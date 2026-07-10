@@ -25,11 +25,9 @@ PAUSA = 0.3
 # =====================================================
 # 1) CARGAR EL CSV DE AEROPUERTOS
 # =====================================================
-# Sube el archivo airports_flightable_categorized.csv cuando lo pida.
+# Se lee desde la misma carpeta donde se ejecuta el script.
 
-print("Sube el archivo 'airports_flightable_categorized.csv':")
-subida = files.upload()
-nombre_csv = list(subida.keys())[0]
+nombre_csv = "airports_flightable_categorized.csv"
 
 airports = pd.read_csv(nombre_csv, sep=";", encoding="utf-8-sig")
 
