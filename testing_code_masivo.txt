@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from requests.adapters import HTTPAdapter
 from google.colab import files
 
 # =====================================================
@@ -35,7 +36,12 @@ MAX_REINTENTOS = 3
 ESPERA_REINTENTO = 2.0  # segundos de espera antes de reintentar
 
 # Sesión reutilizable: mantiene viva la conexión entre llamadas (más rápido).
+# Ajustamos el tamaño del pool de conexiones para que iguale al número de
+# hilos; si no, urllib3 avisa "Connection pool is full" y descarta conexiones.
 session = requests.Session()
+adaptador = HTTPAdapter(pool_connections=HILOS, pool_maxsize=HILOS)
+session.mount("https://", adaptador)
+session.mount("http://", adaptador)
 
 # =====================================================
 # 1) CARGAR EL CSV DE AEROPUERTOS
