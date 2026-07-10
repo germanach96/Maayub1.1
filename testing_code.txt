@@ -1,0 +1,82 @@
+import requests
+import pandas as pd
+from google.colab import files
+
+# =====================================================
+# CONFIGURACIÓN
+# =====================================================
+
+TOKEN = "20c5066cf5c092b6d28afd9a02032bf0"
+
+ORIGEN = input("Origen (IATA, dejar vacío si no aplica): ").upper().strip()
+DESTINO = input("Destino (IATA, dejar vacío si no aplica): ").upper().strip()
+TIPO = input("Tipo de viaje (OW/RD): ").upper().strip()
+MES = input("Mes de salida (YYYY-MM, dejar vacío si no aplica): ").strip()
+
+URL = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates"
+
+# =====================================================
+# PARÁMETROS
+# =====================================================
+
+params = {
+    "currency": "EUR",
+    "market": "es",
+    "sorting": "price",
+    "limit": 1000,
+    "token": TOKEN
+}
+
+if ORIGEN:
+    params["origin"] = ORIGEN
+
+if DESTINO:
+    params["destination"] = DESTINO
+
+if MES:
+    params["departure_at"] = MES
+
+if TIPO == "OW":
+    params["one_way"] = "true"
+elif TIPO == "RD":
+    params["one_way"] = "false"
+
+print("\nParámetros enviados:")
+print(params)
+
+# =====================================================
+# CONSULTA
+# =====================================================
+
+response = requests.get(URL, params=params)
+
+print("\nStatus Code:", response.status_code)
+
+data = response.json()
+
+# =====================================================
+# RESULTADOS
+# =====================================================
+
+if "data" in data and len(data["data"]) > 0:
+
+    df = pd.DataFrame(data["data"])
+
+    print(f"\nSe encontraron {len(df)} vuelos.")
+
+    display(df)
+
+    nombre_archivo = "resultado.csv"
+
+    df.to_csv(
+        nombre_archivo,
+        sep=";",
+        index=False,
+        encoding="utf-8-sig"
+    )
+
+    files.download(nombre_archivo)
+
+else:
+    print("\nSin resultados.")
+    print(data)
