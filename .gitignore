@@ -1,0 +1,10 @@
+# Artefactos de Python
+__pycache__/
+*.pyc
+
+# Salidas generadas por los scripts (no versionar)
+raw_weather/
+clima_destinos.csv
+failed_airports.txt
+resultado_*.csv
+resultado.csv
