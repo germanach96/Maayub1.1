@@ -9,6 +9,10 @@ El proceso tiene dos fases independientes:
 
 Se pueden ejecutar por separado: si ya descargaste el crudo, puedes re-agregar
 sin volver a descargar. La descarga es REANUDABLE (salta lo ya bajado).
+
+Esta versión está pensada para ser LENTA pero FIABLE: descarga un aeropuerto
+por petición (llamadas ligeras) y, si topa el límite del tier gratuito (HTTP
+429), espera con paciencia y reintenta en vez de rendirse. Tarda ~2 horas.
 """
 
 import os
@@ -32,10 +36,20 @@ START_DATE = "2015-01-01"
 END_DATE = "2024-12-31"          # 10 años completos, sin 2025/2026 parciales
 DAILY_VARS = "temperature_2m_mean,temperature_2m_max,precipitation_sum,sunshine_duration"
 
-TAM_LOTE = 15                    # aeropuertos por petición
-PAUSA_ENTRE_PETICIONES = 10      # segundos entre peticiones (límite del tier gratuito)
-BACKOFFS = [30, 60, 120]         # espera antes de cada reintento (3 reintentos)
+# Descargamos UN aeropuerto por petición: la llamada es mucho más ligera y, si
+# algo falla, solo afecta a ese aeropuerto (no a un lote entero).
+PAUSA_ENTRE_PETICIONES = 12      # segundos entre peticiones (~2h para los 575)
 TIMEOUT = 120                    # segundos por petición HTTP
+
+# Reintentos ante errores normales (timeouts, 5xx, red): pocos y con backoff.
+MAX_REINTENTOS_ERROR = 5
+BACKOFFS_ERROR = [30, 60, 120, 240, 480]
+
+# Manejo del límite de peticiones (HTTP 429): en vez de rendirse, ESPERAMOS y
+# reintentamos con paciencia hasta que el límite se libere.
+ESPERA_429_BASE = 60             # primera espera ante un 429 (segundos)
+ESPERA_429_MAX = 600             # tope de espera (10 min)
+MAX_RONDAS_429 = 10              # cuántas veces aguantamos un 429 antes de rendirnos
 
 UMBRAL_LLUVIA_MM = 1.0           # un día "de lluvia" si precip > 1.0 mm
 UMBRAL_NULLS = 0.20              # avisar si una variable tiene >20% de nulos
@@ -70,38 +84,75 @@ def cargar_aeropuertos():
 # FASE 1: DESCARGA DEL CRUDO (REANUDABLE)
 # =====================================================
 
-def pedir_lote(params, n_esperados):
-    """Hace la petición de un lote con reintentos (3) y backoff exponencial.
-    Devuelve la lista de objetos JSON (uno por coordenada, en el mismo orden)
-    o None si el lote falla definitivamente."""
-    for intento in range(len(BACKOFFS) + 1):  # 1 intento inicial + 3 reintentos
+def pedir_localizacion(lat, lon):
+    """Descarga los datos de UN aeropuerto. Devuelve el objeto JSON o None si
+    falla definitivamente. Ante un 429 (límite) espera con paciencia y reintenta;
+    ante otros errores, reintenta unas pocas veces con backoff."""
+    params = {
+        "latitude": lat,
+        "longitude": lon,
+        "start_date": START_DATE,
+        "end_date": END_DATE,
+        "daily": DAILY_VARS,
+        "timezone": "auto",
+        # OJO: no se especifica "models" a propósito (el default funciona en
+        # aeropuertos costeros/isla donde era5_land falla).
+    }
+
+    intentos_error = 0     # cuenta de errores "normales" (timeout, 5xx, red)
+    rondas_429 = 0         # cuenta de veces que hemos aguantado un 429
+    espera_429 = ESPERA_429_BASE
+
+    while True:
         try:
             resp = requests.get(ARCHIVE_URL, params=params, timeout=TIMEOUT)
-            if resp.status_code == 200:
-                data = resp.json()
-                # Con una sola coordenada la API devuelve un dict, no una lista.
-                if isinstance(data, dict):
-                    data = [data]
-                # La respuesta debe traer un objeto por coordenada, en orden.
-                if len(data) != n_esperados:
-                    print(f"  Respuesta con {len(data)} objetos, esperaba {n_esperados} (intento {intento + 1})")
-                else:
-                    return data
-            else:
-                print(f"  HTTP {resp.status_code} (intento {intento + 1})")
         except Exception as e:
-            print(f"  Excepción: {e} (intento {intento + 1})")
+            intentos_error += 1
+            if intentos_error > MAX_REINTENTOS_ERROR:
+                print(f"  Excepción persistente, se abandona: {e}")
+                return None
+            espera = BACKOFFS_ERROR[intentos_error - 1]
+            print(f"  Excepción: {e} -> reintento {intentos_error}/{MAX_REINTENTOS_ERROR} en {espera}s")
+            time.sleep(espera)
+            continue
 
-        # Si aún quedan reintentos, esperar el backoff correspondiente.
-        if intento < len(BACKOFFS):
-            time.sleep(BACKOFFS[intento])
+        # Éxito
+        if resp.status_code == 200:
+            data = resp.json()
+            # Con una sola coordenada la API devuelve un dict (no una lista).
+            if isinstance(data, list):
+                data = data[0] if data else None
+            return data
 
-    return None
+        # Límite de peticiones: esperar (respetando Retry-After si viene) y reintentar.
+        if resp.status_code == 429:
+            rondas_429 += 1
+            if rondas_429 > MAX_RONDAS_429:
+                print(f"  429 persistente tras {MAX_RONDAS_429} esperas, se abandona")
+                return None
+            retry_after = resp.headers.get("Retry-After")
+            if retry_after and str(retry_after).isdigit():
+                espera = int(retry_after)
+            else:
+                espera = espera_429
+                espera_429 = min(espera_429 * 2, ESPERA_429_MAX)  # escalar la próxima
+            print(f"  429 (límite) -> espera {espera}s y reintento (ronda {rondas_429}/{MAX_RONDAS_429})")
+            time.sleep(espera)
+            continue
+
+        # Otros códigos HTTP: reintentar unas pocas veces.
+        intentos_error += 1
+        if intentos_error > MAX_REINTENTOS_ERROR:
+            print(f"  HTTP {resp.status_code} persistente, se abandona")
+            return None
+        espera = BACKOFFS_ERROR[intentos_error - 1]
+        print(f"  HTTP {resp.status_code} -> reintento {intentos_error}/{MAX_REINTENTOS_ERROR} en {espera}s")
+        time.sleep(espera)
 
 
 def fetch_raw():
-    """Descarga el crudo de todos los aeropuertos en lotes, guardando cada uno
-    en raw_weather/{IATA}.json inmediatamente. Salta los ya descargados."""
+    """Descarga el crudo de todos los aeropuertos, UNO POR UNO, guardando cada
+    uno en raw_weather/{IATA}.json inmediatamente. Salta los ya descargados."""
     os.makedirs(RAW_DIR, exist_ok=True)
 
     aeropuertos = cargar_aeropuertos()
@@ -114,48 +165,39 @@ def fetch_raw():
     ya_bajados = len(aeropuertos) - len(pendientes)
     print(f"Total: {len(aeropuertos)} | Ya descargados: {ya_bajados} | Pendientes: {len(pendientes)}")
 
-    # Partimos los pendientes en lotes de TAM_LOTE.
-    lotes = [pendientes[i:i + TAM_LOTE] for i in range(0, len(pendientes), TAM_LOTE)]
-    total_lotes = len(lotes)
+    total = len(pendientes)
+    for idx, aeropuerto in enumerate(pendientes, start=1):
+        iata = aeropuerto["iata"]
+        objeto = pedir_localizacion(aeropuerto["lat"], aeropuerto["lon"])
 
-    for idx, lote in enumerate(lotes, start=1):
-        lats = ",".join(str(a["lat"]) for a in lote)
-        lons = ",".join(str(a["lon"]) for a in lote)
-        iatas = [a["iata"] for a in lote]
-        etiqueta = f"{iatas[0]}...{iatas[-1]}" if len(iatas) > 1 else iatas[0]
-
-        params = {
-            "latitude": lats,
-            "longitude": lons,
-            "start_date": START_DATE,
-            "end_date": END_DATE,
-            "daily": DAILY_VARS,
-            "timezone": "auto",
-            # OJO: no se especifica "models" a propósito (el default funciona en
-            # aeropuertos costeros/isla donde era5_land falla).
-        }
-
-        resultado = pedir_lote(params, len(lote))
-
-        if resultado is None:
-            # Fallo definitivo: registrar los IATA y continuar con el siguiente lote.
-            with open(FAILED_FILE, "a", encoding="utf-8") as f:
-                for it in iatas:
-                    f.write(it + "\n")
-            print(f"Lote {idx}/{total_lotes} ({etiqueta}) - FALLO (registrado en {FAILED_FILE})")
+        if objeto is None:
+            print(f"[{idx}/{total}] {iata} - FALLO")
         else:
-            # Guardar el crudo de cada aeropuerto inmediatamente (reanudable).
-            for aeropuerto, objeto in zip(lote, resultado):
-                ruta = os.path.join(RAW_DIR, f"{aeropuerto['iata']}.json")
-                with open(ruta, "w", encoding="utf-8") as f:
-                    json.dump(objeto, f)
-            print(f"Lote {idx}/{total_lotes} ({etiqueta}) - OK")
+            ruta = os.path.join(RAW_DIR, f"{iata}.json")
+            with open(ruta, "w", encoding="utf-8") as f:
+                json.dump(objeto, f)
+            print(f"[{idx}/{total}] {iata} - OK")
 
         # Pausa entre peticiones (no hace falta tras la última).
-        if idx < total_lotes:
+        if idx < total:
             time.sleep(PAUSA_ENTRE_PETICIONES)
 
-    print("\nDescarga terminada.")
+    # Registro de los que aún faltan (se recalcula mirando qué JSON existen,
+    # así el fichero siempre refleja la realidad, sin duplicados entre corridas).
+    faltan = [
+        a["iata"] for a in aeropuertos
+        if not os.path.exists(os.path.join(RAW_DIR, f"{a['iata']}.json"))
+    ]
+    if faltan:
+        with open(FAILED_FILE, "w", encoding="utf-8") as f:
+            f.write("\n".join(faltan) + "\n")
+        print(f"\nDescarga terminada. Faltan {len(faltan)} aeropuertos (ver {FAILED_FILE}).")
+        print("Vuelve a ejecutar fetch_raw() para reintentar solo los que faltan.")
+    else:
+        # Si ya están todos, limpiamos el fichero de fallos si existía.
+        if os.path.exists(FAILED_FILE):
+            os.remove(FAILED_FILE)
+        print(f"\nDescarga terminada. Los {len(aeropuertos)} aeropuertos están descargados.")
 
 
 # =====================================================
