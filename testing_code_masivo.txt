@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from google.colab import files
 
 # =====================================================
@@ -19,8 +20,22 @@ BASE_PARAMS = {
     "token": TOKEN
 }
 
-# Pausa (segundos) entre llamadas para no saturar la API
-PAUSA = 0.3
+# Número de llamadas en paralelo. Si aparecen muchos errores 429
+# (Too Many Requests) o el proceso se vuelve inestable, baja este número.
+HILOS = 50
+
+# Pausa (segundos) al inicio de cada llamada para no saturar la API.
+# Con muchos hilos conviene que sea pequeña o incluso 0.
+PAUSA = 0.05
+
+# Reintentos ante errores 429 (Too Many Requests): con muchos hilos la API
+# puede rechazar llamadas. En vez de perder esos vuelos, esperamos y
+# reintentamos hasta MAX_REINTENTOS veces.
+MAX_REINTENTOS = 3
+ESPERA_REINTENTO = 2.0  # segundos de espera antes de reintentar
+
+# Sesión reutilizable: mantiene viva la conexión entre llamadas (más rápido).
+session = requests.Session()
 
 # =====================================================
 # 1) CARGAR EL CSV DE AEROPUERTOS
@@ -81,18 +96,37 @@ print(f"Llamadas totales estimadas: {len(destinos) * 3}")
 
 def consultar(origin, destination, one_way, tipo_llamada):
     """Hace una llamada a la API y devuelve una lista de dicts con los vuelos,
-    añadiendo columnas de contexto para identificar la ruta y el tipo."""
+    añadiendo columnas de contexto para identificar la ruta y el tipo.
+    Reintenta automáticamente si la API responde 429 (Too Many Requests)."""
     params = dict(BASE_PARAMS)
     params["origin"] = origin
     params["destination"] = destination
     params["one_way"] = "true" if one_way else "false"
 
-    try:
-        resp = requests.get(URL, params=params, timeout=30)
-        data = resp.json()
-    except Exception as e:
-        print(f"  ERROR en {origin}->{destination} ({tipo_llamada}): {e}")
-        return []
+    data = None
+    for intento in range(1, MAX_REINTENTOS + 1):
+        if PAUSA:
+            time.sleep(PAUSA)
+        try:
+            resp = session.get(URL, params=params, timeout=30)
+
+            # Si nos limitan (429), esperamos y reintentamos
+            if resp.status_code == 429:
+                if intento < MAX_REINTENTOS:
+                    time.sleep(ESPERA_REINTENTO)
+                    continue
+                else:
+                    print(f"  429 (límite) en {origin}->{destination} ({tipo_llamada}) tras {MAX_REINTENTOS} intentos")
+                    return []
+
+            data = resp.json()
+            break
+        except Exception as e:
+            if intento < MAX_REINTENTOS:
+                time.sleep(ESPERA_REINTENTO)
+                continue
+            print(f"  ERROR en {origin}->{destination} ({tipo_llamada}): {e}")
+            return []
 
     filas = []
     if isinstance(data, dict) and data.get("data"):
@@ -106,25 +140,35 @@ def consultar(origin, destination, one_way, tipo_llamada):
     return filas
 
 # =====================================================
-# 4) RECORRER TODOS LOS DESTINOS (3 LLAMADAS CADA UNO)
+# 4) RECORRER TODOS LOS DESTINOS (3 LLAMADAS CADA UNO) EN PARALELO
 # =====================================================
 
-resultados = []
-
-for i, DESTINO in enumerate(destinos, start=1):
-    print(f"\n[{i}/{len(destinos)}] Ruta {ORIGEN} <-> {DESTINO}")
-
+# Preparamos la lista de todas las llamadas a hacer (3 por destino).
+tareas = []
+for DESTINO in destinos:
     # Llamada 1: ida (origen -> destino, solo ida)
-    resultados += consultar(ORIGEN, DESTINO, one_way=True, tipo_llamada="OW_IDA")
-    time.sleep(PAUSA)
-
+    tareas.append((ORIGEN, DESTINO, True, "OW_IDA"))
     # Llamada 2: vuelta (destino -> origen, solo ida)
-    resultados += consultar(DESTINO, ORIGEN, one_way=True, tipo_llamada="OW_VUELTA")
-    time.sleep(PAUSA)
-
+    tareas.append((DESTINO, ORIGEN, True, "OW_VUELTA"))
     # Llamada 3: redondo (origen -> destino, ida y vuelta)
-    resultados += consultar(ORIGEN, DESTINO, one_way=False, tipo_llamada="RD")
-    time.sleep(PAUSA)
+    tareas.append((ORIGEN, DESTINO, False, "RD"))
+
+resultados = []
+total_tareas = len(tareas)
+completadas = 0
+
+# Lanzamos las llamadas en paralelo con un pool de hilos.
+with ThreadPoolExecutor(max_workers=HILOS) as executor:
+    futuros = [
+        executor.submit(consultar, origin, destination, one_way, tipo)
+        for (origin, destination, one_way, tipo) in tareas
+    ]
+
+    for futuro in as_completed(futuros):
+        resultados += futuro.result()
+        completadas += 1
+        if completadas % 25 == 0 or completadas == total_tareas:
+            print(f"  {completadas}/{total_tareas} llamadas completadas")
 
 print(f"\n\nTotal de vuelos recopilados: {len(resultados)}")
 
