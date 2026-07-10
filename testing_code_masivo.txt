@@ -12,6 +12,11 @@ from google.colab import files
 TOKEN = "20c5066cf5c092b6d28afd9a02032bf0"
 URL = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates"
 
+# Dominio de Aviasales. La API devuelve el campo "link" como ruta relativa
+# (ej. /search/...), así que le anteponemos esto para que sea un enlace
+# completo y funcional.
+BASE_AVIASALES = "https://www.aviasales.com"
+
 # Parámetros base comunes a todas las llamadas
 BASE_PARAMS = {
     "currency": "EUR",
@@ -138,6 +143,13 @@ def consultar(origin, destination, one_way, tipo_llamada):
     if isinstance(data, dict) and data.get("data"):
         for vuelo in data["data"]:
             registro = dict(vuelo)
+
+            # El "link" viene relativo (ej. /search/...); lo convertimos en
+            # un enlace completo anteponiendo el dominio de Aviasales.
+            link = registro.get("link")
+            if isinstance(link, str) and link.startswith("/"):
+                registro["link"] = BASE_AVIASALES + link
+
             registro["ruta_origen"] = origin
             registro["ruta_destino"] = destination
             registro["one_way"] = params["one_way"]
