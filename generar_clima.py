@@ -1,24 +1,39 @@
 """
-Genera un CSV maestro de clima mensual histórico (normales de 10 años) para una
-lista de aeropuertos, usando la API gratuita de Open-Meteo (Archive / Historical
-Weather). No requiere API key.
+Genera un CSV maestro de clima mensual histórico (normales) para una lista de
+aeropuertos, usando la API gratuita de Open-Meteo (Archive / Historical Weather).
+No requiere API key.
 
-El proceso tiene dos fases independientes:
+Dos fases independientes:
   1) fetch_raw()  -> descarga el crudo de cada aeropuerto a raw_weather/{IATA}.json
   2) aggregate()  -> lee esos JSON y calcula las normales mensuales -> clima_destinos.csv
 
-Se pueden ejecutar por separado: si ya descargaste el crudo, puedes re-agregar
-sin volver a descargar. La descarga es REANUDABLE (salta lo ya bajado).
+--- IMPORTANTE: LÍMITES DEL TIER GRATUITO ---
+Open-Meteo pesa cada petición así:  llamadas = (días / 14) x (variables / 10)
+y el plan gratuito permite 10.000 llamadas/día (5.000/hora, 600/minuto).
 
-Esta versión está pensada para ser LENTA pero FIABLE: descarga un aeropuerto
-por petición (llamadas ligeras) y, si topa el límite del tier gratuito (HTTP
-429), espera con paciencia y reintenta en vez de rendirse. Tarda ~2 horas.
+Con 4 variables, cada aeropuerto pesa (días/14) x 0.4. Por eso NO se pueden bajar
+575 aeropuertos a 10 años en un día (serían ~60.000 llamadas = ~6 días).
+
+Este script:
+  - Descarga UN aeropuerto por petición.
+  - Calcula SOLO la pausa entre peticiones para ir justo por debajo del límite/hora.
+  - Si agota la cuota DIARIA (429 sostenido), se detiene limpio en ~3 min (no se
+    cuelga horas) y te dice que lo relances más tarde. Es REANUDABLE: al relanzar
+    salta lo ya descargado.
+
+Ajusta la ventana de años con START_DATE / END_DATE según cuánto quieras esperar:
+  - 1 año  (2024)      -> ~6.000 llamadas -> 1 sola sesión (~1.5h)
+  - 3 años (2022-2024) -> ~18.000        -> 2 sesiones (relanzar 1 día después)
+  - 5 años (2020-2024) -> ~30.000        -> 3 sesiones
+  - 10 años(2015-2024) -> ~60.000        -> ~6 sesiones
 """
 
 import os
 import ast
 import time
 import json
+import shutil
+import datetime
 import requests
 import pandas as pd
 
@@ -32,27 +47,46 @@ OUTPUT_CSV = "clima_destinos.csv"
 FAILED_FILE = "failed_airports.txt"
 
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
-START_DATE = "2015-01-01"
-END_DATE = "2024-12-31"          # 10 años completos, sin 2025/2026 parciales
+
+# --- Ventana de años (cámbiala aquí) ---
+START_DATE = "2022-01-01"
+END_DATE = "2024-12-31"          # 3 años completos por defecto (balance calidad/tiempo)
+
 DAILY_VARS = "temperature_2m_mean,temperature_2m_max,precipitation_sum,sunshine_duration"
+N_VARIABLES = 4                  # nº de variables en DAILY_VARS (para calcular el peso)
 
-# Descargamos UN aeropuerto por petición: la llamada es mucho más ligera y, si
-# algo falla, solo afecta a ese aeropuerto (no a un lote entero).
-PAUSA_ENTRE_PETICIONES = 12      # segundos entre peticiones (~2h para los 575)
 TIMEOUT = 120                    # segundos por petición HTTP
+PAUSA_MINIMA = 6                 # pausa mínima entre peticiones (segundos)
 
-# Reintentos ante errores normales (timeouts, 5xx, red): pocos y con backoff.
-MAX_REINTENTOS_ERROR = 5
-BACKOFFS_ERROR = [30, 60, 120, 240, 480]
+# Reintentos ante errores normales (timeout, 5xx, red): pocos, con backoff.
+BACKOFFS_ERROR = [30, 60, 120]
 
-# Manejo del límite de peticiones (HTTP 429): en vez de rendirse, ESPERAMOS y
-# reintentamos con paciencia hasta que el límite se libere.
-ESPERA_429_BASE = 60             # primera espera ante un 429 (segundos)
-ESPERA_429_MAX = 600             # tope de espera (10 min)
-MAX_RONDAS_429 = 10              # cuántas veces aguantamos un 429 antes de rendirnos
+# Ante 429 hacemos unos pocos reintentos cortos. Si AUN ASÍ sigue fallando,
+# asumimos que se agotó la cuota diaria y PARAMOS (no tiene sentido esperar horas).
+BACKOFFS_429 = [30, 60, 120]
 
 UMBRAL_LLUVIA_MM = 1.0           # un día "de lluvia" si precip > 1.0 mm
 UMBRAL_NULLS = 0.20              # avisar si una variable tiene >20% de nulos
+
+
+class CuotaAgotada(Exception):
+    """Se lanza cuando el 429 persiste: probablemente se agotó la cuota diaria."""
+    pass
+
+
+def _dias_del_rango():
+    """Número de días (inclusive) entre START_DATE y END_DATE."""
+    d0 = datetime.date.fromisoformat(START_DATE)
+    d1 = datetime.date.fromisoformat(END_DATE)
+    return (d1 - d0).days + 1
+
+
+def _pausa_entre_peticiones():
+    """Calcula la pausa para ir justo por debajo del límite de 5.000 llamadas/hora.
+    peso_por_aeropuerto = (días/14) x (variables/10). Para no pasar de 5.000/hora
+    necesitamos >= 0.72 x peso segundos entre peticiones; usamos 0.8 x peso de margen."""
+    peso = (_dias_del_rango() / 14.0) * (N_VARIABLES / 10.0)
+    return max(PAUSA_MINIMA, round(0.8 * peso, 1))
 
 
 # =====================================================
@@ -80,14 +114,24 @@ def cargar_aeropuertos():
     return aeropuertos
 
 
+def reset_raw():
+    """Borra la carpeta raw_weather/ y el registro de fallos para empezar de cero.
+    Útil si cambias la ventana de años (los JSON viejos serían de otro rango)."""
+    if os.path.isdir(RAW_DIR):
+        shutil.rmtree(RAW_DIR)
+    if os.path.exists(FAILED_FILE):
+        os.remove(FAILED_FILE)
+    print("raw_weather/ y failed_airports.txt borrados. Empezarás desde cero.")
+
+
 # =====================================================
 # FASE 1: DESCARGA DEL CRUDO (REANUDABLE)
 # =====================================================
 
 def pedir_localizacion(lat, lon):
-    """Descarga los datos de UN aeropuerto. Devuelve el objeto JSON o None si
-    falla definitivamente. Ante un 429 (límite) espera con paciencia y reintenta;
-    ante otros errores, reintenta unas pocas veces con backoff."""
+    """Descarga los datos de UN aeropuerto. Devuelve el objeto JSON, o None si
+    falla por un error puntual (se salta ese aeropuerto). Si el 429 persiste,
+    lanza CuotaAgotada para que la descarga se detenga limpiamente."""
     params = {
         "latitude": lat,
         "longitude": lon,
@@ -99,91 +143,103 @@ def pedir_localizacion(lat, lon):
         # aeropuertos costeros/isla donde era5_land falla).
     }
 
-    intentos_error = 0     # cuenta de errores "normales" (timeout, 5xx, red)
-    rondas_429 = 0         # cuenta de veces que hemos aguantado un 429
-    espera_429 = ESPERA_429_BASE
+    intentos_error = 0
 
-    while True:
+    for ronda in range(len(BACKOFFS_429) + 1):
         try:
             resp = requests.get(ARCHIVE_URL, params=params, timeout=TIMEOUT)
         except Exception as e:
-            intentos_error += 1
-            if intentos_error > MAX_REINTENTOS_ERROR:
-                print(f"  Excepción persistente, se abandona: {e}")
+            if intentos_error >= len(BACKOFFS_ERROR):
+                print(f"  Excepción persistente, se salta: {e}")
                 return None
-            espera = BACKOFFS_ERROR[intentos_error - 1]
-            print(f"  Excepción: {e} -> reintento {intentos_error}/{MAX_REINTENTOS_ERROR} en {espera}s")
+            espera = BACKOFFS_ERROR[intentos_error]
+            intentos_error += 1
+            print(f"  Excepción: {e} -> reintento en {espera}s")
             time.sleep(espera)
             continue
 
         # Éxito
         if resp.status_code == 200:
             data = resp.json()
-            # Con una sola coordenada la API devuelve un dict (no una lista).
             if isinstance(data, list):
                 data = data[0] if data else None
             return data
 
-        # Límite de peticiones: esperar (respetando Retry-After si viene) y reintentar.
+        # Límite de peticiones
         if resp.status_code == 429:
-            rondas_429 += 1
-            if rondas_429 > MAX_RONDAS_429:
-                print(f"  429 persistente tras {MAX_RONDAS_429} esperas, se abandona")
-                return None
+            if ronda >= len(BACKOFFS_429):
+                # Ya reintentamos varias veces y sigue: cuota diaria agotada.
+                raise CuotaAgotada()
             retry_after = resp.headers.get("Retry-After")
             if retry_after and str(retry_after).isdigit():
                 espera = int(retry_after)
             else:
-                espera = espera_429
-                espera_429 = min(espera_429 * 2, ESPERA_429_MAX)  # escalar la próxima
-            print(f"  429 (límite) -> espera {espera}s y reintento (ronda {rondas_429}/{MAX_RONDAS_429})")
+                espera = BACKOFFS_429[ronda]
+            print(f"  429 (límite) -> espera {espera}s y reintento")
             time.sleep(espera)
             continue
 
-        # Otros códigos HTTP: reintentar unas pocas veces.
-        intentos_error += 1
-        if intentos_error > MAX_REINTENTOS_ERROR:
-            print(f"  HTTP {resp.status_code} persistente, se abandona")
+        # Otros códigos HTTP
+        if intentos_error >= len(BACKOFFS_ERROR):
+            print(f"  HTTP {resp.status_code} persistente, se salta")
             return None
-        espera = BACKOFFS_ERROR[intentos_error - 1]
-        print(f"  HTTP {resp.status_code} -> reintento {intentos_error}/{MAX_REINTENTOS_ERROR} en {espera}s")
+        espera = BACKOFFS_ERROR[intentos_error]
+        intentos_error += 1
+        print(f"  HTTP {resp.status_code} -> reintento en {espera}s")
         time.sleep(espera)
+
+    return None
 
 
 def fetch_raw():
-    """Descarga el crudo de todos los aeropuertos, UNO POR UNO, guardando cada
-    uno en raw_weather/{IATA}.json inmediatamente. Salta los ya descargados."""
+    """Descarga el crudo de todos los aeropuertos, uno por uno, guardando cada
+    uno en raw_weather/{IATA}.json. Salta los ya descargados. Si se agota la
+    cuota diaria, se detiene limpiamente (relanzar más tarde para continuar)."""
     os.makedirs(RAW_DIR, exist_ok=True)
 
     aeropuertos = cargar_aeropuertos()
-
-    # REANUDABLE: nos quedamos solo con los que no tienen ya su JSON guardado.
     pendientes = [
         a for a in aeropuertos
         if not os.path.exists(os.path.join(RAW_DIR, f"{a['iata']}.json"))
     ]
     ya_bajados = len(aeropuertos) - len(pendientes)
-    print(f"Total: {len(aeropuertos)} | Ya descargados: {ya_bajados} | Pendientes: {len(pendientes)}")
 
+    pausa = _pausa_entre_peticiones()
+    peso = (_dias_del_rango() / 14.0) * (N_VARIABLES / 10.0)
+    coste_total = len(pendientes) * peso
+
+    print(f"Ventana: {START_DATE} a {END_DATE} ({_dias_del_rango()} días)")
+    print(f"Peso por aeropuerto: ~{peso:.1f} llamadas | Pausa entre peticiones: {pausa}s")
+    print(f"Total: {len(aeropuertos)} | Ya descargados: {ya_bajados} | Pendientes: {len(pendientes)}")
+    print(f"Coste de lo pendiente: ~{coste_total:.0f} llamadas (tope diario: 10.000)")
+    if coste_total > 10000:
+        print("  -> No entra en la cuota de un solo día: se descargará en varias sesiones.")
+    print()
+
+    descargados = 0
     total = len(pendientes)
     for idx, aeropuerto in enumerate(pendientes, start=1):
         iata = aeropuerto["iata"]
-        objeto = pedir_localizacion(aeropuerto["lat"], aeropuerto["lon"])
+        try:
+            objeto = pedir_localizacion(aeropuerto["lat"], aeropuerto["lon"])
+        except CuotaAgotada:
+            print(f"\n*** Cuota diaria agotada tras {descargados} aeropuertos en esta sesión. ***")
+            print("La cuota de Open-Meteo se reinicia cada día. Vuelve a ejecutar")
+            print("fetch_raw() más tarde (o mañana) y continuará donde se quedó.")
+            break
 
         if objeto is None:
-            print(f"[{idx}/{total}] {iata} - FALLO")
+            print(f"[{idx}/{total}] {iata} - FALLO (se salta)")
         else:
-            ruta = os.path.join(RAW_DIR, f"{iata}.json")
-            with open(ruta, "w", encoding="utf-8") as f:
+            with open(os.path.join(RAW_DIR, f"{iata}.json"), "w", encoding="utf-8") as f:
                 json.dump(objeto, f)
+            descargados += 1
             print(f"[{idx}/{total}] {iata} - OK")
 
-        # Pausa entre peticiones (no hace falta tras la última).
         if idx < total:
-            time.sleep(PAUSA_ENTRE_PETICIONES)
+            time.sleep(pausa)
 
-    # Registro de los que aún faltan (se recalcula mirando qué JSON existen,
-    # así el fichero siempre refleja la realidad, sin duplicados entre corridas).
+    # Recalcular qué falta mirando el disco (sin duplicados entre corridas).
     faltan = [
         a["iata"] for a in aeropuertos
         if not os.path.exists(os.path.join(RAW_DIR, f"{a['iata']}.json"))
@@ -191,13 +247,13 @@ def fetch_raw():
     if faltan:
         with open(FAILED_FILE, "w", encoding="utf-8") as f:
             f.write("\n".join(faltan) + "\n")
-        print(f"\nDescarga terminada. Faltan {len(faltan)} aeropuertos (ver {FAILED_FILE}).")
-        print("Vuelve a ejecutar fetch_raw() para reintentar solo los que faltan.")
+        print(f"\nAún faltan {len(faltan)} aeropuertos (ver {FAILED_FILE}).")
+        print("Vuelve a ejecutar fetch_raw() para continuar.")
     else:
-        # Si ya están todos, limpiamos el fichero de fallos si existía.
         if os.path.exists(FAILED_FILE):
             os.remove(FAILED_FILE)
-        print(f"\nDescarga terminada. Los {len(aeropuertos)} aeropuertos están descargados.")
+        print(f"\n¡Completo! Los {len(aeropuertos)} aeropuertos están descargados.")
+        print("Ya puedes ejecutar aggregate().")
 
 
 # =====================================================
@@ -241,7 +297,7 @@ def normales_de_aeropuerto(iata, daily):
         horas_sol_dia=("sol_horas", "mean"),
     ).reset_index()
 
-    # Fase 2: normal mensual = media de los ~10 valores de cada mes calendario.
+    # Fase 2: normal mensual = media de los valores de cada mes calendario.
     normal = por_mes_anio.groupby("mes").agg(
         temp_media=("temp_media", "mean"),
         temp_max_media=("temp_max_media", "mean"),
@@ -290,8 +346,6 @@ def aggregate():
     # Redondear todas las métricas a 1 decimal (dias_lluvia incluido, ej. 4.3).
     cols_num = ["temp_media", "temp_max_media", "precip_mm", "dias_lluvia", "horas_sol_dia"]
     maestro[cols_num] = maestro[cols_num].round(1)
-
-    # Orden final de columnas.
     maestro = maestro[["iata", "mes"] + cols_num]
 
     maestro.to_csv(OUTPUT_CSV, index=False, encoding="utf-8")
@@ -300,11 +354,10 @@ def aggregate():
     # -------------------------------------------------
     # VALIDACIÓN
     # -------------------------------------------------
-    n_filas = len(maestro)
     n_aeropuertos = maestro["iata"].nunique()
+    n_filas = len(maestro)
     print(f"\n--- Validación ---")
-    print(f"Filas: {n_filas} (esperado 6900 = 575 x 12)")
-    print(f"Aeropuertos en el CSV: {n_aeropuertos}")
+    print(f"Aeropuertos: {n_aeropuertos} | Filas: {n_filas} (esperado {n_aeropuertos} x 12 = {n_aeropuertos * 12})")
 
     meses_por_iata = maestro.groupby("iata")["mes"].nunique()
     incompletos = meses_por_iata[meses_por_iata < 12]
@@ -331,10 +384,10 @@ def aggregate():
 # =====================================================
 # EJECUCIÓN
 # =====================================================
-# En Colab puedes llamar a las funciones por separado en celdas distintas:
-#   fetch_raw()     # descarga (reanudable)
-#   aggregate()     # agrega y genera el CSV
-# Aquí se ejecutan las dos en orden por comodidad.
+# En Colab, en celdas separadas:
+#   reset_raw()     # (opcional) empezar de cero si cambiaste la ventana de años
+#   fetch_raw()     # descarga; si agota la cuota diaria para solo, relánzalo luego
+#   aggregate()     # cuando estén los 575, genera el CSV
 
 if __name__ == "__main__":
     fetch_raw()
