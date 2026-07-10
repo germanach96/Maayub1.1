@@ -1,0 +1,160 @@
+import requests
+import pandas as pd
+import time
+from google.colab import files
+
+# =====================================================
+# CONFIGURACIÓN
+# =====================================================
+
+TOKEN = "20c5066cf5c092b6d28afd9a02032bf0"
+URL = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates"
+
+# Parámetros base comunes a todas las llamadas
+BASE_PARAMS = {
+    "currency": "EUR",
+    "market": "es",
+    "sorting": "price",
+    "limit": 1000,
+    "token": TOKEN
+}
+
+# Pausa (segundos) entre llamadas para no saturar la API
+PAUSA = 0.3
+
+# =====================================================
+# 1) CARGAR EL CSV DE AEROPUERTOS
+# =====================================================
+# Sube el archivo airports_flightable_categorized.csv cuando lo pida.
+
+print("Sube el archivo 'airports_flightable_categorized.csv':")
+subida = files.upload()
+nombre_csv = list(subida.keys())[0]
+
+airports = pd.read_csv(nombre_csv, sep=";", encoding="utf-8-sig")
+
+# Nos quedamos solo con lo que necesitamos: el código IATA y sus categorías
+airports = airports[["code", "Zone", "Top151"]].dropna(subset=["code"])
+airports["code"] = airports["code"].astype(str).str.upper().str.strip()
+
+# =====================================================
+# 2) PEDIR ORIGEN Y GRUPO DE DESTINOS
+# =====================================================
+
+ORIGEN = input("\nAeropuerto de ORIGEN (IATA): ").upper().strip()
+
+print("\nElige el grupo de destinos:")
+print("  1 - Zona: Europe")
+print("  2 - Zona: Asia")
+print("  3 - Zona: America")
+print("  4 - Zona: Africa / Oceania")
+print("  5 - Top 151")
+
+opcion = input("\nOpción (1-5): ").strip()
+
+mapa_zonas = {
+    "1": "Europe",
+    "2": "Asia",
+    "3": "America",
+    "4": "Africa / Oceania",
+}
+
+if opcion in mapa_zonas:
+    zona = mapa_zonas[opcion]
+    seleccionados = airports[airports["Zone"] == zona]
+    grupo_nombre = zona
+elif opcion == "5":
+    seleccionados = airports[airports["Top151"] == 1]
+    grupo_nombre = "Top151"
+else:
+    raise ValueError("Opción no válida. Debe ser un número del 1 al 5.")
+
+# Lista de destinos = todos los del grupo menos el origen
+destinos = [c for c in seleccionados["code"].unique() if c != ORIGEN]
+
+print(f"\nOrigen: {ORIGEN}")
+print(f"Grupo elegido: {grupo_nombre}")
+print(f"Destinos a consultar: {len(destinos)}")
+print(f"Llamadas totales estimadas: {len(destinos) * 3}")
+
+# =====================================================
+# 3) FUNCIÓN PARA HACER UNA LLAMADA
+# =====================================================
+
+def consultar(origin, destination, one_way, tipo_llamada):
+    """Hace una llamada a la API y devuelve una lista de dicts con los vuelos,
+    añadiendo columnas de contexto para identificar la ruta y el tipo."""
+    params = dict(BASE_PARAMS)
+    params["origin"] = origin
+    params["destination"] = destination
+    params["one_way"] = "true" if one_way else "false"
+
+    try:
+        resp = requests.get(URL, params=params, timeout=30)
+        data = resp.json()
+    except Exception as e:
+        print(f"  ERROR en {origin}->{destination} ({tipo_llamada}): {e}")
+        return []
+
+    filas = []
+    if isinstance(data, dict) and data.get("data"):
+        for vuelo in data["data"]:
+            registro = dict(vuelo)
+            registro["ruta_origen"] = origin
+            registro["ruta_destino"] = destination
+            registro["one_way"] = params["one_way"]
+            registro["tipo_llamada"] = tipo_llamada
+            filas.append(registro)
+    return filas
+
+# =====================================================
+# 4) RECORRER TODOS LOS DESTINOS (3 LLAMADAS CADA UNO)
+# =====================================================
+
+resultados = []
+
+for i, DESTINO in enumerate(destinos, start=1):
+    print(f"\n[{i}/{len(destinos)}] Ruta {ORIGEN} <-> {DESTINO}")
+
+    # Llamada 1: ida (origen -> destino, solo ida)
+    resultados += consultar(ORIGEN, DESTINO, one_way=True, tipo_llamada="OW_IDA")
+    time.sleep(PAUSA)
+
+    # Llamada 2: vuelta (destino -> origen, solo ida)
+    resultados += consultar(DESTINO, ORIGEN, one_way=True, tipo_llamada="OW_VUELTA")
+    time.sleep(PAUSA)
+
+    # Llamada 3: redondo (origen -> destino, ida y vuelta)
+    resultados += consultar(ORIGEN, DESTINO, one_way=False, tipo_llamada="RD")
+    time.sleep(PAUSA)
+
+print(f"\n\nTotal de vuelos recopilados: {len(resultados)}")
+
+# =====================================================
+# 5) GUARDAR Y DESCARGAR EL CSV
+# =====================================================
+
+if resultados:
+    df = pd.DataFrame(resultados)
+
+    # Ponemos primero las columnas de contexto para que sea más legible
+    cols_contexto = ["ruta_origen", "ruta_destino", "one_way", "tipo_llamada"]
+    otras = [c for c in df.columns if c not in cols_contexto]
+    df = df[cols_contexto + otras]
+
+    print(f"\nSe encontraron {len(df)} vuelos en total.")
+    display(df)
+
+    nombre_archivo = f"resultado_{ORIGEN}_{grupo_nombre.replace(' / ', '_').replace(' ', '')}.csv"
+
+    df.to_csv(
+        nombre_archivo,
+        sep=";",
+        index=False,
+        encoding="utf-8-sig"
+    )
+
+    files.download(nombre_archivo)
+    print(f"\nArchivo descargado: {nombre_archivo}")
+else:
+    print("\nSin resultados para ninguna ruta.")
