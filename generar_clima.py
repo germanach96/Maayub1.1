@@ -49,8 +49,9 @@ FAILED_FILE = "failed_airports.txt"
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 
 # --- Ventana de años (cámbiala aquí) ---
-START_DATE = "2022-01-01"
-END_DATE = "2024-12-31"          # 3 años completos por defecto (balance calidad/tiempo)
+START_DATE = "2015-01-01"
+END_DATE = "2024-12-31"          # 10 años completos (normal climática de verdad).
+# ¿Quieres terminar en 1 sola sesión? Cambia START_DATE a "2024-01-01" (1 año).
 
 DAILY_VARS = "temperature_2m_mean,temperature_2m_max,precipitation_sum,sunshine_duration"
 N_VARIABLES = 4                  # nº de variables en DAILY_VARS (para calcular el peso)
@@ -121,7 +122,24 @@ def reset_raw():
         shutil.rmtree(RAW_DIR)
     if os.path.exists(FAILED_FILE):
         os.remove(FAILED_FILE)
-    print("raw_weather/ y failed_airports.txt borrados. Empezarás desde cero.")
+    print(f"{RAW_DIR}/ y {FAILED_FILE} borrados. Empezarás desde cero.")
+
+
+def montar_drive(carpeta="maayub_clima"):
+    """SOLO EN COLAB Y RECOMENDADO PARA DESCARGAS DE VARIOS DÍAS.
+    Monta Google Drive y hace que el crudo se guarde ahí, para que el progreso
+    NO se pierda cuando Colab reinicia el entorno entre sesiones.
+    Llama a esta función ANTES de fetch_raw() y de aggregate() en cada sesión."""
+    from google.colab import drive
+    drive.mount("/content/drive")
+
+    global RAW_DIR, FAILED_FILE
+    base = f"/content/drive/MyDrive/{carpeta}"
+    RAW_DIR = os.path.join(base, "raw_weather")
+    FAILED_FILE = os.path.join(base, "failed_airports.txt")
+    os.makedirs(RAW_DIR, exist_ok=True)
+    print(f"Crudo guardándose en Drive: {RAW_DIR}")
+    print("El progreso sobrevivirá entre sesiones/días.")
 
 
 # =====================================================
@@ -384,10 +402,16 @@ def aggregate():
 # =====================================================
 # EJECUCIÓN
 # =====================================================
-# En Colab, en celdas separadas:
-#   reset_raw()     # (opcional) empezar de cero si cambiaste la ventana de años
-#   fetch_raw()     # descarga; si agota la cuota diaria para solo, relánzalo luego
-#   aggregate()     # cuando estén los 575, genera el CSV
+# --- FLUJO RECOMENDADO EN COLAB (10 años = ~6 sesiones en días distintos) ---
+# Cada día, en celdas separadas:
+#   montar_drive()  # IMPRESCINDIBLE para varios días: guarda el crudo en tu Drive
+#   fetch_raw()     # baja ~95 aeropuertos, agota la cuota diaria y para solo
+# Al día siguiente repites montar_drive() + fetch_raw(); salta lo ya bajado.
+# Cuando fetch_raw() diga "¡Completo!", en esa sesión:
+#   montar_drive()  # (si no lo hiciste ya en la sesión)
+#   aggregate()     # genera clima_destinos.csv
+#
+# Si solo vas a hacer 1 sesión (p. ej. ventana de 1 año), Drive es opcional.
 
 if __name__ == "__main__":
     fetch_raw()
