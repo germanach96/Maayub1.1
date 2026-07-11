@@ -270,33 +270,40 @@ def ejecutar():
     aeropuertos = cargar_aeropuertos(input_path)
 
     # 3) Ver qué falta (los que aún no están en el CSV de salida).
+    Y = len(aeropuertos)
+    primera_vez = not os.path.exists(csv_path)
     hechos = iatas_ya_en_csv(csv_path)
     pendientes = [a for a in aeropuertos if a["iata"] not in hechos]
 
     pausa = _pausa_entre_peticiones()
     peso = (_dias_del_rango() / 14.0) * (N_VARIABLES / 10.0)
 
-    print(f"CSV de salida: {csv_path}")
+    print(f"CSV de climas: {csv_path}")
     print(f"Ventana: {START_DATE} a {END_DATE} | peso ~{peso:.1f} llamadas/aeropuerto | pausa {pausa}s")
-    print(f"Aeropuertos: {len(aeropuertos)} | ya con datos: {len(hechos)} | pendientes: {len(pendientes)}")
+
+    # Mensaje de estado tras comparar los dos CSV.
+    if primera_vez:
+        print(f"\n>>> Primera vez: se creará un CSV nuevo de climas. 0 de {Y} aeropuertos con info.")
+    else:
+        print(f"\n>>> {len(hechos)} de {Y} aeropuertos con info.")
 
     if not pendientes:
-        print("\n¡Ya están todos! El CSV está completo.")
+        print(f">>> Ya tienes TODA la info completa ({Y} de {Y} aeropuertos). Nada que descargar.")
         _descargar(csv_path)
         return
 
-    print(f"Cuota diaria: ~10.000 llamadas -> ~{int(10000 / peso)} aeropuertos por ejecución.\n")
+    print(f">>> Faltan {len(pendientes)}. Cuota diaria ~ {int(10000 / peso)} aeropuertos por ejecución.\n")
 
     # 4) Descargar los pendientes, guardando cada uno en el CSV al momento.
     nuevos = 0
+    corte_por_limite = False
     total = len(pendientes)
     for idx, aeropuerto in enumerate(pendientes, start=1):
         iata = aeropuerto["iata"]
         try:
             objeto = pedir_localizacion(aeropuerto["lat"], aeropuerto["lon"])
         except CuotaAgotada:
-            print(f"\n*** Límite diario alcanzado (bajados {nuevos} nuevos hoy). ***")
-            print("Vuelve a ejecutar este mismo código mañana y seguirá con los que falten.")
+            corte_por_limite = True
             break
 
         daily = objeto.get("daily") if objeto else None
@@ -317,15 +324,24 @@ def ejecutar():
         if idx < total:
             time.sleep(pausa)
 
-    # 5) Resumen.
+    # 5) Resumen final.
     hechos = iatas_ya_en_csv(csv_path)
-    faltan = len(aeropuertos) - len(hechos)
-    print(f"\nProgreso: {len(hechos)}/{len(aeropuertos)} aeropuertos en el CSV.")
+    faltan = Y - len(hechos)
+    print(f"\n>>> Bajados {nuevos} nuevos en esta ejecución. Ahora: {len(hechos)} de {Y} aeropuertos con info.")
+
     if faltan == 0:
-        print("¡COMPLETO! Se descarga el CSV.")
+        # Terminó todo (haya sido antes o justo al llegar al límite).
+        print(">>> ¡COMPLETO! Ya tienes la info de los", Y, "aeropuertos. Se descarga el CSV.")
         _descargar(csv_path)
+    elif corte_por_limite:
+        # Se paró por la cuota diaria: decir cuándo volver (aprox +24h).
+        volver = datetime.datetime.now() + datetime.timedelta(hours=24)
+        print(">>> LÍMITE DIARIO ALCANZADO.")
+        print(f">>> Vuelve a correr este código mañana, a partir de las {volver.strftime('%Y-%m-%d %H:%M')} (aprox. +24h).")
     else:
-        print(f"Faltan {faltan}. Vuelve a ejecutar el código (mañana) para continuar.")
+        # Terminó de recorrer los pendientes sin tocar el límite, pero algunos
+        # se saltaron por errores puntuales: se reintentan al re-ejecutar.
+        print(f">>> Faltan {faltan} (se saltaron por errores puntuales). Vuelve a ejecutar para reintentarlos.")
 
 
 def _descargar(csv_path):
