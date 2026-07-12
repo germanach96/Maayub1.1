@@ -1,22 +1,38 @@
 import requests
 import pandas as pd
+import time
 from datetime import date, timedelta
 from google.colab import files
 
 # =====================================================
 # CONFIGURACIÓN
 # =====================================================
+#
+# NOTA IMPORTANTE:
+# La API de hoteles de Hotellook/Travelpayouts (engine.hotellook.com) fue
+# CERRADA en 2025, por eso el token de vuelos ya no sirve para hoteles.
+# Este script usa la API de Booking.com vía RapidAPI (booking-com15), que
+# necesita SU PROPIA key (no la de vuelos).
+#
+# Para conseguir la key:
+#   1. Crear cuenta en https://rapidapi.com
+#   2. Suscribirse (plan gratis) a la API "Booking.com" de DataCrawler:
+#      https://rapidapi.com/DataCrawler/api/booking-com15
+#   3. Copiar aquí la "X-RapidAPI-Key" que te dan en la pestaña de la API.
 
-TOKEN = "20c5066cf5c092b6d28afd9a02032bf0"
+RAPIDAPI_KEY = "PON_AQUI_TU_RAPIDAPI_KEY"
+RAPIDAPI_HOST = "booking-com15.p.rapidapi.com"
 
 # --- Input del usuario (solo uno) ---
-DESTINO = input("Destino (IATA, ej: BKK): ").upper().strip()
+DESTINO = input("Destino (IATA o nombre de ciudad, ej: BCN o Barcelona): ").strip()
 
 # --- Parámetros fijos (cambiar a mano si hace falta) ---
 NOCHES = 3
 ADULTS = 2
-CURRENCY = "eur"
-LIMIT = 100  # máximo de hoteles a traer (el default de la API es 4)
+ROOM_QTY = 1
+CURRENCY = "EUR"
+LOCALE = "en-us"
+MAX_HOTELES = 100  # tope de hoteles a traer (la API pagina ~20 por página)
 
 # CHECK_IN: primer viernes a ~60 días vista desde hoy.
 # Se calcula solo: sumamos 60 días y avanzamos hasta caer en viernes (weekday 4).
@@ -29,8 +45,13 @@ CHECK_OUT = CHECK_IN + timedelta(days=NOCHES)
 CHECK_IN_STR = CHECK_IN.isoformat()
 CHECK_OUT_STR = CHECK_OUT.isoformat()
 
-URL = "https://engine.hotellook.com/api/v2/cache.json"
-URL_LOOKUP = "https://engine.hotellook.com/api/v2/lookup.json"
+URL_DEST = f"https://{RAPIDAPI_HOST}/api/v1/hotels/searchDestination"
+URL_HOTELS = f"https://{RAPIDAPI_HOST}/api/v1/hotels/searchHotels"
+
+HEADERS = {
+    "X-RapidAPI-Key": RAPIDAPI_KEY,
+    "X-RapidAPI-Host": RAPIDAPI_HOST
+}
 
 print("\nConfiguración:")
 print(f"  Destino    : {DESTINO}")
@@ -38,75 +59,105 @@ print(f"  Check-in   : {CHECK_IN_STR} ({CHECK_IN.strftime('%A')})")
 print(f"  Check-out  : {CHECK_OUT_STR} ({NOCHES} noches)")
 print(f"  Adultos    : {ADULTS}")
 print(f"  Moneda     : {CURRENCY}")
-print(f"  Límite     : {LIMIT}")
+print(f"  Máx hoteles: {MAX_HOTELES}")
+
+
+# Imprime todas las cabeceras de rate limit que traiga la respuesta
+# (RapidAPI las nombra tipo x-ratelimit-*; las mostramos todas).
+def imprimir_rate_limit(resp):
+    encontradas = {k: v for k, v in resp.headers.items() if "ratelimit" in k.lower()}
+    print("Rate limit:")
+    if encontradas:
+        for k, v in encontradas.items():
+            print(f"  {k}: {v}")
+    else:
+        print("  (la respuesta no trae cabeceras de rate limit)")
+
 
 # =====================================================
-# EXTRA: LOOKUP (inspección de la localización)
+# PASO 1: BUSCAR DESTINO (equivalente al viejo lookup)
 # =====================================================
-# Antes de pedir precios miramos qué localización resuelve la API para el IATA.
-# Trae hotelsCount, id de la localización y coordenadas. No se guarda en el CSV.
+# Convierte el IATA/nombre en un dest_id que entiende la API de hoteles.
+# Imprimimos el bloque completo de resultados para inspección (trae dest_id,
+# search_type, coordenadas, país...). No se guarda en el CSV.
 
-params_lookup = {
-    "query": DESTINO,
-    "lookFor": "both",
-    "limit": 1,
-    "token": TOKEN
-}
+params_dest = {"query": DESTINO}
 
-resp_lookup = requests.get(URL_LOOKUP, params=params_lookup)
+resp_dest = requests.get(URL_DEST, headers=HEADERS, params=params_dest)
 
-print("\n=== LOOKUP ===")
-print("Status Code:", resp_lookup.status_code)
+print("\n=== SEARCH DESTINATION ===")
+print("Status Code:", resp_dest.status_code)
+imprimir_rate_limit(resp_dest)
 
-data_lookup = resp_lookup.json()
-locations = data_lookup.get("results", {}).get("locations", [])
+data_dest = resp_dest.json()
+destinos = data_dest.get("data", []) or []
 
-print("locations:")
-print(locations)
+print("data (destinos):")
+print(destinos)
 
-# =====================================================
-# PARÁMETROS (cache de precios de hoteles)
-# =====================================================
+if not destinos:
+    print("\nSin destinos: la API no resolvió ninguna localización para esa búsqueda.")
+    raise SystemExit
 
-params = {
-    "location": DESTINO,
-    "checkIn": CHECK_IN_STR,
-    "checkOut": CHECK_OUT_STR,
-    "currency": CURRENCY,
-    "limit": LIMIT,
-    "token": TOKEN
-}
+# Preferimos un resultado de tipo ciudad (search_type == "CITY"); si no, el primero.
+elegido = next((d for d in destinos if str(d.get("search_type", "")).upper() == "CITY"), destinos[0])
+DEST_ID = elegido.get("dest_id")
+SEARCH_TYPE = elegido.get("search_type", "CITY")
 
-print("\nParámetros enviados:")
-print(params)
+print(f"\nDestino elegido: {elegido.get('name')} "
+      f"(dest_id={DEST_ID}, search_type={SEARCH_TYPE})")
 
 # =====================================================
-# CONSULTA
+# PASO 2: BUSCAR HOTELES (cache de precios)
 # =====================================================
+# La API pagina los resultados; recorremos páginas hasta llegar a MAX_HOTELES
+# o hasta que una página venga vacía.
 
-response = requests.get(URL, params=params)
+hoteles = []
+pagina = 1
 
-print("\nStatus Code:", response.status_code)
+while len(hoteles) < MAX_HOTELES:
+    params_hotels = {
+        "dest_id": DEST_ID,
+        "search_type": SEARCH_TYPE,
+        "arrival_date": CHECK_IN_STR,
+        "departure_date": CHECK_OUT_STR,
+        "adults": ADULTS,
+        "room_qty": ROOM_QTY,
+        "page_number": pagina,
+        "currency_code": CURRENCY,
+        "languagecode": LOCALE,
+    }
 
-# Cabeceras de rate limit (60 req/min). Con una sola llamada no aplica,
-# pero las imprimimos igual para tenerlas a la vista.
-print("\nRate limit:")
-print("  X-RateLimit-Limit    :", response.headers.get("X-RateLimit-Limit"))
-print("  X-RateLimit-Remaining:", response.headers.get("X-RateLimit-Remaining"))
-print("  X-RateLimit-Interval :", response.headers.get("X-RateLimit-Interval"))
+    resp = requests.get(URL_HOTELS, headers=HEADERS, params=params_hotels)
 
-data = response.json()
+    print(f"\n=== SEARCH HOTELS (página {pagina}) ===")
+    print("Status Code:", resp.status_code)
+    imprimir_rate_limit(resp)
+
+    data = resp.json()
+    lote = (data.get("data") or {}).get("hotels", []) or []
+
+    print(f"Hoteles en esta página: {len(lote)}")
+
+    if not lote:
+        break
+
+    hoteles.extend(lote)
+    pagina += 1
+    time.sleep(1)  # respiro entre páginas por si el plan tiene rate limit
+
+# Recortamos por si la última página nos pasó de MAX_HOTELES.
+hoteles = hoteles[:MAX_HOTELES]
 
 # =====================================================
 # RESULTADOS
 # =====================================================
+# Puede venir vacío para destinos/fechas poco buscados: eso NO es un error.
+if hoteles:
 
-# La respuesta de cache.json es una lista de hoteles (puede venir vacía para
-# destinos poco buscados: eso NO es un error, es una caché sin datos).
-if isinstance(data, list) and len(data) > 0:
-
-    # Aplanamos los campos anidados (location.geo.lat, location.country, etc.)
-    df = pd.json_normalize(data, sep=".")
+    # Aplanamos TODO el objeto de cada hotel (incluye property.* anidado).
+    df = pd.json_normalize(hoteles, sep=".")
 
     # Columnas de contexto al principio.
     df.insert(0, "query_iata", DESTINO)
@@ -136,5 +187,4 @@ if isinstance(data, list) and len(data) > 0:
     files.download(nombre_archivo)
 
 else:
-    print("\nSin resultados: la caché no devolvió hoteles para este destino/fechas.")
-    print(data)
+    print("\nSin resultados: no se devolvieron hoteles para este destino/fechas.")
