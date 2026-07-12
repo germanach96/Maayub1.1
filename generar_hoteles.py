@@ -13,12 +13,17 @@ La próxima vez que lo ejecutes (p. ej. el mes que viene, cuando se renueve la
 cuota), continúa con las que falten. Cuando estén todas, el CSV queda completo
 y se descarga.
 
-=== LÍMITES DEL PLAN GRATIS ===
-50 llamadas/mes y cada ciudad cuesta 2 (buscar destino + 1 página de precios):
-~19-23 ciudades por mes. El script procesa PRIMERO las ciudades Top151 (139) y
-después el resto (533 en total). El freno de cuota se lee de las cabeceras
-x-ratelimit-* de cada respuesta, así que si algún mes te pasas a un plan de
-pago con más llamadas, este mismo script lo aprovecha entero sin cambiar nada.
+=== CUÁNTO TARDA / CUÁNTO CUESTA ===
+Cada ciudad cuesta 2 llamadas (buscar destino + 1 página de precios), y hay 533
+ciudades -> 1066 llamadas para tenerlas todas. Según el plan de RapidAPI:
+  - BASIC (gratis): 50 llamadas/mes -> ~20 ciudades/mes -> las 533 en ~27 meses.
+    Inviable para poblar la tabla entera; solo sirve para ir goteando.
+  - PRO ($8.99/mes): 35.000 llamadas/mes -> las 533 en UNA sola ejecución.
+    Recomendado: subes a PRO un mes, ejecutas una vez, y vuelves a bajar a BASIC.
+El script procesa PRIMERO las ciudades Top151 (139) y luego el resto, así que
+aunque vayas gratis, las importantes caen antes. El freno de cuota se lee de las
+cabeceras x-ratelimit-* de cada respuesta: el mismo script aprovecha entero el
+plan que tengas activo sin cambiar ni una línea.
 
 REQUISITO: sube 'airports_flightable_categorized.csv' a Colab (a /content) o
 déjalo en la carpeta de Drive indicada abajo. El CSV de salida se guarda en esa
@@ -67,10 +72,15 @@ LOCALE = "en-us"
 # --- Freno de cuota (¡NO tocar a la ligera!) ---
 # La cuota real se lee de la cabecera x-ratelimit-requests-remaining de cada
 # respuesta. Cuando quedan <= RESERVA_LLAMADAS, el script para limpiamente.
+# Esto es lo que impide pasarse del plan gratis (50/mes): en BASIC el propio
+# contador de la API para a las ~50 sin que tengas que tocar nada.
 RESERVA_LLAMADAS = 4
 # Cinturón extra por si algún día la API dejara de mandar cabeceras: tope local
-# de llamadas por ejecución (50 = un mes entero de plan gratis).
-MAX_LLAMADAS_EJECUCION = 50
+# de llamadas por ejecución. Puesto por encima de una pasada completa a las 533
+# ciudades (533 x 2 = 1066) para que, si te pasas UN mes al plan PRO ($8.99,
+# 35.000 req/mes), este script recorra TODAS las ciudades de una sola vez.
+# En BASIC no llega a activarse: la cabecera de cuota para mucho antes.
+MAX_LLAMADAS_EJECUCION = 1500
 
 TIMEOUT = 60          # segundos por petición HTTP
 PAUSA = 1.5           # pausa entre peticiones (segundos)
