@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.adapters import HTTPAdapter
@@ -150,6 +151,15 @@ def consultar(origin, destination, one_way, tipo_llamada):
             if isinstance(link, str) and link.startswith("/"):
                 registro["link"] = BASE_AVIASALES + link
 
+            # El día en que Aviasales cacheó este precio viene dentro del
+            # link como search_date=DDMMYYYY. Lo extraemos como columna
+            # propia en formato AAAA-MM-DD (solo día, sin hora).
+            registro["dia_busqueda"] = ""
+            if isinstance(link, str):
+                m = re.search(r"search_date=(\d{2})(\d{2})(\d{4})", link)
+                if m:
+                    registro["dia_busqueda"] = f"{m.group(3)}-{m.group(2)}-{m.group(1)}"
+
             registro["ruta_origen"] = origin
             registro["ruta_destino"] = destination
             registro["one_way"] = params["one_way"]
@@ -198,7 +208,7 @@ if resultados:
     df = pd.DataFrame(resultados)
 
     # Ponemos primero las columnas de contexto para que sea más legible
-    cols_contexto = ["ruta_origen", "ruta_destino", "one_way", "tipo_llamada"]
+    cols_contexto = ["ruta_origen", "ruta_destino", "one_way", "tipo_llamada", "dia_busqueda"]
     otras = [c for c in df.columns if c not in cols_contexto]
     df = df[cols_contexto + otras]
 
