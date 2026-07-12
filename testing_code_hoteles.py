@@ -20,7 +20,7 @@ from google.colab import files
 #      https://rapidapi.com/DataCrawler/api/booking-com15
 #   3. Copiar aquí la "X-RapidAPI-Key" que te dan en la pestaña de la API.
 
-RAPIDAPI_KEY = "PON_AQUI_TU_RAPIDAPI_KEY"
+RAPIDAPI_KEY = "1260627abemsh5af49300bfd82acp1ab3f6jsn88a333740fba"
 RAPIDAPI_HOST = "booking-com15.p.rapidapi.com"
 
 # --- Input del usuario (solo uno) ---
@@ -32,7 +32,10 @@ ADULTS = 2
 ROOM_QTY = 1
 CURRENCY = "EUR"
 LOCALE = "en-us"
-MAX_HOTELES = 100  # tope de hoteles a traer (la API pagina ~20 por página)
+# Tope de hoteles a traer. La API pagina ~20 por página y cada página = 1 request.
+# OJO: el plan gratis de RapidAPI da solo 50 requests/mes, así que no te pases
+# mientras exploras (40 = ~2 páginas = ~2 requests + 1 del destino por ejecución).
+MAX_HOTELES = 40
 
 # CHECK_IN: primer viernes a ~60 días vista desde hoy.
 # Se calcula solo: sumamos 60 días y avanzamos hasta caer en viernes (weekday 4).
