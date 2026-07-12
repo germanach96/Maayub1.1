@@ -1,0 +1,576 @@
+﻿iata;country_code;indice_pais;fuente_pais;ciudad_snapshot;ratio_ciudad;indice_coste;categoria;coste_mensual_usd
+ADD;ET;34;worldbank;Addis Ababa;1.06;36;€€;
+AGP;ES;60;wherenext;Malaga;1.09;65;€€€;2398
+AKL;NZ;80;wherenext;Auckland;1.16;93;€€€€;3422
+ALG;DZ;30;worldbank;Algiers;1.25;38;€€;
+AMS;NL;75;wherenext;Amsterdam;1.18;88;€€€€;3245
+ARN;SE;84;wherenext;Stockholm;1.19;100;€€€€;3630
+ATH;GR;52;wherenext;Athens;1.12;58;€€;2128
+ATL;US;82;wherenext;Atlanta;1.09;89;€€€€;3270
+AUH;AE;59;wherenext;Abu Dhabi;1.0;59;€€;2150
+AYT;TR;23;wherenext;Antalya;1.2;28;€;1020
+BCN;ES;60;wherenext;Barcelona;1.23;74;€€€;2706
+BKK;TH;28;wherenext;Bangkok;1.32;37;€€;1320
+BLR;IN;21;wherenext;Bangalore;1.21;25;€;908
+BNE;AU;91;wherenext;Brisbane;1.06;96;€€€€;3551
+BOG;CO;28;wherenext;Bogota;1.25;35;€€;1250
+BOM;IN;21;wherenext;Mumbai;1.25;26;€;938
+BOS;US;82;wherenext;Boston;1.21;99;€€€€;3630
+BRU;BE;72;wherenext;Brussels;1.11;80;€€€;2942
+BSB;BR;35;wherenext;Brasilia;1.17;41;€€;1521
+BUD;HU;39;wherenext;Budapest;1.34;52;€€;1943
+CAI;EG;19;wherenext;Cairo;1.25;24;€;875
+CAN;CN;50;wherenext;Guangzhou;1.15;57;€€;2128
+CCU;IN;21;wherenext;Kolkata;1.08;23;€;810
+CDG;FR;67;wherenext;Paris;1.22;82;€€€;2989
+CGK;ID;28;wherenext;Jakarta;1.18;33;€;1180
+CGO;CN;50;wherenext;Zhengzhou;0.92;46;€€;1702
+CJU;KR;62;wherenext;Jeju;1.13;70;€€€;2542
+CKG;CN;50;wherenext;Chongqing;0.97;48;€€;1794
+CLT;US;82;wherenext;Charlotte;1.04;85;€€€€;3120
+CMN;MA;35;wherenext;Casablanca;1.2;42;€€;1560
+CNF;BR;35;wherenext;Belo Horizonte;1.03;36;€€;1339
+CPH;DK;88;wherenext;Copenhagen;1.08;95;€€€€;3456
+CPT;ZA;40;wherenext;Cape Town;1.06;42;€€;1537
+CSX;CN;50;wherenext;;1.0;50;€€;1850
+CTS;JP;74;wherenext;Sapporo;1.04;77;€€€;2808
+CTU;CN;50;wherenext;Chengdu;1.09;55;€€;2017
+CUN;MX;38;wherenext;Cancun;1.1;42;€€;1540
+DAD;VN;24;wherenext;Da Nang (ajuste manual);0.9;22;€;810
+DCA;US;82;wherenext;Washington;1.26;103;€€€€;3780
+DEL;IN;21;wherenext;Delhi;1.23;26;€;922
+DEN;US;82;wherenext;Denver;1.17;96;€€€€;3510
+DFW;US;82;wherenext;Dallas;1.1;90;€€€€;3300
+DME;RU;29;worldbank;Moscow;1.27;37;€€;
+DOH;QA;60;wherenext;Doha;1.02;61;€€€;2244
+DPS;ID;28;wherenext;Denpasar;1.06;30;€;1060
+DTW;US;82;wherenext;Detroit;1.02;84;€€€;3060
+DUB;IE;91;wherenext;Dublin;1.11;101;€€€€;3719
+DUS;DE;68;wherenext;Dusseldorf;1.13;77;€€€;2825
+DXB;AE;59;wherenext;Dubai;1.1;65;€€€;2365
+EWR;US;82;wherenext;New York;1.47;121;€€€€;4410
+EZE;AR;32;wherenext;Buenos Aires;1.01;32;€;1162
+FCO;IT;63;wherenext;Rome;1.11;70;€€€;2553
+FLL;US;82;wherenext;Fort Lauderdale;1.11;91;€€€€;3330
+FRA;DE;68;wherenext;Frankfurt;1.11;75;€€€;2775
+FUK;JP;74;wherenext;Fukuoka;1.11;82;€€€;2997
+GDL;MX;38;wherenext;Guadalajara;1.08;41;€€;1512
+GIG;BR;35;wherenext;Rio de Janeiro;1.19;42;€€;1547
+GRU;BR;35;wherenext;Sao Paulo;1.31;46;€€;1703
+GVA;CH;109;wherenext;Geneva;0.95;104;€€€€;3800
+HAK;CN;50;wherenext;Haikou;1.0;50;€€;1850
+HAM;DE;68;wherenext;Hamburg;1.19;81;€€€;2975
+HAN;VN;24;wherenext;Hanoi;1.03;25;€;927
+HEL;FI;80;wherenext;Helsinki;1.11;89;€€€€;3275
+HGH;CN;50;wherenext;Hangzhou;1.23;62;€€€;2276
+HKG;HK;64;wherenext;Hong Kong;1.0;64;€€€;2350
+HND;JP;74;wherenext;Tokyo;1.2;89;€€€€;3240
+HYD;IN;21;wherenext;Hyderabad;1.2;25;€;900
+IAD;US;82;wherenext;Washington;1.26;103;€€€€;3780
+IAH;US;82;wherenext;Houston;1.05;86;€€€€;3150
+ICN;KR;62;wherenext;Seoul;1.1;68;€€€;2475
+IST;TR;23;wherenext;Istanbul;1.5;34;€;1275
+JED;SA;43;wherenext;Jeddah;1.08;46;€€;1674
+JFK;US;82;wherenext;New York;1.47;121;€€€€;4410
+JNB;ZA;40;wherenext;Johannesburg;1.09;44;€€;1581
+KBP;UA;28;worldbank;Kyiv;1.33;37;€€;
+KIX;JP;74;wherenext;Osaka;1.09;81;€€€;2943
+KMG;CN;50;wherenext;Kunming;1.05;52;€€;1942
+KUL;MY;29;wherenext;Kuala Lumpur;1.19;35;€€;1250
+KWI;KW;53;wherenext;Kuwait City;1.07;57;€€;2086
+LAS;US;82;wherenext;Las Vegas;1.07;88;€€€€;3210
+LAX;US;82;wherenext;Los Angeles;1.23;101;€€€€;3690
+LED;RU;29;worldbank;San Petersburgo (ajuste manual);1.1;32;€;
+LGA;US;82;wherenext;New York;1.47;121;€€€€;4410
+LGW;GB;79;wherenext;London;1.2;95;€€€€;3480
+LHR;GB;79;wherenext;London;1.2;95;€€€€;3480
+LIM;PE;37;wherenext;Lima;1.2;44;€€;1620
+LIS;PT;54;wherenext;Lisbon;1.18;64;€€€;2360
+LOS;NG;29;wherenext;Lagos;1.6;46;€€;1680
+MAA;IN;21;wherenext;Chennai;1.16;24;€;870
+MAD;ES;60;wherenext;Madrid;1.14;68;€€€;2508
+MAN;GB;79;wherenext;Manchester;1.1;87;€€€€;3190
+MCO;US;82;wherenext;Orlando;1.02;84;€€€;3060
+MDE;CO;28;wherenext;Medellin;1.26;35;€€;1260
+MDW;US;82;wherenext;Chicago;1.13;93;€€€€;3390
+MEL;AU;91;wherenext;Melbourne;1.14;104;€€€€;3819
+MEX;MX;38;wherenext;Mexico City;1.18;45;€€;1652
+MIA;US;82;wherenext;Miami;1.19;98;€€€€;3570
+MNL;PH;32;wherenext;Manila;1.14;36;€€;1311
+MSP;US;82;wherenext;Minneapolis;1.1;90;€€€€;3300
+MTY;MX;38;wherenext;Monterrey;1.17;44;€€;1638
+MUC;DE;68;wherenext;Munich;1.25;85;€€€€;3125
+MXP;IT;63;wherenext;Milan;1.25;79;€€€;2875
+NBO;KE;30;wherenext;Nairobi;1.22;37;€€;1342
+NKG;CN;50;wherenext;Nanjing;1.08;54;€€;1998
+NRT;JP;74;wherenext;Tokyo;1.2;89;€€€€;3240
+ORD;US;82;wherenext;Chicago;1.13;93;€€€€;3390
+ORY;FR;67;wherenext;Paris;1.22;82;€€€;2989
+OSL;NO;95;wherenext;Oslo;1.05;100;€€€€;3675
+OTP;RO;31;wherenext;Bucharest;1.23;38;€€;1414
+PEK;CN;50;wherenext;Beijing;1.42;71;€€€;2627
+PER;AU;91;wherenext;Perth;1.07;97;€€€€;3584
+PHL;US;82;wherenext;Philadelphia;1.17;96;€€€€;3510
+PHX;US;82;wherenext;Phoenix;1.1;90;€€€€;3300
+PMI;ES;60;wherenext;Palma de Mallorca (ajuste manual);1.05;63;€€€;2310
+PRG;CZ;44;wherenext;Prague;1.23;54;€€;1968
+PTY;PA;43;wherenext;Panama City;1.12;48;€€;1736
+PUS;KR;62;wherenext;Busan;1.01;63;€€€;2272
+PVG;CN;50;wherenext;Shanghai;1.37;68;€€€;2534
+RUH;SA;43;wherenext;Riyadh;1.12;48;€€;1736
+SAN;US;82;wherenext;San Diego;1.23;101;€€€€;3690
+SAW;TR;23;wherenext;Istanbul;1.5;34;€;1275
+SCL;CL;45;wherenext;Santiago;1.2;54;€€;1980
+SEA;US;82;wherenext;Seattle;1.32;108;€€€€;3960
+SFO;US;82;wherenext;San Francisco (ajuste manual);1.5;123;€€€€;4500
+SGN;VN;24;wherenext;Ho Chi Minh City;1.17;28;€;1053
+SHE;CN;50;wherenext;Shenyang;1.0;50;€€;1850
+SHJ;AE;59;wherenext;Sharjah;0.89;53;€€;1914
+SIN;SG;61;wherenext;Singapore;1.0;61;€€€;2250
+SLC;US;82;wherenext;Salt Lake City;1.06;87;€€€€;3180
+STN;GB;79;wherenext;London;1.2;95;€€€€;3480
+SUB;ID;28;wherenext;Surabaya;1.0;28;€;1000
+SVO;RU;29;worldbank;Moscow;1.27;37;€€;
+SYD;AU;91;wherenext;Sydney;1.14;104;€€€€;3819
+SZX;CN;50;wherenext;Shenzhen;1.27;64;€€€;2350
+TAO;CN;50;wherenext;Qingdao;0.97;48;€€;1794
+TLV;IL;97;wherenext;Tel Aviv-Yafo;1.11;108;€€€€;3941
+TPA;US;82;wherenext;Tampa;1.08;89;€€€€;3240
+TPE;TW;43;wherenext;Taipei;1.07;46;€€;1658
+TSN;CN;50;wherenext;Tianjin;1.06;53;€€;1961
+VCP;BR;35;wherenext;Sao Paulo;1.31;46;€€;1703
+VIE;AT;72;wherenext;Vienna;1.01;73;€€€;2676
+VKO;RU;29;worldbank;Moscow;1.27;37;€€;
+WAW;PL;35;wherenext;Warsaw;1.23;43;€€;1599
+WUH;CN;50;wherenext;Wuhan;1.06;53;€€;1961
+XIY;CN;50;wherenext;Xi'an;1.0;50;€€;1850
+XMN;CN;50;wherenext;Xiamen;1.02;51;€€;1887
+YUL;CA;78;wherenext;Montreal;1.02;80;€€€;2907
+YVR;CA;78;wherenext;Vancouver;1.15;90;€€€€;3277
+YYC;CA;78;wherenext;Calgary;1.03;80;€€€;2936
+YYZ;CA;78;wherenext;Toronto;1.1;86;€€€€;3135
+ZRH;CH;109;wherenext;Zurich;1.11;121;€€€€;4440
+AAL;DK;88;wherenext;Aalborg;1.0;88;€€€€;3200
+ABJ;CI;34;worldbank;Abidjan;1.0;34;€;
+ABQ;US;82;wherenext;Albuquerque;1.0;82;€€€;3000
+ABV;NG;29;wherenext;Abuja;1.56;45;€€;1638
+ABZ;GB;79;wherenext;Aberdeen;1.0;79;€€€;2900
+ACC;GH;31;wherenext;Accra;1.01;31;€;1162
+ACE;ES;60;wherenext;;1.0;60;€€€;2200
+ADB;TR;23;wherenext;Izmir;1.2;28;€;1020
+ADE;YE;12;worldbank;;1.0;12;€;
+ADL;AU;91;wherenext;Adelaide;1.01;92;€€€€;3384
+AEP;AR;32;wherenext;Buenos Aires;1.01;32;€;1162
+AGA;MA;35;wherenext;Agadir;1.01;35;€€;1313
+AHB;SA;43;wherenext;;1.0;43;€€;1550
+AHO;IT;63;wherenext;Alghero;1.0;63;€€€;2300
+AJA;FR;67;wherenext;Ajaccio;1.0;67;€€€;2450
+ALA;KZ;30;worldbank;Almaty;1.19;36;€€;
+ALC;ES;60;wherenext;Alicante;1.01;61;€€€;2222
+AMM;JO;36;wherenext;Amman;1.13;41;€€;1469
+ANC;US;82;wherenext;Anchorage;1.2;98;€€€€;3600
+ANU;AG;63;worldbank;Saint John's;1.0;63;€€€;
+ASB;TM;95;numbeo2022;Ashgabat;1.0;95;€€€€;
+ASU;PY;32;worldbank;Asuncion;1.0;32;€;
+AUA;AW;68;worldbank;Oranjestad;1.0;68;€€€;
+AUS;US;82;wherenext;Austin;1.1;90;€€€€;3300
+AWZ;IR;24;numbeo2022;Ahvaz;0.77;18;€;
+BAH;BH;42;wherenext;Manama;1.0;42;€€;1550
+BDL;US;82;wherenext;Hartford;1.12;92;€€€€;3360
+BEG;RS;33;wherenext;Belgrade;1.4;46;€€;1680
+BEL;BR;35;wherenext;Belem;1.04;36;€€;1352
+BEN;LY;19;numbeo2022;Benghazi;1.19;23;€;
+BES;FR;67;wherenext;Brest;0.94;63;€€€;2303
+BEY;LB;34;worldbank;Beirut;1.25;42;€€;
+BFS;GB;79;wherenext;Belfast;1.04;82;€€€;3016
+BGI;BB;99;worldbank;Bridgetown;1.0;99;€€€€;
+BGO;NO;95;wherenext;Bergen;1.01;96;€€€€;3535
+BGW;IQ;34;worldbank;Baghdad;1.03;35;€€;
+BGY;IT;63;wherenext;Milan;1.25;79;€€€;2875
+BHD;GB;79;wherenext;Belfast;1.04;82;€€€;3016
+BHX;GB;79;wherenext;Birmingham;1.0;79;€€€;2900
+BIA;FR;67;wherenext;Bastia;1.14;76;€€€;2793
+BIO;ES;60;wherenext;Bilbao;1.18;71;€€€;2596
+BIQ;FR;67;wherenext;Biarritz;1.14;76;€€€;2793
+BJV;TR;23;wherenext;;1.0;23;€;850
+BKI;MY;29;wherenext;Kota Kinabalu;1.0;29;€;1050
+BKO;ML;31;worldbank;Bamako;1.0;31;€;
+BLL;DK;88;wherenext;;1.0;88;€€€€;3200
+BLQ;IT;63;wherenext;Bologna;1.12;71;€€€;2576
+BMA;SE;84;wherenext;Stockholm;1.19;100;€€€€;3630
+BNA;US;82;wherenext;Nashville;1.23;101;€€€€;3690
+BND;IR;24;numbeo2022;;1.0;24;€;
+BOD;FR;67;wherenext;Bordeaux;1.07;72;€€€;2622
+BOH;GB;79;wherenext;Bournemouth;1.02;81;€€€;2958
+BOJ;BG;32;wherenext;;1.0;32;€;1150
+BOO;NO;95;wherenext;Bodo;1.0;95;€€€€;3500
+BPN;ID;28;wherenext;Balikpapan;1.2;34;€;1200
+BRE;DE;68;wherenext;Bremen;1.0;68;€€€;2500
+BRI;IT;63;wherenext;Bari;1.0;63;€€€;2300
+BRN;CH;109;wherenext;Bern;1.0;109;€€€€;4000
+BRS;GB;79;wherenext;Bristol;1.12;88;€€€€;3248
+BSL;CH;109;wherenext;Basel;1.04;113;€€€€;4160
+BTH;ID;28;wherenext;;1.0;28;€;1000
+BTS;SK;48;wherenext;Bratislava;1.24;60;€€€;2170
+BVA;FR;67;wherenext;Paris;1.22;82;€€€;2989
+BVC;CV;43;worldbank;;1.0;43;€€;
+BWI;US;82;wherenext;Baltimore;1.1;90;€€€€;3300
+BWN;BN;32;worldbank;Bandar Seri Begawan;1.0;32;€;
+BZE;BZ;48;worldbank;Belize City;1.14;55;€€;
+BZV;CG;74;numbeo2022;Brazzaville;1.0;74;€€€;
+CAG;IT;63;wherenext;Cagliari;1.02;64;€€€;2346
+CCS;VE;40;numbeo2022;Caracas;1.15;46;€€;
+CEB;PH;32;wherenext;Cebu City;1.05;34;€;1208
+CFU;GR;52;wherenext;;1.0;52;€€;1900
+CGB;BR;35;wherenext;Cuiaba;0.99;35;€€;1287
+CGN;DE;68;wherenext;Cologne;1.09;74;€€€;2725
+CGP;BD;26;wherenext;;1.0;26;€;950
+CGQ;CN;50;wherenext;Changchun;0.98;49;€€;1813
+CGR;BR;35;wherenext;Campo Grande;0.98;34;€;1274
+CHQ;GR;52;wherenext;Chania;1.07;56;€€;2033
+CIA;IT;63;wherenext;Rome;1.11;70;€€€;2553
+CIT;KZ;30;worldbank;Shymkent;1.03;31;€;
+CLE;US;82;wherenext;Cleveland;1.08;89;€€€€;3240
+CLJ;RO;31;wherenext;;1.0;31;€;1150
+CLO;CO;28;wherenext;Cali;1.12;31;€;1120
+CMB;LK;21;wherenext;Colombo;1.26;26;€;945
+CMH;US;82;wherenext;Columbus;1.02;84;€€€;3060
+CNS;AU;91;wherenext;Cairns;1.0;91;€€€€;3350
+CNX;TH;28;wherenext;;1.0;28;€;1000
+COK;IN;21;wherenext;Kochi;1.0;21;€;750
+COO;BJ;31;worldbank;Cotonou;1.0;31;€;
+CRL;BE;72;wherenext;Brussels;1.11;80;€€€;2942
+CTA;IT;63;wherenext;Catania;0.92;58;€€;2116
+CUR;CW;63;worldbank;;1.0;63;€€€;
+CVG;US;82;wherenext;Cincinnati;0.98;80;€€€;2940
+CWB;BR;35;wherenext;Curitiba;1.1;38;€€;1430
+CWL;GB;79;wherenext;;1.0;79;€€€;2900
+CZL;DZ;30;worldbank;Constantine;1.18;35;€€;
+CZX;CN;50;wherenext;Changzhou;1.0;50;€€;1850
+DAC;BD;26;wherenext;Dhaka;1.3;34;€;1235
+DAR;TZ;26;worldbank;Dar es Salaam;1.0;26;€;
+DBV;HR;41;wherenext;Dubrovnik;1.14;47;€€;1710
+DJE;TN;36;wherenext;;1.0;36;€€;1300
+DKR;SN;32;worldbank;Dakar;1.0;32;€;
+DLA;CM;31;worldbank;Douala;1.05;33;€;
+DLC;CN;50;wherenext;Dalian;1.03;52;€€;1906
+DLM;TR;23;wherenext;;1.0;23;€;850
+DMK;TH;28;wherenext;Bangkok;1.32;37;€€;1320
+DMM;SA;43;wherenext;;1.0;43;€€;1550
+DRS;DE;68;wherenext;Dresden;1.01;69;€€€;2525
+DRW;AU;91;wherenext;Darwin;1.13;103;€€€€;3785
+DSN;CN;50;wherenext;;1.0;50;€€;1850
+DTM;DE;68;wherenext;Dortmund;1.03;70;€€€;2575
+DWC;AE;59;wherenext;Dubai;1.1;65;€€€;2365
+DYG;CN;50;wherenext;;1.0;50;€€;1850
+DYU;TJ;25;worldbank;Dushanbe;1.0;25;€;
+DZA;YT;67;heredado;;1.0;67;€€€;2450
+EBB;UG;32;worldbank;;1.0;32;€;
+EBL;IQ;34;worldbank;Erbil;1.09;37;€€;
+EDI;GB;79;wherenext;Edinburgh;1.03;81;€€€;2987
+EIN;NL;75;wherenext;Eindhoven;1.01;76;€€€;2778
+ELQ;SA;43;wherenext;;1.0;43;€€;1550
+EMA;GB;79;wherenext;;1.0;79;€€€;2900
+ESB;TR;23;wherenext;Ankara;1.24;29;€;1054
+EVN;AM;35;worldbank;Yerevan;1.2;42;€€;
+EXT;GB;79;wherenext;Exeter;1.02;81;€€€;2958
+FAI;US;82;wherenext;Fairbanks;1.33;109;€€€€;3990
+FAO;PT;54;wherenext;Faro;1.23;66;€€€;2460
+FDF;MQ;70;numbeo2022;Fort-de-France;1.0;70;€€€;
+FDH;DE;68;wherenext;Friedrichshafen;1.0;68;€€€;2500
+FEZ;MA;35;wherenext;;1.0;35;€€;1300
+FIH;CD;38;worldbank;;1.0;38;€€;
+FKB;DE;68;wherenext;Karlsruhe;1.02;69;€€€;2550
+FLN;BR;35;wherenext;Florianopolis;1.17;41;€€;1521
+FLR;IT;63;wherenext;Florence;1.15;72;€€€;2645
+FMM;DE;68;wherenext;;1.0;68;€€€;2500
+FNA;SL;22;worldbank;Freetown;1.0;22;€;
+FNC;PT;54;wherenext;Funchal;1.02;55;€€;2040
+FOC;CN;50;wherenext;Fuzhou;1.05;52;€€;1942
+FOR;BR;35;wherenext;Fortaleza;1.01;35;€€;1313
+FUE;ES;60;wherenext;;1.0;60;€€€;2200
+GCI;GG;79;heredado;;1.0;79;€€€;2900
+GCM;KY;103;worldbank;;1.0;103;€€€€;
+GDN;PL;35;wherenext;Gdansk;1.1;38;€€;1430
+GLA;GB;79;wherenext;Glasgow;1.01;80;€€€;2929
+GOA;IT;63;wherenext;Genoa;1.11;70;€€€;2553
+GOT;SE;84;wherenext;Gothenburg;1.04;87;€€€€;3172
+GRO;ES;60;wherenext;Girona;1.12;67;€€€;2464
+GUA;GT;34;wherenext;Guatemala City;1.0;34;€;1250
+GUM;GU;82;heredado;;1.0;82;€€€;3000
+GYD;AZ;26;worldbank;Baku;1.34;35;€€;
+GYE;EC;37;wherenext;Guayaquil;1.07;40;€€;1444
+GYN;BR;35;wherenext;Goiania;1.08;38;€€;1404
+HAJ;DE;68;wherenext;;1.0;68;€€€;2500
+HAU;NO;95;wherenext;Haugesund;0.94;89;€€€€;3290
+HAV;CU;36;worldbank;Havana;1.0;36;€€;
+HBE;EG;19;wherenext;Alexandria;1.14;22;€;798
+HER;GR;52;wherenext;;1.0;52;€€;1900
+HET;CN;50;wherenext;Hohhot;0.92;46;€€;1702
+HFE;CN;50;wherenext;Hefei;1.0;50;€€;1850
+HHN;DE;68;wherenext;Frankfurt;1.11;75;€€€;2775
+HIR;SB;68;worldbank;Honiara;1.0;68;€€€;
+HKT;TH;28;wherenext;Phuket;1.25;35;€€;1250
+HNL;US;82;wherenext;Honolulu;1.5;123;€€€€;4500
+HOU;US;82;wherenext;Houston;1.05;86;€€€€;3150
+HRB;CN;50;wherenext;Harbin;0.96;48;€€;1776
+HRE;ZW;51;worldbank;Harare;1.0;51;€€;
+HRG;EG;19;wherenext;;1.0;19;€;700
+IBZ;ES;60;wherenext;Ibiza;1.46;88;€€€€;3212
+IFN;IR;24;numbeo2022;;1.0;24;€;
+IKA;IR;24;numbeo2022;Tehran;1.0;24;€;
+INC;CN;50;wherenext;Yinchuan;0.87;44;€€;1610
+IND;US;82;wherenext;Indianapolis;1.02;84;€€€;3060
+ISB;PK;22;worldbank;Islamabad;1.21;27;€;
+JAX;US;82;wherenext;Jacksonville;1.0;82;€€€;3000
+JER;JE;98;numbeo2022;;1.0;98;€€€€;
+JHB;MY;29;wherenext;;1.0;29;€;1050
+JIB;DJ;42;worldbank;Djibouti;1.0;42;€€;
+JJN;CN;50;wherenext;;1.0;50;€€;1850
+JMK;GR;52;wherenext;Mykonos (ajuste manual);1.4;73;€€€;2660
+JOG;ID;28;wherenext;Yogyakarta;1.01;28;€;1010
+JRO;TZ;26;worldbank;;1.0;26;€;
+JTR;GR;52;wherenext;Santorini (ajuste manual);1.35;70;€€€;2565
+KBL;AF;16;worldbank;Kabul;1.15;18;€;
+KCH;MY;29;wherenext;Kuching;1.1;32;€;1155
+KEF;IS;99;wherenext;Reykjavik;1.12;111;€€€€;4032
+KGL;RW;22;wherenext;Kigali;1.0;22;€;800
+KGS;GR;52;wherenext;;1.0;52;€€;1900
+KHH;TW;43;wherenext;Kaohsiung;0.98;42;€€;1519
+KHI;PK;22;worldbank;Karachi;1.28;28;€;
+KHN;CN;50;wherenext;Nanchang;1.0;50;€€;1850
+KIN;JM;44;wherenext;Kingston;1.05;46;€€;1680
+KOJ;JP;74;wherenext;Kagoshima;0.92;68;€€€;2484
+KRK;PL;35;wherenext;;1.0;35;€€;1300
+KRT;SD;37;numbeo2022;Khartoum;1.0;37;€€;
+KTM;NP;22;wherenext;Kathmandu;1.23;27;€;984
+KTW;PL;35;wherenext;Katowice;1.05;37;€€;1365
+KUN;LT;42;wherenext;Kaunas;1.13;47;€€;1751
+KWE;CN;50;wherenext;;1.0;50;€€;1850
+KWL;CN;50;wherenext;Guilin;0.92;46;€€;1702
+LAD;AO;69;numbeo2022;Luanda;1.0;69;€€€;
+LBA;GB;79;wherenext;Leeds;1.03;81;€€€;2987
+LBD;TJ;25;worldbank;Khujand;1.0;25;€;
+LBV;GA;64;numbeo2022;Libreville;1.0;64;€€€;
+LCA;CY;58;wherenext;Larnaca;1.26;73;€€€;2646
+LCY;GB;79;wherenext;London;1.2;95;€€€€;3480
+LEI;ES;60;wherenext;Almeria;1.0;60;€€€;2200
+LEJ;DE;68;wherenext;Leipzig;1.0;68;€€€;2500
+LFW;TG;31;worldbank;Lome;1.0;31;€;
+LHE;PK;22;worldbank;Lahore;1.38;30;€;
+LHW;CN;50;wherenext;;1.0;50;€€;1850
+LIL;FR;67;wherenext;Lille;1.0;67;€€€;2450
+LIN;IT;63;wherenext;Milan;1.25;79;€€€;2875
+LIR;CR;46;wherenext;;1.0;46;€€;1700
+LJG;CN;50;wherenext;;1.0;50;€€;1850
+LJU;SI;54;wherenext;Ljubljana;1.22;66;€€€;2440
+LOP;ID;28;wherenext;;1.0;28;€;1000
+LPA;ES;60;wherenext;;1.0;60;€€€;2200
+LPB;BO;36;worldbank;La Paz;1.17;42;€€;
+LPL;GB;79;wherenext;Liverpool;1.01;80;€€€;2929
+LTN;GB;79;wherenext;London;1.2;95;€€€€;3480
+LUN;ZM;27;worldbank;Lusaka;1.0;27;€;
+LUX;LU;95;wherenext;Luxembourg;1.07;102;€€€€;3745
+LXA;CN;50;wherenext;Lhasa;1.16;58;€€;2146
+LYS;FR;67;wherenext;Lyon;1.11;74;€€€;2720
+MAH;ES;60;wherenext;;1.0;60;€€€;2200
+MAO;BR;35;wherenext;Manaus;1.06;37;€€;1378
+MBJ;JM;44;wherenext;;1.0;44;€€;1600
+MCI;US;82;wherenext;Kansas City;1.0;82;€€€;3000
+MCT;OM;42;wherenext;Muscat;1.05;44;€€;1628
+MED;SA;43;wherenext;;1.0;43;€€;1550
+MEM;US;82;wherenext;Memphis;0.94;77;€€€;2820
+MFM;MO;50;worldbank;;1.0;50;€€;
+MHD;IR;24;numbeo2022;;1.0;24;€;
+MIR;TN;36;wherenext;Monastir;1.08;39;€€;1404
+MKE;US;82;wherenext;Milwaukee;0.98;80;€€€;2940
+MLA;MT;56;wherenext;;1.0;56;€€;2050
+MLE;MV;46;worldbank;Male;1.0;46;€€;
+MMX;SE;84;wherenext;Malmo;1.06;89;€€€€;3233
+MPL;FR;67;wherenext;Montpellier;1.0;67;€€€;2450
+MPM;MZ;34;worldbank;Maputo;1.0;34;€;
+MRS;FR;67;wherenext;Marseille;1.0;67;€€€;2450
+MRU;MU;33;wherenext;;1.0;33;€;1200
+MSQ;BY;27;worldbank;Minsk;1.14;31;€;
+MST;NL;75;wherenext;Maastricht;1.0;75;€€€;2750
+MSY;US;82;wherenext;New Orleans;1.17;96;€€€€;3510
+MVD;UY;52;wherenext;Montevideo;1.03;54;€€;1957
+MYR;US;82;wherenext;Myrtle Beach;0.91;75;€€€;2730
+NAN;FJ;46;wherenext;;1.0;46;€€;1700
+NAP;IT;63;wherenext;Naples;1.0;63;€€€;2300
+NAS;BS;87;worldbank;Nassau;1.0;87;€€€€;
+NAT;BR;35;wherenext;Natal;0.97;34;€;1261
+NBE;TN;36;wherenext;;1.0;36;€€;1300
+NCE;FR;67;wherenext;Nice;1.19;80;€€€;2916
+NCL;GB;79;wherenext;Newcastle;0.95;75;€€€;2755
+NDJ;TD;32;worldbank;;1.0;32;€;
+NDR;MA;35;wherenext;Nador;0.89;31;€;1157
+NGB;CN;50;wherenext;Ningbo;1.16;58;€€;2146
+NGO;JP;74;wherenext;Nagoya;1.03;76;€€€;2781
+NGS;JP;74;wherenext;Nagasaki;0.96;71;€€€;2592
+NNG;CN;50;wherenext;Nanning;1.08;54;€€;1998
+NOC;IE;91;wherenext;;1.0;91;€€€€;3350
+NRN;DE;68;wherenext;Dusseldorf;1.13;77;€€€;2825
+NSI;CM;31;worldbank;Yaounde;1.06;33;€;
+NTE;FR;67;wherenext;Nantes;1.02;68;€€€;2499
+NUE;DE;68;wherenext;Nuremberg;1.02;69;€€€;2550
+NYO;SE;84;wherenext;Stockholm;1.19;100;€€€€;3630
+OAK;US;82;wherenext;Oakland;1.32;108;€€€€;3960
+OGG;US;82;wherenext;Kahului;1.25;102;€€€€;3750
+OKA;JP;74;wherenext;Okinawa;1.08;80;€€€;2916
+OLB;IT;63;wherenext;Olbia;0.96;60;€€€;2208
+OOL;AU;91;wherenext;Gold Coast;1.06;96;€€€€;3551
+OPO;PT;54;wherenext;Porto;1.1;59;€€;2200
+ORK;IE;91;wherenext;Cork;1.02;93;€€€€;3417
+ORN;DZ;30;worldbank;;1.0;30;€;
+OSS;KG;30;worldbank;Osh;0.97;29;€;
+OUA;BF;34;worldbank;Ouagadougou;1.0;34;€;
+OVD;ES;60;wherenext;;1.0;60;€€€;2200
+PAP;HT;78;worldbank;Port-au-Prince;1.0;78;€€€;
+PBI;US;82;wherenext;West Palm Beach;1.02;84;€€€;3060
+PDL;PT;54;wherenext;Ponta Delgada;1.0;54;€€;2000
+PDX;US;82;wherenext;Portland;1.23;101;€€€€;3690
+PEN;MY;29;wherenext;;1.0;29;€;1050
+PEW;PK;22;worldbank;Peshawar;0.96;21;€;
+PFO;CY;58;wherenext;Paphos;1.0;58;€€;2100
+PIK;GB;79;wherenext;Glasgow;1.01;80;€€€;2929
+PIT;US;82;wherenext;Pittsburgh;1.09;89;€€€€;3270
+PLS;TC;90;worldbank;;1.0;90;€€€€;
+PLU;BR;35;wherenext;Belo Horizonte;1.03;36;€€;1339
+PMO;IT;63;wherenext;Palermo;0.96;60;€€€;2208
+PMV;VE;40;numbeo2022;;1.0;40;€€;
+POA;BR;35;wherenext;;1.0;35;€€;1300
+POM;PG;42;wherenext;Port Moresby;1.0;42;€€;1550
+POP;DO;30;wherenext;Puerto Plata;0.93;28;€;1023
+POS;TT;55;wherenext;Port of Spain;1.03;57;€€;2060
+POZ;PL;35;wherenext;Poznan;1.12;39;€€;1456
+PPT;PF;87;numbeo2022;Papeete;1.0;87;€€€€;
+PRN;XK;37;worldbank;Pristina;1.0;37;€€;
+PSA;IT;63;wherenext;Pisa;1.09;69;€€€;2507
+PTP;GP;71;numbeo2022;;1.0;71;€€€;
+PUJ;DO;30;wherenext;Punta Cana (ajuste manual);1.25;38;€€;1375
+PUY;HR;41;wherenext;Pula;1.07;44;€€;1605
+PVR;MX;38;wherenext;Puerto Vallarta;1.07;41;€€;1498
+RAI;CV;43;worldbank;Praia;1.0;43;€€;
+RAK;MA;35;wherenext;Marrakech;1.16;41;€€;1508
+RAO;BR;35;wherenext;Ribeirao Preto;1.1;38;€€;1430
+RDU;US;82;wherenext;Raleigh;1.05;86;€€€€;3150
+REC;BR;35;wherenext;Recife;1.04;36;€€;1352
+RGN;MM;21;wherenext;;1.0;21;€;750
+RHO;GR;52;wherenext;;1.0;52;€€;1900
+RIX;LV;47;wherenext;Riga;1.27;60;€€€;2159
+RMQ;TW;43;wherenext;;1.0;43;€€;1550
+RSW;US;82;wherenext;Fort Myers;1.06;87;€€€€;3180
+RTB;HN;41;worldbank;Roatan;1.25;51;€€;
+RTM;NL;75;wherenext;Rotterdam;1.0;75;€€€;2750
+RUN;RE;69;numbeo2022;;1.0;69;€€€;
+RZE;PL;35;wherenext;Rzeszow;1.02;36;€€;1326
+SAH;YE;12;worldbank;;1.0;12;€;
+SAL;SV;37;worldbank;;1.0;37;€€;
+SAP;HN;41;worldbank;San Pedro Sula;1.03;42;€€;
+SAT;US;82;wherenext;;1.0;82;€€€;3000
+SCO;KZ;30;worldbank;;1.0;30;€;
+SCQ;ES;60;wherenext;Santiago de Compostela;0.97;58;€€;2134
+SDJ;JP;74;wherenext;Sendai;1.0;74;€€€;2700
+SDQ;DO;30;wherenext;Santo Domingo;1.1;33;€;1210
+SDR;ES;60;wherenext;Santander;1.07;64;€€€;2354
+SDU;BR;35;wherenext;Rio de Janeiro;1.19;42;€€;1547
+SEN;GB;79;wherenext;London;1.2;95;€€€€;3480
+SEZ;SC;49;worldbank;;1.0;49;€€;
+SFB;US;82;wherenext;Orlando;1.02;84;€€€;3060
+SID;CV;43;worldbank;;1.0;43;€€;
+SJC;US;82;wherenext;San Jose;1.22;100;€€€€;3660
+SJD;MX;38;wherenext;;1.0;38;€€;1400
+SJJ;BA;32;wherenext;Sarajevo;1.11;36;€€;1276
+SJO;CR;46;wherenext;;1.0;46;€€;1700
+SJU;PR;71;worldbank;;1.0;71;€€€;
+SJW;CN;50;wherenext;Shijiazhuang;0.86;43;€€;1591
+SKG;GR;52;wherenext;Thessaloniki;1.03;54;€€;1957
+SKP;MK;40;wherenext;Skopje;1.39;56;€€;2015
+SMF;US;82;wherenext;Sacramento;1.27;104;€€€€;3810
+SNA;US;82;wherenext;Los Angeles;1.23;101;€€€€;3690
+SNN;IE;91;wherenext;;1.0;91;€€€€;3350
+SOF;BG;32;wherenext;Sofia;1.33;43;€€;1530
+SON;VU;82;worldbank;;1.0;82;€€€;
+SOU;GB;79;wherenext;Southampton;1.02;81;€€€;2958
+SPU;HR;41;wherenext;Split;1.13;46;€€;1695
+SSA;BR;35;wherenext;Salvador;1.09;38;€€;1417
+SSH;EG;19;wherenext;Sharm el Sheikh (ajuste manual);1.15;22;€;805
+STL;US;82;wherenext;;1.0;82;€€€;3000
+STR;DE;68;wherenext;Stuttgart;1.13;77;€€€;2825
+STT;VI;81;worldbank;;1.0;81;€€€;
+SUF;IT;63;wherenext;;1.0;63;€€€;2300
+SVG;NO;95;wherenext;Stavanger;1.06;101;€€€€;3710
+SVQ;ES;60;wherenext;Sevilla;1.06;64;€€€;2332
+SWA;CN;50;wherenext;;1.0;50;€€;1850
+SXB;FR;67;wherenext;Strasbourg;1.09;73;€€€;2670
+SXM;SX;69;worldbank;;1.0;69;€€€;
+SYX;CN;50;wherenext;Sanya;1.0;50;€€;1850
+SYZ;IR;24;numbeo2022;Shiraz;1.33;32;€;
+SZB;MY;29;wherenext;Kuala Lumpur;1.19;35;€€;1250
+SZG;AT;72;wherenext;Salzburg;1.05;76;€€€;2782
+TAS;UZ;26;worldbank;Tashkent;1.31;34;€;
+TBS;GE;23;wherenext;Tbilisi;1.19;27;€;1012
+TBZ;IR;24;numbeo2022;Tabriz;1.6;38;€€;
+TFN;ES;60;wherenext;;1.0;60;€€€;2200
+TFS;ES;60;wherenext;;1.0;60;€€€;2200
+TGD;ME;33;wherenext;Podgorica;1.04;34;€;1248
+TGU;HN;41;worldbank;Tegucigalpa;1.01;41;€€;
+THR;IR;24;numbeo2022;Tehran;1.0;24;€;
+TIA;AL;34;wherenext;Tirana;1.28;44;€€;1600
+TIJ;MX;38;wherenext;Tijuana;1.09;41;€€;1526
+TIP;LY;19;numbeo2022;Tripoli;1.27;24;€;
+TLC;MX;38;wherenext;Mexico City;1.18;45;€€;1652
+TLL;EE;53;wherenext;Tallinn;1.29;68;€€€;2516
+TLS;FR;67;wherenext;Toulouse;1.05;70;€€€;2572
+TNA;CN;50;wherenext;Jinan;0.98;49;€€;1813
+TNG;MA;35;wherenext;Tangier;1.07;37;€€;1391
+TNR;MG;28;worldbank;Antananarivo;1.0;28;€;
+TOS;NO;95;wherenext;Tromso;1.0;95;€€€€;3500
+TPS;IT;63;wherenext;Trapani;0.85;54;€€;1955
+TRD;NO;95;wherenext;Trondheim;1.04;99;€€€€;3640
+TRF;NO;95;wherenext;Oslo;1.05;100;€€€€;3675
+TRN;IT;63;wherenext;Turin;1.04;66;€€€;2392
+TRV;IN;21;wherenext;Thiruvananthapuram;1.11;23;€;833
+TSF;IT;63;wherenext;Venice;1.12;71;€€€;2576
+TSR;RO;31;wherenext;Timisoara;1.08;33;€;1242
+TUN;TN;36;wherenext;Tunis;1.29;46;€€;1677
+TXN;CN;50;wherenext;;1.0;50;€€;1850
+TYN;CN;50;wherenext;Taiyuan;0.78;39;€€;1443
+UIO;EC;37;wherenext;Quito;1.04;38;€€;1404
+UPG;ID;28;wherenext;Makassar;1.01;28;€;1010
+URC;CN;50;wherenext;Urumqi;0.97;48;€€;1794
+USM;TH;28;wherenext;Koh Samui (ajuste manual);1.25;35;€€;1250
+UVF;LC;47;worldbank;;1.0;47;€€;
+VCE;IT;63;wherenext;Venice;1.12;71;€€€;2576
+VLC;ES;60;wherenext;Valencia;1.1;66;€€€;2420
+VLI;VU;82;worldbank;Port-Vila;1.0;82;€€€;
+VNO;LT;42;wherenext;Vilnius;1.26;53;€€;1953
+VRA;CU;36;worldbank;Varadero;1.0;36;€€;
+VRN;IT;63;wherenext;Verona;1.06;67;€€€;2438
+VTE;LA;24;wherenext;Vientiane;1.0;24;€;900
+VVI;BO;36;worldbank;;1.0;36;€€;
+WDH;NA;37;worldbank;Windhoek;0.99;37;€€;
+WMI;PL;35;wherenext;Warsaw;1.23;43;€€;1599
+WNZ;CN;50;wherenext;;1.0;50;€€;1850
+WRO;PL;35;wherenext;Wroclaw;1.16;41;€€;1508
+WUX;CN;50;wherenext;Wuxi;1.0;50;€€;1850
+XNN;CN;50;wherenext;Xining;1.12;56;€€;2072
+XRY;ES;60;wherenext;Jerez de la Frontera;0.89;53;€€;1958
+XUZ;CN;50;wherenext;;1.0;50;€€;1850
+YCU;CN;50;wherenext;;1.0;50;€€;1850
+YEG;CA;78;wherenext;Edmonton;1.0;78;€€€;2850
+YHZ;CA;78;wherenext;Halifax;1.06;83;€€€;3021
+YNT;CN;50;wherenext;Yantai;1.0;50;€€;1850
+YOW;CA;78;wherenext;Ottawa;1.0;78;€€€;2850
+YQB;CA;78;wherenext;Quebec City;0.92;72;€€€;2622
+YQT;CA;78;wherenext;;1.0;78;€€€;2850
+YTZ;CA;78;wherenext;Toronto;1.1;86;€€€€;3135
+YWG;CA;78;wherenext;Winnipeg;0.98;76;€€€;2793
+YWK;CA;78;wherenext;;1.0;78;€€€;2850
+YYT;CA;78;wherenext;;1.0;78;€€€;2850
+YZV;CA;78;wherenext;Sept-Iles;1.15;90;€€€€;3277
+ZAD;HR;41;wherenext;Zadar;1.22;50;€€;1830
+ZAG;HR;41;wherenext;Zagreb;1.2;49;€€;1800
+ZTH;GR;52;wherenext;;1.0;52;€€;1900
+ZUH;CN;50;wherenext;Zhuhai;1.05;52;€€;1942
