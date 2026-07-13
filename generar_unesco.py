@@ -62,6 +62,17 @@ RADIOS_KM = [60, 100]
 CULTURALES = {"i", "ii", "iii", "iv", "v", "vi"}
 NATURALES = {"vii", "viii", "ix", "x"}
 
+# Unos pocos sitios no tienen los criterios en Wikidata, así que su categoría
+# saldría vacía. Los rellenamos a mano (todos culturales, verificado en la ficha
+# oficial de UNESCO). Nota: 1156 (Dresden Elbe Valley) fue RETIRADO de la lista
+# en 2009; se deja como cultural por coherencia, pero ver aviso al ejecutar.
+CATEGORIA_MANUAL = {
+    "291": "cultural",   # Jesuit Missions of the Guaranis (São Miguel das Missões)
+    "678": "cultural",   # Complex of Hué Monuments
+    "1156": "cultural",  # Dresden Elbe Valley (retirado en 2009)
+    "1671": "cultural",  # Cosmological Axis of Yogyakarta
+}
+
 # Todos los componentes (un punto por localización) con su whc_id.
 Q_COMPONENTES = """
 SELECT ?whcid ?lat ?lon WHERE {
@@ -187,7 +198,8 @@ def descargar_componentes():
             continue
         componentes.append({"whc_id": bid, "lat": lat, "lon": lon})
         if bid not in categoria_por_sitio:
-            categoria_por_sitio[bid] = categoria_de(crit_por_sitio.get(bid, set()))
+            cat = categoria_de(crit_por_sitio.get(bid, set()))
+            categoria_por_sitio[bid] = cat or CATEGORIA_MANUAL.get(bid, "")
 
     print(f"  {len(componentes)} puntos | {len(categoria_por_sitio)} sitios únicos")
     return componentes, categoria_por_sitio
@@ -266,7 +278,7 @@ def ejecutar():
     filas = [contar_para_aeropuerto(a, componentes, categoria_por_sitio)
              for a in aeropuertos]
     df = pd.DataFrame(filas)[_cols_salida()]
-    df.to_csv(csv_path, index=False, encoding="utf-8")
+    df.to_csv(csv_path, index=False, sep=";", encoding="utf-8")
 
     # 5) Resumen.
     r0 = RADIOS_KM[0]

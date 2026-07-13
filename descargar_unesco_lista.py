@@ -44,6 +44,11 @@ CULTURALES = {"i", "ii", "iii", "iv", "v", "vi"}
 NATURALES = {"vii", "viii", "ix", "x"}
 ORDEN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"]
 
+# Sitios sin criterios en Wikidata -> se rellena la categoría a mano (todos
+# culturales, verificado en UNESCO). 1156 (Dresden) fue retirado en 2009.
+CATEGORIA_MANUAL = {"291": "cultural", "678": "cultural",
+                    "1156": "cultural", "1671": "cultural"}
+
 # Un punto por sitio + país + nombre.
 Q_SITIOS = """
 SELECT ?whcid ?name ?countryLabel ?lat ?lon WHERE {
@@ -122,7 +127,7 @@ def ejecutar():
         cs = crit_por_sitio.get(bid, set())
         salida.append({
             **s,
-            "categoria": categoria(cs),
+            "categoria": categoria(cs) or CATEGORIA_MANUAL.get(bid, ""),
             "criterios": " ".join(f"({c})" for c in ORDEN if c in cs),
             "n_componentes": n_componentes[bid],
         })
