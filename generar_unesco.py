@@ -5,31 +5,39 @@ de cada aeropuerto del maestro, como proxy de "cosas que ver" para el score.
 === USO: COPIAR Y PEGAR ESTE CÓDIGO EN UNA CELDA DE COLAB Y EJECUTAR ===
 No hay que llamar a ninguna función a mano. Al ejecutar, el script:
   1. Monta tu Google Drive (un clic la primera vez) para guardar el resultado.
-  2. Descarga la lista OFICIAL completa de UNESCO (un solo XML con ~1.220 sitios).
-  3. Cruza esa lista contra las coordenadas de tu maestro con haversine.
+  2. Descarga la lista de UNESCO desde Wikidata (todos los sitios WHC, con TODOS
+     sus componentes y los criterios de inscripción).
+  3. Cruza esos puntos contra las coordenadas de tu maestro con haversine.
   4. Escribe un CSV con los conteos por aeropuerto y lo descarga.
 
-=== POR QUÉ ESTE ES MUCHO MÁS RÁPIDO QUE EL DE CLIMA ===
-UNESCO no es una API por localización: publica TODA la lista en un único archivo
-estático. Se baja una sola vez (archivo pequeño) y el resto del cálculo es local.
-No hay API key, ni cuotas, ni reintentos: 575 aeropuertos x ~1.220 sitios se
-resuelve en menos de un segundo. Por eso no lleva la lógica de "reanudar" que sí
-necesita generar_clima.py.
+=== POR QUÉ WIKIDATA Y NO EL XML OFICIAL ===
+La web oficial (whc.unesco.org) está detrás de Cloudflare con un reto de
+JavaScript, así que un script recibe 403. Wikidata tiene los mismos sitios
+(cruzados por el "World Heritage Site ID", P757), con coordenadas y criterios, y
+su endpoint SPARQL sí es accesible por programa. El total (~1.250 sitios) y el
+reparto por categoría coinciden con las cifras oficiales de UNESCO.
 
-=== SI LA DESCARGA FALLA (UNESCO a veces bloquea con 403) ===
-El script lo intenta con un User-Agent de navegador. Si aun así falla, te lo dice:
-entra a https://whc.unesco.org/en/syndication con tu navegador, baja "All the
-sites in one XML file", súbelo a la carpeta de Drive indicada abajo (o a /content)
-con el nombre 'whc_sites.xml' y vuelve a ejecutar.
+=== CÓMO CUENTA (todos los componentes) ===
+Muchos sitios son "en serie": varios lugares bajo un mismo id (p. ej. las cuevas
+de arte rupestre del norte de España). Usamos TODOS esos puntos: un sitio cuenta
+como cercano si CUALQUIERA de sus componentes cae dentro del radio, y se cuenta
+UNA sola vez (por whc_id). Así un sitio en serie que se extiende hasta el
+aeropuerto suma aunque su punto "principal" esté lejos.
+
+=== ES RÁPIDO ===
+UNESCO se baja en dos consultas (no una por aeropuerto). El cruce es local:
+575 aeropuertos x ~8.400 puntos se resuelve en unos segundos. No hay cuotas ni
+lógica de "reanudar" como en generar_clima.py.
 
 REQUISITO: sube 'airports_flightable_categorized.csv' a Colab (a /content) o déjalo
 en la carpeta de Drive indicada abajo.
 """
 
 import os
+import re
 import ast
 import math
-import xml.etree.ElementTree as ET
+from collections import defaultdict
 
 import requests
 import pandas as pd
@@ -38,30 +46,39 @@ import pandas as pd
 # CONFIGURACIÓN
 # =====================================================
 
-# Carpeta en tu Drive donde se guarda el CSV de salida (y donde puedes dejar el
-# XML de UNESCO y/o el CSV de aeropuertos). Se crea sola si no existe.
 CARPETA_DRIVE = "/content/drive/MyDrive/maayub_unesco"
-
 INPUT_CSV_NAME = "airports_flightable_categorized.csv"
-XML_NAME = "whc_sites.xml"                 # nombre local del XML de UNESCO
 OUTPUT_CSV_NAME = "unesco_destinos.csv"
 
-# Fuente oficial: World Heritage Centre. "All the sites in one XML file".
-UNESCO_XML_URL = "https://whc.unesco.org/en/list/xml/"
-# User-Agent de navegador: sin esto UNESCO suele responder 403 a los scripts.
-HTTP_HEADERS = {
-    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                   "AppleWebKit/537.36 (KHTML, like Gecko) "
-                   "Chrome/124.0 Safari/537.36"),
-}
-TIMEOUT = 120
+# Fuente: endpoint SPARQL de Wikidata.
+WDQS = "https://query.wikidata.org/sparql"
+HTTP_HEADERS = {"User-Agent": "MaayubResearch/1.0 (germanach96@gmail.com)"}
+TIMEOUT = 180
 
 # --- Radios (km). El checklist pide 60; 100 añade el "excursión de día". ---
 RADIOS_KM = [60, 100]
 
-# Columnas del CSV de salida (en orden). Se generan por cada radio:
-#   unesco_<r>km, unesco_cultural_<r>km, unesco_natural_<r>km
-# más la distancia al sitio más próximo.
+# Criterios de inscripción: i-vi = cultural, vii-x = natural. Ambos -> mixto.
+CULTURALES = {"i", "ii", "iii", "iv", "v", "vi"}
+NATURALES = {"vii", "viii", "ix", "x"}
+
+# Todos los componentes (un punto por localización) con su whc_id.
+Q_COMPONENTES = """
+SELECT ?whcid ?lat ?lon WHERE {
+  ?item wdt:P757 ?whcid .
+  ?item p:P625 [ psv:P625 [ wikibase:geoLatitude ?lat ; wikibase:geoLongitude ?lon ] ] .
+}
+"""
+# Criterios de inscripción por sitio (para la categoría cultural/natural/mixto).
+Q_CRITERIOS = """
+SELECT ?whcid ?critLabel WHERE {
+  ?item wdt:P757 ?whcid .
+  ?item wdt:P2614 ?c .
+  ?c rdfs:label ?critLabel . FILTER(LANG(?critLabel)="en")
+}
+"""
+
+
 def _cols_salida():
     cols = ["iata"]
     for r in RADIOS_KM:
@@ -84,6 +101,14 @@ def haversine_km(lat1, lon1, lat2, lon2):
     return 2 * R * math.asin(math.sqrt(a))
 
 
+def id_base(whcid):
+    """El id oficial es numérico; Wikidata añade sufijos (bis/ter) en extensiones
+    y reusa el id del sitio en sus componentes. Nos quedamos con el nº base para
+    que todos los componentes de un mismo sitio compartan clave."""
+    m = re.match(r"^(\d+)", whcid.strip())
+    return m.group(1) if m else None
+
+
 def cargar_aeropuertos(ruta):
     """Lee el CSV de aeropuertos y devuelve una lista de dicts {iata, lat, lon}.
     El campo 'coordinates' es un dict de Python en texto (comillas simples)."""
@@ -103,7 +128,6 @@ def cargar_aeropuertos(ruta):
 
 
 def localizar_input():
-    """Busca el CSV de aeropuertos en /content o en la carpeta de Drive."""
     for p in [INPUT_CSV_NAME,
               os.path.join("/content", INPUT_CSV_NAME),
               os.path.join(CARPETA_DRIVE, INPUT_CSV_NAME)]:
@@ -112,105 +136,92 @@ def localizar_input():
     return None
 
 
-def localizar_xml():
-    """Busca un XML de UNESCO ya descargado a mano (en /content o en Drive)."""
-    for p in [XML_NAME,
-              os.path.join("/content", XML_NAME),
-              os.path.join(CARPETA_DRIVE, XML_NAME)]:
-        if os.path.exists(p):
-            return p
-    return None
-
-
 # =====================================================
-# LISTA DE SITIOS UNESCO
+# LISTA DE SITIOS UNESCO (Wikidata)
 # =====================================================
 
-def obtener_xml():
-    """Devuelve el texto del XML de UNESCO. Primero mira si ya lo tienes bajado
-    a mano; si no, lo intenta descargar. Devuelve None si no hay forma."""
-    ruta_local = localizar_xml()
-    if ruta_local:
-        print(f"Usando XML local: {ruta_local}")
-        with open(ruta_local, "r", encoding="utf-8", errors="replace") as f:
-            return f.read()
-
-    print(f"Descargando lista oficial de UNESCO: {UNESCO_XML_URL}")
-    try:
-        resp = requests.get(UNESCO_XML_URL, headers=HTTP_HEADERS, timeout=TIMEOUT)
-    except Exception as e:
-        print(f"  Fallo de red al descargar: {e}")
-        return None
-
-    if resp.status_code != 200:
-        print(f"  UNESCO respondió HTTP {resp.status_code} (a veces bloquean scripts).")
-        return None
-
-    # Guardar copia en Drive para no volver a depender de la descarga.
-    try:
-        os.makedirs(CARPETA_DRIVE, exist_ok=True)
-        with open(os.path.join(CARPETA_DRIVE, XML_NAME), "w", encoding="utf-8") as f:
-            f.write(resp.text)
-    except Exception:
-        pass
-    return resp.text
+def _sparql(query):
+    r = requests.get(WDQS, params={"query": query, "format": "json"},
+                     headers=HTTP_HEADERS, timeout=TIMEOUT)
+    r.raise_for_status()
+    return r.json()["results"]["bindings"]
 
 
-def _texto(row, tag):
-    el = row.find(tag)
-    return el.text if el is not None and el.text is not None else ""
+def categoria_de(criterios):
+    cult = bool(criterios & CULTURALES)
+    nat = bool(criterios & NATURALES)
+    if cult and nat:
+        return "mixto"
+    if nat:
+        return "natural"
+    if cult:
+        return "cultural"
+    return ""
 
 
-def parsear_sitios(xml_text):
-    """Convierte el XML en una lista de dicts {lat, lon, categoria}.
-    categoria es 'cultural', 'natural' o 'mixed'. Salta filas sin coordenadas."""
-    raiz = ET.fromstring(xml_text)
-    sitios = []
-    for row in raiz.iter("row"):
-        lat_txt = _texto(row, "latitude").strip()
-        lon_txt = _texto(row, "longitude").strip()
-        if not lat_txt or not lon_txt:
+def descargar_componentes():
+    """Devuelve (lista de componentes, categoría_por_sitio).
+    Cada componente es un dict {whc_id, lat, lon}. categoría_por_sitio mapea
+    whc_id -> 'cultural'/'natural'/'mixto'/''."""
+    print("Descargando UNESCO desde Wikidata (componentes)...")
+    filas = _sparql(Q_COMPONENTES)
+    print("Descargando UNESCO desde Wikidata (criterios)...")
+    filas_crit = _sparql(Q_CRITERIOS)
+
+    crit_por_sitio = defaultdict(set)
+    for b in filas_crit:
+        bid = id_base(b["whcid"]["value"])
+        if bid:
+            crit_por_sitio[bid].add(b["critLabel"]["value"].strip("()").lower())
+
+    categoria_por_sitio = {}
+    componentes = []
+    for b in filas:
+        bid = id_base(b["whcid"]["value"])
+        if not bid:
             continue
         try:
-            lat = float(lat_txt)
-            lon = float(lon_txt)
-        except ValueError:
+            lat = float(b["lat"]["value"])
+            lon = float(b["lon"]["value"])
+        except (ValueError, KeyError):
             continue
-        cat = _texto(row, "category").strip().lower()   # Cultural/Natural/Mixed
-        sitios.append({"lat": lat, "lon": lon, "categoria": cat})
-    return sitios
+        componentes.append({"whc_id": bid, "lat": lat, "lon": lon})
+        if bid not in categoria_por_sitio:
+            categoria_por_sitio[bid] = categoria_de(crit_por_sitio.get(bid, set()))
+
+    print(f"  {len(componentes)} puntos | {len(categoria_por_sitio)} sitios únicos")
+    return componentes, categoria_por_sitio
 
 
 # =====================================================
 # CÁLCULO POR AEROPUERTO
 # =====================================================
 
-def contar_para_aeropuerto(aeropuerto, sitios):
-    """Devuelve un dict con los conteos por radio (total/cultural/natural) y la
-    distancia al sitio más próximo, para un aeropuerto dado."""
-    fila = {"iata": aeropuerto["iata"]}
-    conteos = {r: {"total": 0, "cultural": 0, "natural": 0} for r in RADIOS_KM}
-    minimo = math.inf
-
+def contar_para_aeropuerto(aeropuerto, componentes, categoria_por_sitio):
+    """Cuenta sitios ÚNICOS cuya distancia mínima (sobre todos sus componentes)
+    cae dentro de cada radio, con split cultural/natural, más el más próximo."""
     alat, alon = aeropuerto["lat"], aeropuerto["lon"]
-    for s in sitios:
-        d = haversine_km(alat, alon, s["lat"], s["lon"])
-        if d < minimo:
-            minimo = d
-        for r in RADIOS_KM:
-            if d <= r:
-                conteos[r]["total"] += 1
-                # 'mixed' cuenta en ambos porque es a la vez cultural y natural.
-                if s["categoria"] in ("cultural", "mixed"):
-                    conteos[r]["cultural"] += 1
-                if s["categoria"] in ("natural", "mixed"):
-                    conteos[r]["natural"] += 1
 
+    # Distancia mínima aeropuerto -> sitio (sobre todos los componentes del sitio).
+    min_por_sitio = {}
+    nearest = math.inf
+    for cp in componentes:
+        d = haversine_km(alat, alon, cp["lat"], cp["lon"])
+        if d < nearest:
+            nearest = d
+        w = cp["whc_id"]
+        if w not in min_por_sitio or d < min_por_sitio[w]:
+            min_por_sitio[w] = d
+
+    fila = {"iata": aeropuerto["iata"]}
     for r in RADIOS_KM:
-        fila[f"unesco_{r}km"] = conteos[r]["total"]
-        fila[f"unesco_cultural_{r}km"] = conteos[r]["cultural"]
-        fila[f"unesco_natural_{r}km"] = conteos[r]["natural"]
-    fila["unesco_cercano_km"] = round(minimo, 1) if minimo != math.inf else ""
+        dentro = [w for w, d in min_por_sitio.items() if d <= r]
+        cats = [categoria_por_sitio.get(w, "") for w in dentro]
+        fila[f"unesco_{r}km"] = len(dentro)
+        # 'mixto' cuenta en ambos (es a la vez cultural y natural).
+        fila[f"unesco_cultural_{r}km"] = sum(1 for c in cats if c in ("cultural", "mixto"))
+        fila[f"unesco_natural_{r}km"] = sum(1 for c in cats if c in ("natural", "mixto"))
+    fila["unesco_cercano_km"] = round(nearest, 1) if nearest != math.inf else ""
     return fila
 
 
@@ -237,31 +248,23 @@ def ejecutar():
         return
     aeropuertos = cargar_aeropuertos(input_path)
 
-    # 3) Conseguir la lista de UNESCO (descarga o XML subido a mano).
-    xml_text = obtener_xml()
-    if xml_text is None:
-        print("\n>>> NO SE PUDO OBTENER LA LISTA DE UNESCO.")
-        print(">>> Entra en https://whc.unesco.org/en/syndication con el navegador,")
-        print(">>> baja 'All the sites in one XML file', renómbralo a 'whc_sites.xml'")
-        print(f">>> y súbelo a /content o a {CARPETA_DRIVE}. Luego vuelve a ejecutar.")
-        return
-
+    # 3) Bajar la lista de UNESCO (con todos los componentes).
     try:
-        sitios = parsear_sitios(xml_text)
-    except ET.ParseError as e:
-        print(f"\n>>> El XML de UNESCO no se pudo leer (¿archivo corrupto?): {e}")
-        print(">>> Bórralo y vuelve a descargarlo o súbelo a mano.")
+        componentes, categoria_por_sitio = descargar_componentes()
+    except Exception as e:
+        print(f"\n>>> No se pudo descargar UNESCO de Wikidata: {e}")
+        print(">>> Reintenta en un minuto (el endpoint a veces va cargado).")
+        return
+    if not componentes:
+        print("\n>>> Wikidata no devolvió puntos. Reintenta más tarde.")
         return
 
-    if not sitios:
-        print("\n>>> El XML no tenía sitios con coordenadas. Revisa el archivo.")
-        return
+    print(f"\nAeropuertos: {len(aeropuertos)} | Radios: "
+          f"{', '.join(str(r) + ' km' for r in RADIOS_KM)}")
 
-    print(f"\nAeropuertos: {len(aeropuertos)} | Sitios UNESCO con coordenadas: {len(sitios)}")
-    print(f"Radios: {', '.join(str(r) + ' km' for r in RADIOS_KM)}")
-
-    # 4) Calcular y escribir. Es rápido, así que se genera de una y se sobrescribe.
-    filas = [contar_para_aeropuerto(a, sitios) for a in aeropuertos]
+    # 4) Calcular y escribir. Es rápido, se genera de una y se sobrescribe.
+    filas = [contar_para_aeropuerto(a, componentes, categoria_por_sitio)
+             for a in aeropuertos]
     df = pd.DataFrame(filas)[_cols_salida()]
     df.to_csv(csv_path, index=False, encoding="utf-8")
 
@@ -275,7 +278,6 @@ def ejecutar():
 
 
 def _descargar(csv_path):
-    """Ofrece el CSV para descargar si estamos en Colab."""
     try:
         from google.colab import files
         files.download(csv_path)

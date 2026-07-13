@@ -12,11 +12,14 @@ accesible por programa. El total y el reparto por categoría coinciden con las
 cifras oficiales de UNESCO.
 
 === QUÉ PRODUCE ===
-unesco_sitios.csv con una fila por sitio (deduplicado por whc_id):
-  whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
-- categoria: cultural (criterios i-vi), natural (vii-x) o mixto (ambos).
-- n_componentes: nº de puntos que Wikidata tiene para ese sitio (los sitios en
-  serie tienen varios; aquí guardamos el primero como representativo).
+1) unesco_sitios.csv -> una fila por sitio (deduplicado por whc_id), PARA REVISAR:
+     whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
+   - categoria: cultural (criterios i-vi), natural (vii-x) o mixto (ambos).
+   - n_componentes: nº de puntos que Wikidata tiene para ese sitio (los sitios en
+     serie tienen varios; aquí guardamos el primero como representativo).
+2) unesco_componentes.csv -> una fila por PUNTO (todos los componentes), que es lo
+   que consume generar_unesco.py para contar a <60/100 km:
+     whc_id;nombre;pais;categoria;lat;lon
 
 === CAVEATS (para tenerlos presentes al mirar el CSV) ===
 - En sitios en serie, nombre/coordenada son los de UNO de los componentes, no
@@ -33,7 +36,8 @@ from collections import defaultdict, Counter
 WDQS = "https://query.wikidata.org/sparql"
 HEADERS = {"User-Agent": "MaayubResearch/1.0 (germanach96@gmail.com)"}
 TIMEOUT = 180
-OUTPUT_CSV = "unesco_sitios.csv"
+OUTPUT_CSV = "unesco_sitios.csv"              # una fila por sitio (revisión)
+OUTPUT_COMPONENTES = "unesco_componentes.csv"  # una fila por punto (para el cálculo)
 
 # Criterios: i-vi = cultural, vii-x = natural. Con ambos -> mixto.
 CULTURALES = {"i", "ii", "iii", "iv", "v", "vi"}
@@ -130,8 +134,26 @@ def ejecutar():
         w.writeheader()
         w.writerows(salida)
 
+    # Segundo CSV: una fila por PUNTO (todos los componentes). Es lo que consume
+    # generar_unesco.py. La categoría se toma del sitio (misma para sus puntos).
+    cat_por_sitio = {r["whc_id"]: r["categoria"] for r in salida}
+    cols_c = ["whc_id", "nombre", "pais", "categoria", "lat", "lon"]
+    n_puntos = 0
+    with open(OUTPUT_COMPONENTES, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=cols_c, delimiter=";")
+        w.writeheader()
+        for b in filas:
+            g = lambda k: b[k]["value"] if k in b else ""
+            bid = id_base(g("whcid"))
+            if not bid:
+                continue
+            w.writerow({"whc_id": bid, "nombre": g("name"), "pais": g("countryLabel"),
+                        "categoria": cat_por_sitio.get(bid, ""), "lat": g("lat"), "lon": g("lon")})
+            n_puntos += 1
+
     reparto = Counter(r["categoria"] or "sin_categoria" for r in salida)
     print(f"\n>>> {OUTPUT_CSV}: {len(salida)} sitios únicos con coordenadas.")
+    print(f">>> {OUTPUT_COMPONENTES}: {n_puntos} puntos (componentes).")
     print(f">>> Por categoría: {dict(reparto)}")
     print(f">>> Sitios en serie (>1 componente): {sum(1 for r in salida if r['n_componentes'] > 1)}")
 

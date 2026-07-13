@@ -9,7 +9,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 12;Tiya archaeological site;Ethiopia;cultural;(i) (iv);8.43491667;38.61211111;1
 13;Melka Kunture;Ethiopia;cultural;(iii) (iv) (v);8.7025;38.608333333333;1
 15;Axum;Ethiopia;cultural;(i) (iv);14.1218;38.7315;3
-17;Omo River;Ethiopia;cultural;(iii) (iv);4.4969;36.0138;3
+17;Lower Valley of the Omo;Ethiopia;cultural;(iii) (iv);5.372;36.725;3
 18;Monolithic churches in Lalibela;Ethiopia;cultural;(i) (ii) (iii);12.02935;39.04042;1
 19;Fasil Ghebbi;Ethiopia;cultural;(ii) (iii);12.608055555556;37.469722222222;1
 20;Ancient City of Damascus;Syria;cultural;(i) (ii) (iii) (iv) (vi);33.51111222;36.30639;2
@@ -23,20 +23,20 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 28;Yellowstone National Park;United States;natural;(vii) (viii) (ix) (x);44.6;-110.5;1
 29;Kraków Old Town;Poland;cultural;(iv);50.06209;19.93688;1
 30;Warsaw Old Town;Poland;cultural;(ii) (vi);52.249722222222;21.012222222222;2
-31;Auschwitz-Birkenau State Museum;Poland;cultural;(vi);50.035833;19.178333;4
+31;Auschwitz I concentration camp;Poland;cultural;(vi);50.027606;19.203088;4
 32;Wieliczka Salt Mine;Poland;cultural;(iv);49.983053;20.055655;6
 33;Białowieża Forest;Poland;natural;(ix) (x);52.75;23.95;4
 34;Fort Batenstein;Ghana;cultural;(vi);4.82429;-1.91724;15
 35;Asante Traditional Buildings;Ghana;cultural;(v);6.40111;-1.62583;1
 36;Medina of Tunis;Tunisia;cultural;(ii) (iii) (v);36.7990274;10.1700595;2
-37;Archaeological site of Carthage;Tunisia;cultural;(ii) (iii) (vi);36.85788;10.33084;14
+37;Byzantine basilica of Dermech;Tunisia;cultural;(ii) (iii) (vi);36.848776;10.325329;14
 38;Roman amphitheatre of El Jem;Tunisia;cultural;(iv) (vi);35.29638889;10.70694444;2
 39;Ngorongoro Conservation Area;Tanzania;mixto;(iv) (vii) (viii) (ix) (x);-3.21;35.46;2
 42;Boyana Church;Bulgaria;cultural;(ii) (iii);42.644672222222;23.266172222222;1
 43;Madara Rider;Bulgaria;cultural;(i) (iii);43.2773746;27.1188945;1
 44;Thracian Tomb of Kazanlak;Bulgaria;cultural;(i) (iii) (iv);42.625555555556;25.399166666667;1
 45;Rock-hewn Churches of Ivanovo;Bulgaria;cultural;(ii) (iii);43.695555555556;25.988055555556;1
-55;Røros Mining Town and the Circumference;Norway;cultural;(iii) (iv) (v);62.57388889;11.38555556;3
+55;Røros Mining Town Cultural Landscapes and Winter Transport Route;Norway;cultural;(iii) (iv) (v);62.57389;11.38556;3
 58;Urnes Stave Church;Norway;cultural;(i) (ii) (iii);61.298055555556;7.3225;1
 59;Bryggen;Norway;cultural;(iii);60.3975;5.3233333333333;1
 63;Virunga National Park;Democratic Republic of the Congo;natural;(vii) (viii) (x);-0.5;29.5;1
@@ -48,21 +48,21 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 76;Everglades National Park;United States;natural;(viii) (ix) (x);25.3125;-80.6875;1
 78;Independence Hall;United States;cultural;(vi);39.948888888889;-75.15;1
 79;Sanctuary of Aphrodite at Kouklia;Cyprus;cultural;(iii) (vi);34.707283333333;32.574158333333;5
-80;Mont-Saint-Michel and its Bay;France;cultural;(i) (iii) (vi);48.63556;-1.51056;5
+80;Moidrey windmill;France;cultural;(i) (iii) (vi);48.5852;-1.5061;5
 81;Notre-Dame de Chartres;France;cultural;(i) (ii) (iv);48.447777777778;1.4877777777778;2
 83;Palace and Park of Versailles;France;cultural;(i) (ii) (vi);48.805;2.119444444;3
 84;Vézelay Abbey;France;cultural;(i) (iv) (vi);47.466388888889;3.7483333333333;5
-85;Lascaux;France;cultural;(i) (iii);45.049166666667;1.1761111111111;16
+85;Cap Blanc rock shelter;France;cultural;(i) (iii);44.9456;1.09694;16
 86;Memphis and its Necropolis – the Pyramid Fields from Giza to Dahshur;Egypt;cultural;(i) (iii) (vi);29.976;31.1304;3
-87;Thebes;Egypt;cultural;(i) (iii) (vi);25.720555555556;32.610277777778;5
+87;Karnak Temple Complex;Egypt;cultural;(i) (iii) (vi);25.718333333333;32.658333333333;5
 88;Abu Simbel;Egypt;cultural;(i) (iii) (vi);22.336944444444;31.625555555556;13
-89;Islamic Cairo;Egypt;cultural;(i) (v) (vi);30.046;31.2627;7
+89;Al-Sayeda Nafeesah Mosque;Egypt;cultural;(i) (v) (vi);30.0215;31.2576;7
 90;Abu Mena;Egypt;cultural;(iv);30.84105;29.66349;1
-91;Archbasilica of St. John Lateran;Italy;cultural;(i) (ii) (iii) (iv) (vi);41.885905555556;12.506155555556;17
+91;Basilica di Santa Maria Maggiore;Italy;cultural;(i) (ii) (iii) (iv) (vi);41.8975;12.498611111111;17
 93;Santa Maria delle Grazie;Italy;cultural;(i) (ii);45.466008;9.170408;2
-94;Parco comunale delle incisioni rupestri di Luine;Italy;cultural;(iii) (vi);45.888889;10.179444;7
+94;rock drawings in Valcamonica;Italy;cultural;(iii) (vi);46.023888888889;10.35;7
 95;Lokrum;Croatia;cultural;(i) (iii) (iv);42.627222222222;18.119444444444;3
-96;Stari Ras and Sopoćani;Serbia;cultural;(i) (iii);43.11889;20.42278;6
+96;Đurđevi stupovi;Serbia;cultural;(i) (iii);43.165555555556;20.493888888889;6
 97;Diocletian's Palace;Croatia;cultural;(ii) (iii) (iv);43.508055555556;16.438333333333;2
 98;Plitvice Lakes National Park;Croatia;natural;(vii) (viii) (ix);44.880445;15.616035;1
 99;Natural and Cultural Heritage of the Ohrid region;North Macedonia;mixto;(i) (iii) (iv) (vii) (ix);41.1181;20.8133;16
@@ -72,7 +72,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 113;Chogha Zanbil;Iran;cultural;(iii) (iv);32.008333333333;48.520833333333;1
 114;Persepolis;Iran;cultural;(i) (iii) (vi);29.934444;52.891389;2
 115;Naqsh-e Jahan Square;Iran;cultural;(i) (v) (vi);32.658222222222;51.677333333333;1
-116;Djenné;Mali;cultural;(iii) (iv);13.9;-4.55;6
+116;Djenné-Djenno;Mali;cultural;(iii) (iv);13.89;-4.5402777777778;6
 119;Timbuktu;Mali;cultural;(ii) (iv) (v);16.77348;-3.00742;2
 120;Sagarmatha National Park;Nepal;natural;(vii);27.891069;86.693033;1
 121;Pashupatinath Temple;Nepal;cultural;(iii) (iv) (vi);27.710495;85.348645;10
@@ -81,23 +81,23 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 129;Copán;Honduras;cultural;(iv) (vi);14.837963888889;-89.142441666667;1
 130;Hypogeum of Ħal Saflieni;Malta;cultural;(iii);35.869558333333;14.506883333333;1
 131;St. John's Co-Cathedral;Malta;cultural;(i) (vi);35.897778;14.512778;2
-132;Ġgantija;Malta;cultural;(iv);36.047265;14.269095;8
+132;Mnajdra;Malta;cultural;(iv);35.826666666667;14.436388888889;8
 133;Burgess Shale;Canada;natural;(viii);51.4333;-116.467;1
 134;Redwood National and State Parks;United States;natural;(vii) (ix);41.373888888889;-123.99805555556;1
-135;Portobelo;Panama;cultural;(i) (iv);9.5544444444444;-79.655;3
+135;Chagres and Fort San Lorenzo;Panama;cultural;(i) (iv);9.322587;-80.002425;3
 136;Garamba National Park;Democratic Republic of the Congo;natural;(vii) (x);4.19559;29.48093;2
 137;Kahuzi-Biéga National Park;Democratic Republic of the Congo;natural;(x);-2.3148055555556;28.758666666667;1
 138;Mohenjo-daro;Pakistan;cultural;(ii) (iii);27.329166666667;68.138888888889;1
 139;Taxila;Pakistan;cultural;(iii) (vi);33.745833333333;72.7875;20
 140;Takht-i-Bahi;Pakistan;cultural;(iv);34.320833333333;71.945833333333;3
 143;Historical Monuments at Makli, Thatta;Pakistan;cultural;(iii);24.756388888889;67.898611111111;1
-144;Songo Mnara;Tanzania;cultural;(iii);-9.0394227777778;39.551702222222;3
+144;Ruins of Kilwa Kisiwani and Ruins of Songo Mnara;Tanzania;cultural;(iii);-8.95777778;39.52277778;3
 145;Los Glaciares National Park;Argentina;natural;(vii) (viii);-50.330530387333;-73.234164314729;1
 147;Kakadu National Park;Australia;mixto;(i) (vi) (vii) (ix) (x);-13.005471;132.519512;7
 148;Old City of Jerusalem and its Walls;Israel;cultural;(ii) (iii) (vi);31.778214;35.23191;1
 149;Quiriguá;Guatemala;cultural;(i) (ii) (iv);15.269444444444;-89.040277777778;1
 150;Mammoth Cave National Park;United States;natural;(vii) (viii) (x);37.186944444444;-86.101111111111;1
-151;Olympic Mountains;United States;natural;(vii) (ix);47.833333333333;-123.83333333333;3
+151;Olympic National Park;United States;natural;(vii) (ix);47.7;-123.75;3
 153;Niokolo-Koba National Park;Senegal;natural;(x);13.074166666667;-12.722222222222;1
 154;Great Barrier Reef;Australia;natural;(vii) (viii) (ix) (x);-16.4;145.8;1
 155;Mount Nimba Strict Nature Reserve;Guinea;natural;(ix) (x);7.603;-8.391;4
@@ -108,15 +108,15 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 160;Palace of Fontainebleau;France;cultural;(ii) (vi);48.402222222222;2.7005555555556;1
 161;Château de Chambord;France;cultural;(i);47.616111111111;1.5172222222222;1
 162;Notre-Dame d'Amiens;France;cultural;(i) (ii);49.89457;2.3021;2
-163;Roman Theatre of Orange;France;cultural;(iii) (vi);44.135754;4.808895;4
-164;Arles Roman City Walls;France;cultural;(ii) (iv);43.67853;4.62443;3
+163;"Roman Theatre and its Surroundings and the ""Triumphal Arch"" of Orange";France;cultural;(iii) (vi);44.13572222;4.808416667;4
+164;Arles, Roman and Romanesque Monuments;France;cultural;(ii) (iv);43.677638888889;4.6306944444444;3
 165;Abbey of Fontenay;France;cultural;(iv);47.639661;4.389327;2
 166;Sydney Opera House;Australia;cultural;(i);-33.857058;151.214897;1
 167;Willandra Lakes Region;Australia;mixto;(iii) (viii);-33.618142;143.101406;1
 168;Speyer Cathedral;Germany;cultural;(ii);49.317222;8.4425;1
 169;Würzburg Residence;Germany;cultural;(i) (iv);49.79279761747;9.9388890432453;4
-170;Medina of Fez;Morocco;cultural;(ii) (v);34.0625;-4.9725;3
-171;Fort and Shalamar Gardens in Lahore;Pakistan;cultural;(i) (ii) (iii);31.59027778;74.30972222;3
+170;Fes Jdid;Morocco;cultural;(ii) (v);34.05527778;-4.99027778;3
+171;Shalamar Gardens;Pakistan;cultural;(i) (ii) (iii);31.585833333333;74.381944444444;3
 173;Stone Town;Tanzania;cultural;(ii) (iii) (vi);-6.1649444444444;39.198788888889;1
 174;Historic Centre of Florence;Italy;cultural;(i) (ii) (iii) (iv) (vi);43.77306;11.25611111;1
 175;Palazzo di Seravezza;Italy;cultural;(ii) (iv) (vi);43.993818;10.231994;21
@@ -127,13 +127,13 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 184;Archaeological Site of Sabratha;Libya;cultural;(iii);32.80528;12.485;1
 185;Aldabra;Seychelles;natural;(vii) (ix) (x);-9.4163888888889;46.416388888889;1
 186;Lord Howe Island Group;Australia;natural;(vii) (x);-31.556175;159.079723;1
-187;Hildesheim Cathedral;Germany;cultural;(i) (ii) (iii);52.148889;9.947222;4
-188;Ksar Beni Isguen;Algeria;cultural;(ii) (iii) (v);32.475222222222;3.6961944444444;22
+187;St. Michael's Church;Germany;cultural;(i) (ii) (iii);52.1529;9.9435;4
+188;M'zab;Algeria;cultural;(ii) (iii) (v);32.487222222222;3.6813888888889;22
 189;Historic Centre of the Town of Olinda;Brazil;cultural;(ii) (iv);-8.01333333;-34.845;1
 190;Cyrene;Libya;cultural;(ii) (iii) (vi);32.816666666667;21.85;2
 191;Djemila;Algeria;cultural;(iii) (iv);36.32056;5.73667;1
 192;Shibam;Yemen;cultural;(iii) (iv) (v);15.926944444444;48.626666666667;1
-193;Royal Mausoleum of Mauretania;Algeria;cultural;(iii) (iv);36.574722222222;2.5533333333333;5
+193;Tipasa;Algeria;cultural;(iii) (iv);36.594243;2.441918;5
 194;Timgad;Algeria;cultural;(ii) (iii) (iv);35.484237;6.468666;1
 195;Taï National Park;Ivory Coast;natural;(vii) (x);5.75;-7.12;1
 196;Río Plátano Biosphere Reserve;Honduras;natural;(vii) (viii) (ix) (x);15.6;-84.8;2
@@ -142,8 +142,8 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 200;Anuradhapura;Sri Lanka;cultural;(ii) (iii) (vi);8.335;80.410833333333;1
 201;Polonnaruwa;Sri Lanka;cultural;(i) (iii) (vi);7.9333333333333;81.0;1
 202;Sigiriya;Sri Lanka;cultural;(ii) (iii) (iv);7.9569444444444;80.759722222222;1
-203;Salines de Salins-les-Bains;France;cultural;(i) (ii) (iv);46.937543;5.876146;4
-204;Old Havana;Cuba;cultural;(iv) (v);23.135944444444;-82.358333333333;11
+203;From the Great Saltworks of Salins-les-Bains to the Royal Saltworks of Arc-et-Senans, the Production of Open-pan Salt;France;cultural;(i) (ii) (iv);46.9375;5.876388889;4
+204;Morro Castle;Cuba;cultural;(iv) (v);23.15041667;-82.35666667;11
 205;Talamanca Range-La Amistad Reserves;Panama;natural;(vii) (viii) (ix) (x);9.40694444;-82.93861111;8
 206;Centro Histórico de Angra do Heroísmo;Portugal;cultural;(iv) (vi);38.655;-27.22;1
 208;Buddhas of Bamiyan;Afghanistan;cultural;(i) (ii) (iii) (iv) (vi);34.832041666667;67.826802777778;8
@@ -168,8 +168,8 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 244;Elephanta Caves;India;cultural;(i) (iii);18.963333333333;72.931388888889;1
 246;Konark Sun Temple;India;cultural;(i) (iii) (vi);19.887444;86.094596;1
 247;Amber Fort;India;cultural;(ii) (iii);26.9859;75.8507;8
-249;Mukunda Nayanar Temple;India;cultural;(i) (ii) (iii) (vi);12.627165885191;80.194893906681;4
-250;Gangaikonda Cholapuram;India;cultural;(ii) (iii);11.20524;79.45278;5
+249;Group of monuments at Mahabalipuram;India;cultural;(i) (ii) (iii) (vi);12.616666666667;80.191666666667;4
+250;Prahadisvarar Temple;India;cultural;(ii) (iii);10.78305556;79.1325;5
 251;Agra Fort;India;cultural;(iii);27.179583333333;78.021297222222;1
 252;Taj Mahal;India;cultural;(i);27.175;78.041944444444;1
 255;Fatehpur Sikri;India;cultural;(ii) (iii) (iv);27.091111111111;77.661111111111;1
@@ -178,8 +178,8 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 259;Great Smoky Mountains National Park;United States;natural;(vii) (viii) (ix) (x);35.611111111111;-83.425;1
 260;Sangay National Park;Ecuador;natural;(vii) (viii) (ix) (x);-1.8333333333333;-78.333333333333;1
 261;Vallée de Mai;Seychelles;natural;(vii) (viii) (ix) (x);-4.3291666666667;55.7375;1
-262;Dungonab Bay;Sudan;natural;(vii) (ix) (x);20.937222;37.255278;4
-263;Belém Tower;Portugal;cultural;(iii) (vi);38.691388888889;-9.2158333333333;3
+262;Sanganeb Marine National Park;Sudan;natural;(vii) (ix) (x);19.733333333333;37.433333333333;4
+263;Monastery of the Hieronymites and Tower of Belém in Lisbon;Portugal;cultural;(iii) (vi);38.69194;-9.21583;3
 264;Batalha Monastery;Portugal;cultural;(i) (ii);39.659166666667;-8.8261111111111;1
 265;Convent of Christ;Portugal;cultural;(i) (vi);39.603636;-8.419258;1
 266;Castillo San Felipe del Morro;United States;cultural;(vi);18.47111;-66.12444;9
@@ -187,10 +187,10 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 268;Abbey of Saint Gall;Switzerland;cultural;(ii) (iv);47.423055555556;9.3772222222222;1
 269;Saint John Abbey;Switzerland;cultural;(iii);46.629166666667;10.447777777778;1
 271;Wieskirche;Germany;cultural;(i) (iii);47.6806;10.900445;1
-272;Hanseatic City of Lübeck;Germany;cultural;(iv);53.86667;10.69167;5
-273;Historic centre of Cusco;Peru;cultural;(iii) (iv);-13.518333;-71.978056;5
+272;Marienkirche, Rathaus, Marktplatz;Germany;cultural;(iv);53.86778;10.68444;5
+273;City of Cusco - Main Square and Historic Centre;Peru;cultural;(iii) (iv);-13.5167;-71.9787;5
 274;Historic Sanctuary of Machu Picchu;Peru;mixto;(i) (iii) (vii) (ix);-13.11666667;-72.58333333;1
-275;Jesuit missions among the Guaraní;Brazil;cultural;(iv);-27.255280555556;-55.531669444444;10
+275;São Miguel das Missões;Brazil;cultural;(iv);-28.549078;-54.555889;10
 276;Samarra;Iraq;cultural;(ii) (iii) (iv);34.1959;43.88568;12
 277;Hatra;Iraq;cultural;(ii) (iii) (iv) (vi);35.588055555556;42.718333333333;1
 278;Babylon;Iraq;cultural;(iii) (vi);32.541780555556;44.431644444444;1
@@ -211,7 +211,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 302;Mana Pools National Park, Sapi and Chewore Safari Areas;Zimbabwe;natural;(vii) (ix) (x);-15.81944444;29.40805556;1
 303;Iguazú National Park World Heritage Site;Argentina;natural;(vii) (x);-25.666666666667;-54.4;1
 304;Canadian Rocky Mountain Parks World Heritage Site;Canada;natural;(vii) (viii);51.424722222222;-116.47972222222;2
-306;Matobo Hills;Zimbabwe;cultural;(iii) (v) (vi);-20.5;28.5;2
+306;Matobo Hills;Zimbabwe;cultural;(iii) (v) (vi);-20.583333333333;28.666666666667;2
 307;Liberty Island;United States;cultural;(i) (vi);40.69;-74.045;1
 308;Yosemite National Park;United States;natural;(vii) (viii);37.7425;-119.5375;1
 309;Historic Centre of Salvador da Bahia;Brazil;cultural;(iv) (vi);-12.9667;-38.5;1
@@ -225,7 +225,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 320;Casa Milà;Spain;cultural;(i) (ii) (iv);41.395277777778;2.1616666666667;9
 321;Mosque City of Bagerhat;Bangladesh;cultural;(iv);22.66097;89.75855;1
 322;;Bangladesh;cultural;(i) (ii) (vi);25.03111111;88.97694444;1
-323;Royal Palaces of Abomey;Benin;cultural;(iii) (iv);7.18556;1.98806;6
+323;Royal Palaces of Abomey;Benin;cultural;(iii) (iv);7.18645;1.9940027777778;6
 326;Petra;Jordan;cultural;(i) (iii) (iv);30.328888888889;35.440277777778;2
 327;Qasr Amra;Jordan;cultural;(i) (iii) (iv);31.80175;36.587305555556;1
 330;Chavin de Huantar;Peru;cultural;(iii);-9.592775;-77.178452777778;1
@@ -233,17 +233,17 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 332;Kerkouane;Tunisia;cultural;(iii);36.946388888889;11.099166666667;4
 333;Huascarán National Park;Peru;natural;(vii) (viii);-9.4;-77.4;1
 334;Sanctuary of Bom Jesus de Matosinhos;Brazil;cultural;(i) (iv);-20.507777777778;-43.860694444444;1
-335;Nanda Devi National Park;India;natural;(vii) (x);30.418611111111;79.849722222222;4
+335;Valley of Flowers National Park;India;natural;(vii) (x);30.73;79.6175;4
 337;Kaziranga National Park;India;natural;(ix) (x);26.666666666667;93.35;1
 338;Manas National Park;India;natural;(vii) (ix) (x);26.716666666667;90.933333333333;1
 340;Kevladev National Park;India;natural;(x);27.166667;77.516667;1
 344;Pont du Gard;France;cultural;(i) (iii) (iv);43.9473;4.5355;2
 345;Cité de Carcassonne;France;cultural;(ii) (iv);43.206439;2.363788;2
 347;old town of Santiago de Compostela;Spain;cultural;(i) (ii) (vi);42.88076;-8.54468;1
-348;Chapel of Nuestra Señora de la Cabeza;Spain;cultural;(iii) (iv);40.660605555556;-4.7022416666667;12
+348;old town of Ávila;Spain;cultural;(iii) (iv);40.65639;-4.7;12
 351;Painted Churches in the Troödos Region;Cyprus;cultural;(ii) (iii) (iv);34.920277777778;33.095833333333;11
 352;Rock carvings at Alta;Norway;cultural;(iii);69.946944444444;23.187777777778;7
-353;Aztec Ruins National Monument;United States;cultural;(iii);36.83681604;-107.99981253;11
+353;Chaco Culture National Historical Park - Contiguous unit;United States;cultural;(iii);36.0638;-107.9708;11
 354;Waterton-Glacier International Peace Park;Canada;natural;(vii) (ix);48.996055555556;-113.90416666667;2
 355;Iguaçu National Park;Brazil;natural;(vii) (x);-25.5;-53.8;2
 356;Historic Areas of Istanbul;Turkey;cultural;(i) (ii) (iii) (iv);41.00847;28.97993;3
@@ -256,19 +256,19 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 365;Khami;Zimbabwe;cultural;(iii) (iv);-20.143291666667;28.423436111111;1
 366;Chan Chan;Peru;cultural;(i) (iii);-8.1105555555556;-79.075;1
 367;Porta Nigra;Germany;cultural;(i) (iii) (iv) (vi);49.759722222222;6.6438888888889;11
-368;Mount Nothofagus National Park;Australia;natural;(viii) (ix) (x);-28.3175;152.63361111111;46
+368;Dorrigo National Park;Australia;natural;(viii) (ix) (x);-30.381666666667;152.7511111;46
 369;Giant's Causeway;United Kingdom;natural;(vii) (viii);55.240833333333;-6.5116666666667;1
 370;Durham Castle;United Kingdom;cultural;(ii) (iv) (vi);54.7749;-1.57558;3
 371;Ironbridge Gorge;United Kingdom;cultural;(i) (ii) (iv) (vi);52.626388888889;-2.4727777777778;1
-372;Studley Royal Park;United Kingdom;cultural;(i) (iv);54.116111111111;-1.5730555555556;3
+372;Fountains Abbey;United Kingdom;cultural;(i) (iv);54.1097;-1.58139;3
 373;Stonehenge, Avebury and Associated Sites;United Kingdom;cultural;(i) (ii) (iii);51.1789;-1.82528;4
-374;Beaumaris Castle;United Kingdom;cultural;(i) (iii) (iv);53.264908;-4.08957;5
-377;Hattusa;Turkey;cultural;(i) (ii) (iii) (iv);40.019722222222;34.615277777778;5
+374;Harlech Castle;United Kingdom;cultural;(i) (iii) (iv);52.860004;-4.1091644;5
+377;Yazılıkaya;Turkey;cultural;(i) (ii) (iii) (iv);40.025;34.63278;5
 378;Teruel Cathedral;Spain;cultural;(iv);40.3439;-1.10722;13
 379;Historic City of Toledo;Spain;cultural;(i) (ii) (iii) (iv);39.856901;-4.024613;1
 380;Garajonay National Park;Spain;natural;(vii) (ix);28.12625;-17.23722222;1
-381;Church of Sancti Spiritus;Spain;cultural;(i) (ii) (iv);40.965354;-5.659242;9
-383;Seville Cathedral;Spain;cultural;(i) (ii) (iii) (vi);37.385742159631;-5.9930955622969;6
+381;old quarter of Salamanca;Spain;cultural;(i) (ii) (iv);40.96525;-5.6645;9
+383;Reales Alcázares;Spain;cultural;(i) (ii) (iii) (vi);37.384426149067;-5.9911866258535;6
 384;old town of Cáceres;Spain;cultural;(iii) (iv);39.47416667;-6.37;1
 385;Old Sana'a;Yemen;cultural;(iv) (v) (vi);15.35555556;44.20805556;2
 387;St Kilda;United Kingdom;mixto;(iii) (v) (vii) (ix) (x);57.815;-8.5875;1
@@ -293,7 +293,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 414;Teotihuacan;Mexico;cultural;(i) (ii) (iii) (iv) (vi);19.6925;-98.843888888889;1
 415;Monte Albán;Mexico;cultural;(i) (ii) (iii) (iv);17.043888888889;-96.767777777778;3
 416;Historic Centre of Puebla;Mexico;cultural;(ii) (iv);19.04722222;-98.20833333;1
-417;Ses Salines Natural Park;Spain;mixto;(ii) (iii) (iv) (ix) (x);38.8;1.42611111;6
+417;Dalt Vila y murallas;Spain;mixto;(ii) (iii) (iv) (ix) (x);38.90744;1.43558;6
 419;Gros Morne National Park;Canada;natural;(vii) (viii);49.689444444444;-57.738055555556;1
 420;Potosí;Bolivia;cultural;(ii) (iv) (vi);-19.589166666667;-65.753333333333;1
 421;Tongariro National Park;New Zealand;mixto;(vi) (vii) (viii);-39.2;175.583333;2
@@ -306,7 +306,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 433;Bahla Fort;Oman;cultural;(iv);22.9644;57.3007;1
 434;Bat, Al-Khutm and Al-Ayn archaeological sites;Oman;cultural;(iii) (iv);23.27;56.745;1
 437;Mount Tai;People's Republic of China;mixto;(i) (ii) (iii) (iv) (v) (vi) (vii);36.266666666667;117.1;1
-438;Jiayuguan;People's Republic of China;cultural;(i) (ii) (iii) (iv) (vi);39.80146;98.21618;4
+438;Shanhai Pass;People's Republic of China;cultural;(i) (ii) (iii) (iv) (vi);40.00916;119.75357;4
 439;Forbidden City;People's Republic of China;cultural;(i) (ii) (iii) (iv);39.915833333333;116.39083333333;4
 440;Mogao Caves;People's Republic of China;cultural;(i) (ii) (iii) (iv) (v) (vi);40.037222222222;94.804166666667;1
 441;Mausoleum of the First Qin Emperor;People's Republic of China;cultural;(i) (iii) (iv) (vi);34.38166667;109.25388889;1
@@ -321,8 +321,8 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 452;Sundarbans National Park;India;natural;(ix) (x);21.75;88.75;1
 454;Mount Athos;Greece;mixto;(i) (ii) (iv) (v) (vi) (vii);40.158333333333;24.327222222222;1
 455;Meteora;Greece;mixto;(i) (ii) (iv) (v) (vii);39.7125;21.626666666667;1
-456;Church of Prophet Elijah;Greece;cultural;(i) (ii) (iv);40.640916666667;22.948583333333;16
-460;old town of Trinidad;Cuba;cultural;(iv) (v);21.8031;-79.9844;3
+456;Vlatadon Monastery;Greece;cultural;(i) (ii) (iv);40.64183;22.95447;16
+460;Valle de los Ingenios;Cuba;cultural;(iv) (v);21.841388888889;-79.858055555556;3
 474;Hortobágy National Park;Hungary;cultural;(iv) (v);47.59458;21.15678;1
 475;Manovo-Gounda St. Floris National Park;Central African Republic;natural;(ix) (x);8.5;21.5;1
 476;Chongoni Rock Art Area;Malawi;cultural;(iii) (vi);-14.293333333333;34.279166666667;1
@@ -348,22 +348,22 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 505;Alcobaça Monastery;Portugal;cultural;(i) (ii) (iv);39.548594;-8.978628;1
 506;Banc d'Arguin National Park;Mauritania;natural;(ix) (x);20.234722222222;-16.108888888889;1
 511;Mystras;Greece;cultural;(ii) (iii) (iv);37.074;22.3673;1
-514;Skara Brae;United Kingdom;cultural;(i) (ii) (iii) (iv);59.0487138;-3.3417499;6
+514;Maes Howe;United Kingdom;cultural;(i) (ii) (iii) (iv);58.9966;-3.1882;6
 515;Abbey and Altenmünster of Lorsch;Germany;cultural;(iii) (iv);49.65369;8.56858;7
 516;Bandiagara Escarpment;Mali;mixto;(v) (vii);14.416666666667;-3.3166666666667;1
 517;Olympia;Greece;cultural;(i) (ii) (iii) (iv) (vi);37.638333333333;21.63;1
 518;Poblet Monastery;Spain;cultural;(i) (iv);41.380833333333;1.0825;1
-522;Renaissance Monumental Ensembles of Úbeda and Baeza;Spain;cultural;(i) (ii) (iv);38.01131;-3.37122;4
+522;Centro histórico de Úbeda;Spain;cultural;(i) (ii) (iv);38.01131;-3.37122;4
 524;Sanchi;India;cultural;(i) (ii) (iii) (iv) (vi);23.47944444;77.73972222;1
 526;Colonial City of Santo Domingo;Dominican Republic;cultural;(ii) (iv) (vi);18.473;-69.883;1
 527;Kyiv Pechersk Lavra;Ukraine;cultural;(i) (ii) (iii) (iv);50.432222222222;30.562222222222;5
-529;San Javier;Bolivia;cultural;(iv) (v);-16.2748;-62.5072;7
+529;San Miguel de Velasco;Bolivia;cultural;(iv) (v);-16.6986;-60.9681;7
 530;Delos;Greece;cultural;(ii) (iii) (iv) (vi);37.38948;25.26904;2
 532;Palaces and Parks of Potsdam and Berlin;Germany;cultural;(i) (ii) (iv);52.4;13.033333333333;3
 534;Dessau-Wörlitz Garden Realm;Germany;cultural;(ii) (iv);51.8636;12.2814;1
 535;Stiftskirche St. Servatius;Germany;cultural;(iv);51.7858;11.1368;3
-537;Monasteries of Daphni, Hosios Loukas and Nea Moni of Chios;Greece;cultural;(i) (iv);38.4;22.75;4
-540;Krasnoye Selo;Russia;cultural;(i) (ii) (iv) (vi);59.736245;30.086205;141
+537;Daphni Monastery;Greece;cultural;(i) (iv);38.013055555556;23.635833333333;4
+540;Sestroretsky Razliv;Russia;cultural;(i) (ii) (iv) (vi);60.086944444444;30.010277777778;141
 541;Vilnius Old Town;Lithuania;cultural;(ii) (iv);54.683333333333;25.283333333333;1
 543;Itchan Kala;Uzbekistan;cultural;(iii) (iv) (v);41.377718;60.359476;1
 544;Kizhi Pogost;Russia;cultural;(i) (iv) (v);62.06767;35.22345;1
@@ -374,7 +374,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 549;18th-Century Royal Palace at Caserta with the Park, the Aqueduct of Vanvitelli, and the San Leucio Complex;Italy;cultural;(i) (ii) (iii) (iv);41.07333;14.32639;1
 550;Historic Centre of San Gimignano;Italy;cultural;(i) (iii) (iv);43.467057116273;11.04280443979;1
 551;Te Wahipounamu;New Zealand;natural;(vii) (viii) (ix) (x);-45.036;167.32;1
-554;Laguna Ojo de Liebre;Mexico;natural;(x);27.75;-114.25;2
+554;San Ignacio Lagoon;Mexico;natural;(x);26.8561;-113.1791;2
 555;Birka;Sweden;cultural;(iii) (iv);59.336666666667;17.545;3
 556;Engelsberg Ironworks;Sweden;cultural;(iv);59.969166666667;16.010277777778;2
 557;Rock Carvings in Tanum;Sweden;cultural;(i) (iii) (iv);58.69995;11.33641;2
@@ -386,7 +386,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 565;Casbah of Algiers;Algeria;cultural;(ii) (v);36.78333;3.06028;1
 566;Historic City of Sucre;Bolivia;cultural;(iv);-19.04799;-65.259591944444;1
 567;Tiwanaku;Bolivia;cultural;(iii) (iv);-16.554722222222;-68.673333333333;2
-569;Historic Centres of Berat and Gjirokastër;Albania;cultural;(iii) (iv);40.707916666667;19.93825;4
+569;historic center of Berat;Albania;cultural;(iii) (iv);40.702222222222;19.946944444444;4
 570;Butrint;Albania;cultural;(iii);39.757066;20.016628;1
 573;Aïr and Ténéré National Nature Reserve;Niger;natural;(vii) (ix) (x);18.0;9.0;1
 574;Sukhothai Historical Park;Thailand;cultural;(i) (iii);17.021111111111;99.703611111111;4
@@ -403,43 +403,43 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 588;Danube Delta;Ukraine;natural;(vii) (x);45.2;29.5;2
 590;Khao Yai National Park;Thailand;natural;(x);14.35;101.44;7
 591;Thungyai Naresuan Wildlife Sanctuary;Thailand;natural;(vii) (ix) (x);15.333333333333;98.916666666667;2
-592;Pawon;Indonesia;cultural;(i) (ii) (vi);-7.60613;110.21958;4
+592;Mendut Temple;Indonesia;cultural;(i) (ii) (vi);-7.6048;110.23008;4
 593;Sangiran;Indonesia;cultural;(iii) (vi);-7.45;110.85;1
-595;Pythagoreion and Heraion of Samos;Greece;cultural;(ii) (iii);37.672043;26.886635;3
-596;Saschiz fortified church;Romania;cultural;(iv);46.1941;24.9602;8
+595;Heraion of Samos;Greece;cultural;(ii) (iii);37.67194444;26.88555556;3
+596;Dârjiu fortified church;Romania;cultural;(iv);46.202202;25.199234;8
 597;Horezu monastery;Romania;cultural;(ii);45.1686;24.0069;1
 598;Voroneț Monastery;Romania;cultural;(i) (iv);47.5170438;25.8641623;9
 599;Island of Mozambique;Mozambique;cultural;(iv) (vi);-15.036666666667;40.732777777778;1
 600;banks of the Seine;France;cultural;(i) (ii) (iv);48.85;2.35889;1
 601;Reims Cathedral;France;cultural;(i) (ii) (vi);49.253888888889;4.0341666666667;3
 602;Historic Centre of Bukhara;Uzbekistan;cultural;(ii) (iv) (vi);39.76666667;64.43333333;6
-603;Samarkand – Crossroad of Cultures;Uzbekistan;cultural;(i) (ii) (iv);39.66861;67.0;7
+603;Namazga Mosque;Uzbekistan;cultural;(i) (ii) (iv);39.637222222222;66.968333333333;7
 604;Yuriev Monastery;Russia;cultural;(ii) (iv) (vi);58.486388888889;31.284722222222;10
 606;Serra da Capivara National Park;Brazil;cultural;(iii);-8.6667;-42.55;1
-608;Peucang Island;Indonesia;natural;(vii) (x);-6.740544;105.257383;6
+608;Krakatau Nature Reserve;Indonesia;natural;(vii) (x);-6.102;105.423;6
 609;Komodo National Park;Indonesia;natural;(vii) (x);-8.651625;119.576569;1
 611;Zabid;Yemen;cultural;(ii) (iv) (vi);14.202174387164;43.318330547497;2
 613;Ruínas de León Viejo;Nicaragua;cultural;(iii) (iv);12.400547222222;-86.617797222222;2
 614;City of Safranbolu;Turkey;cultural;(ii) (iv) (v);41.26;32.68972;4
-616;Old Town;Czech Republic;cultural;(ii) (iv) (vi);50.0847;14.4203;4
+616;Průhonice Castle park;Czech Republic;cultural;(ii) (iv) (vi);49.9994;14.5569;4
 617;Historic Centre of Český Krumlov;Czech Republic;cultural;(iv);48.816666666667;14.316666666667;1
 618;Historic Town of Banská Štiavnica and the Technical Monuments in its Vicinity;Slovakia;cultural;(iv) (v);48.46111;18.9;2
 620;Spiš Castle;Slovakia;cultural;(iv);49.000555555556;20.768333333333;4
 621;Historic Centre of Telč;Czech Republic;cultural;(i) (iv);49.18333;15.45;1
 622;Vlkolínec;Slovakia;cultural;(iv) (v);49.0397;19.2784;1
-623;Mines of Rammelsberg, Historic Town of Goslar and Upper Harz Water Management System;Germany;cultural;(i) (ii) (iii) (iv);51.82;10.34;3
+623;Upper Harz Water Regale;Germany;cultural;(i) (ii) (iii) (iv);51.82;10.34;3
 625;Mir Castle Complex;Belarus;cultural;(ii) (iv);53.451266666667;26.472894444444;1
 629;Macquarie Island;Australia;natural;(vii) (viii);-54.63;158.86;1
 630;K'gari;Australia;natural;(vii) (viii) (ix);-25.24;153.15;1
 631;Tajín Veracruz;Mexico;cultural;(iii) (iv);20.448058333333;-97.378241666667;1
 632;Solovetsky Islands;Russia;cultural;(iv);65.024444;35.710556;9
-633;Monastery of Saint Euthymius;Russia;cultural;(i) (ii) (iv);56.433112;40.440246;8
+633;Cathedral of Saint Demetrius;Russia;cultural;(i) (ii) (iv);56.12925;40.410944444444;8
 634;Church of the Ascension, Kolomenskoye;Russia;cultural;(ii);55.667222222222;37.670833333333;1
 635;Bourges Cathedral;France;cultural;(i) (iv);47.08222;2.39917;2
 637;Jiuzhaigou Valley;People's Republic of China;natural;(vii);33.2;103.9;1
 638;Huanglong;People's Republic of China;natural;(vii);32.740756;103.831077;1
 640;Wulingyuan;People's Republic of China;natural;(vii);29.345555555556;110.46666666667;1
-642;Prambanan Temple Compounds;Indonesia;cultural;(i) (iv);-7.7522222222222;110.49166666667;2
+642;Prambanan Temple;Indonesia;cultural;(i) (iv);-7.752;110.49122;2
 648;Jesús de Tavarangüé;Paraguay;cultural;(iv);-27.056;-55.753;5
 652;Puerto Princesa Subterranean River National Park;Philippines;natural;(vii) (x);10.166666666667;118.91666666667;2
 653;Tubbataha Reef;Philippines;natural;(vii) (ix) (x);8.9533333333333;119.8675;2
@@ -451,43 +451,43 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 661;Himeji Castle;Japan;cultural;(i) (iv);34.839444444444;134.69361111111;1
 662;Yakushima;Japan;natural;(vii) (ix);30.358611111111;130.52861111111;1
 663;Shirakami-Sanchi;Japan;natural;(ix);40.47;140.13;2
-664;Cornalvo Dam;Spain;cultural;(iii) (iv);38.988546;-6.191107;25
+664;Alcantarilla Bridge;Spain;cultural;(iii) (iv);38.92917;-6.36022;25
 665;Royal Monastery of Saint Mary of Guadalupe;Spain;cultural;(iv) (vi);39.452777777778;-5.3275;1
 666;Lumbini;Nepal;cultural;(iii) (vi);27.4814;83.275829;2
 668;Angkor;Cambodia;cultural;(i) (ii) (iii) (iv);13.433333333333;103.83333333333;5
-669;León Cathedral;Spain;cultural;(ii) (iv) (vi);42.59944444;-5.56666667;1753
+669;Cathedral of Santiago de Compostela;Spain;cultural;(ii) (iv) (vi);42.880555555556;-8.5444444444444;1753
 670;The Sassi and the Park of the Rupestrian Churches of Matera;Italy;cultural;(iii) (iv) (v);40.666388888889;16.610277777778;1
 672;Ha Long Bay;Vietnam;natural;(vii) (viii);20.9;107.2;2
 675;Joya de Cerén;El Salvador;cultural;(iii) (iv);13.827494444444;-89.356158333333;1
 676;Historic centre of Zacatecas;Mexico;cultural;(ii) (iv);22.76666667;-102.55;1
-677;Baroque Churches of the Philippines;Philippines;cultural;(ii) (iv);10.64191;122.23549;12
+677;Miagao Church;Philippines;cultural;(ii) (iv);10.64191;122.23549;12
 678;Imperial City of Hue;Vietnam;;;16.469444444444;107.57777777778;16
 682;Bwindi Impenetrable National Park;Uganda;natural;(vii) (x);-1.05;29.71666667;1
 684;Rwenzori Mountains National Park;Uganda;natural;(vii) (x);0.4;29.95;1
 685;Doñana National Park;Spain;natural;(vii) (ix) (x);37.02;-6.44;1
 686;Miguasha National Park;Canada;natural;(viii);48.110555555556;-66.369444444444;1
 687;Völklingen Ironworks;Germany;cultural;(ii) (iv);49.25056;6.84528;1
-688;Kiyomizu-dera Temple;Japan;cultural;(ii) (iv);34.994830555556;135.78500277778;18
+688;Ujigami Shrine;Japan;cultural;(ii) (iv);34.892091;135.811456;18
 689;Salt;Jordan;cultural;(ii) (iii);32.039166666667;35.727222222222;1
 690;Pilgrimage Church of Saint John of Nepomuk;Czech Republic;cultural;(iv);49.58;15.94194;1
 692;Odzala National Park;Republic of the Congo;natural;(ix) (x);0.8;14.9;1
 695;Roskilde Cathedral;Denmark;cultural;(ii) (iv);55.642669444444;12.080308333333;1
 696;Kronborg Castle;Denmark;cultural;(iv);56.038611111111;12.621944444444;1
 697;Jelling Heritage Site;Denmark;cultural;(iii);55.75651427092;9.4197434293488;1
-698;Naracoorte Caves National Park;Australia;natural;(viii) (ix);-37.036111111111;140.79666666667;7
+698;Riversleigh;Australia;natural;(viii) (ix);-19.033295;138.629856;7
 699;City of Luxembourg: its Old Quarters and Fortifications;Luxembourg;cultural;(iv);49.610555555556;6.1325;3
 700;Nazca Lines;Peru;cultural;(i) (iii) (iv);-14.6975;-75.135;1
 701;Canaima National Park;Venezuela;natural;(vii) (viii) (ix) (x);5.3193393;-61.7953505;1
-702;Monasteries on the slopes of Popocatépetl;Mexico;cultural;(ii) (iv);18.93472;-98.89778;16
+702;Cuernavaca Cathedral;Mexico;cultural;(ii) (iv);18.92021389;-99.23678056;16
 703;Chengde Mountain Resort and its outlying temples;People's Republic of China;cultural;(ii) (iv);40.9875;117.9375;1
 704;Temple and Cemetery of Confucius and the Kong Family Mansion in Qufu;People's Republic of China;cultural;(i) (iv) (vi);35.596512;116.984449;1
 705;Ancient Building Complex in the Wudang Mountains;People's Republic of China;cultural;(i) (ii) (vi);32.44479;111.05827;1
 707;Potala Palace;People's Republic of China;cultural;(i) (iv) (vi);29.657777777778;91.116944444444;6
-708;Historical Monuments of Mtskheta;Georgia;cultural;(iii) (iv);41.84389;44.71639;2
+708;Svetitskhoveli Complex;Georgia;cultural;(iii) (iv);41.84228;44.72105;2
 709;Upper Svaneti;Georgia;cultural;(iv) (v);42.91639;43.01139;1
-710;Bagrati Cathedral and Gelati Monastery;Georgia;cultural;(iv);42.26222;42.71639;2
+710;Gelati Monastery;Georgia;cultural;(iv);42.294722222222;42.768055555556;2
 711;Los Katíos National Park;Colombia;natural;(ix) (x);7.8;-77.15;1
-712;City of Vicenza and the Palladian Villas of the Veneto;Italy;cultural;(i) (ii);45.55;11.55;28
+712;Villa Almerico Capra (La Rotonda);Italy;cultural;(i) (ii);45.531524;11.560268;28
 714;Rock Paintings of Sierra de San Francisco;Mexico;cultural;(i) (iii);27.655555555556;-112.91611111111;1
 715;Rapa Nui National Park;Chile;cultural;(i) (iii) (v);-27.072877;-109.348579;1
 717;Historic Centre of Siena;Italy;cultural;(i) (ii) (iv);43.31861111;11.33166667;1
@@ -495,11 +495,11 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 719;Yugyd Va National Park;Russia;natural;(vii) (ix);64.4631;59.0123;4
 720;Messel pit;Germany;natural;(viii);49.9175;8.756667;1
 721;Carlsbad Caverns National Park;United States;natural;(vii) (viii);32.175277777778;-104.44388888889;1
-722;Banaue Rice Terraces;Philippines;cultural;(iii) (iv) (v);16.934722;121.134722;3
+722;Bangaan Rice Terraces;Philippines;cultural;(iii) (iv) (v);16.963611111111;121.22194444444;3
 723;Cultural Landscape of Sintra;Portugal;cultural;(ii) (iv) (v);38.788388;-9.433823;1
-724;Gračanica monastery;Serbia;cultural;(ii) (iii) (iv);42.598333333333;21.193333333333;6
+724;Patriarchate of Peć;Serbia;cultural;(ii) (iii) (iv);42.661161111111;20.265619444444;6
 725;Dobšinská Ice Cave;Slovakia;natural;(viii);48.868333333333;20.304444444444;6
-726;Historic Centre of Naples;Italy;cultural;(ii) (iv);40.85139;14.26278;6
+726;historical centre of Naples;Italy;cultural;(ii) (iv);40.83331;14.25;6
 728;Old and New Towns of Edinburgh;United Kingdom;cultural;(ii) (iv);55.95;-3.216666667;1
 729;Bauhaus Dessau;Germany;cultural;(ii) (iv) (vi);51.8392;12.2267;12
 730;Crespi d'Adda;Italy;cultural;(iv) (v);45.596666666667;9.5361111111111;1
@@ -511,7 +511,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 737;Haeinsa Temple Janggyeong Panjeon, the Depositories for the Tripitaka Koreana Woodblocks;South Korea;cultural;(iv) (vi);35.8;128.1;1
 738;Jongmyo;South Korea;cultural;(iv);37.574722222222;126.99361111111;1
 739;Schokland;Netherlands;cultural;(iii) (v);52.638611111111;5.7716666666667;1
-740;Gough and Inaccessible Islands;United Kingdom;natural;(vii) (x);-37.3;-12.68;4
+740;Gough Island;United Kingdom;natural;(vii) (x);-40.32;-9.94;4
 741;Old Town Lunenburg;Canada;cultural;(iv) (v);44.376111111111;-64.309166666667;1
 742;Santa Cruz de Mompós;Colombia;cultural;(iv) (v);9.2394444444444;-74.425;2
 743;Tierradentro;Colombia;cultural;(iii);2.583;-76.033;1
@@ -525,12 +525,12 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 755;Historic Centre of Porto;Portugal;cultural;(iv);41.143191;-8.612974;1
 757;Skellig Michael;Ireland;cultural;(iii) (iv);51.771111111111;-10.540555555556;1
 758;Pannonhalma Archabbey;Hungary;cultural;(iv) (vi);47.552777777778;17.761111111111;1
-759;Fort bij Heemstede;Netherlands;cultural;(ii) (iv) (v);52.336889;4.632222;28
-761;Kunta Kinteh Island;The Gambia;cultural;(iii) (vi);13.31753;-16.36144;9
+759;Torenfort aan de Ossenmarkt;Netherlands;cultural;(ii) (iv) (v);52.307639;5.045858;28
+761;Kunta Kinteh Island and Related Sites;The Gambia;cultural;(iii) (vi);13.31747222;-16.36147222;9
 762;Gammelstad Church Town;Sweden;cultural;(ii) (iv) (v);65.64611;22.02861;1
 763;Lednice-Valtice Cultural Landscape;Czech Republic;cultural;(i) (ii) (iv);48.7758;16.775;1
 764;Great Blue Hole;Belize;natural;(vii) (ix) (x);17.31556;-87.53444;8
-765;Southern Kamchatka Wildlife Reserve;Russia;natural;(vii) (viii) (ix) (x);51.25;156.95;12
+765;Volcanoes of Kamchatka;Russia;natural;(vii) (viii) (ix) (x);56.1;160.5501;12
 766;Central Sikhote-Alin;Russia;natural;(x);46.68333;136.66111;2
 768;Golden Mountains of Altai;Russia;natural;(x);50.466666666667;86.0;5
 769;Uvs Lake;Russia;natural;(ix) (x);50.3;92.7;17
@@ -542,36 +542,36 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 776;Itsukushima Shrine;Japan;cultural;(i) (ii) (iv) (vi);34.29577;132.320105;1
 777;Monasteries of Haghpat and Sanahin;Armenia;cultural;(ii) (iv);41.095;44.71028;4
 778;Lushan Quaternary Glaciation National Geopark;People's Republic of China;cultural;(ii) (iii) (iv) (vi);29.56666667;115.96666667;1
-779;Mount Emei;People's Republic of China;mixto;(iv) (vi) (x);29.519722222222;103.3325;3
+779;Leshan Giant Buddha;People's Republic of China;mixto;(iv) (vi) (x);29.546944444444;103.76925;3
 780;Aigai;Greece;cultural;(i) (iii);40.4779658;22.3227596;1
-781;Historic Walled Town of Cuenca;Spain;cultural;(ii);40.0766;-2.13175;5
+781;Recinto Intramuros de Cuenca;Spain;cultural;(ii);40.07661;-2.13175;5
 782;Llotja de la Seda;Spain;cultural;(i) (iv);39.474444444444;-0.37833333333333;1
 783;Melanchthonhaus;Germany;cultural;(iv) (vi);51.86472;12.65083;7
 784;Historic Centre of the City of Salzburg;Austria;cultural;(ii) (iv) (vi);47.7997;13.0486;1
 785;Semmering railway;Austria;cultural;(ii) (iv);47.643;15.831;1
 786;Palace and gardens of Schönbrunn;Austria;cultural;(i) (iv);48.18667;16.31333;1
-787;The Trulli of Alberobello;Italy;cultural;(iii) (iv) (v);40.7825;17.23694;7
+787;Museo Casa Pezzolla;Italy;cultural;(iii) (iv) (v);40.784027;17.238874;7
 788;Mausoleum of Theodoric;Italy;cultural;(i) (ii) (iii) (iv);44.4250456;12.2091687;12
 789;Historic Centre of the City of Pienza;Italy;cultural;(i) (ii) (iv);43.0766;11.679;1
 790;Archaeological Site of Panamá Viejo and Historic District of Panamá;Panama;cultural;(ii) (iv) (vi);8.9511111111111;-79.540555555556;4
-791;Uxmal;Mexico;cultural;(i) (ii) (iii);20.359444444444;-89.771388888889;5
+791;Kabah;Mexico;cultural;(i) (ii) (iii);20.248425;-89.647297222222;5
 792;Historic Monuments Zone of Querétaro;Mexico;cultural;(ii) (iv);20.58333333;-100.3666667;1
-793;Medina of Meknes;Morocco;cultural;(iv);33.894857;-5.564481;3
+793;Medina of Meknes;Morocco;cultural;(iv);33.88333333;-5.55;3
 794;Dougga;Tunisia;cultural;(ii) (iii);36.42333333;9.22027778;1
 795;Maritime Greenwich;United Kingdom;cultural;(i) (ii) (iv) (vi);51.47777778;0.0;1
 797;Verona historic center;Italy;cultural;(ii) (iv);45.438611111111;10.993888888889;2
 798;Sundarbans Reserved Forest;Bangladesh;natural;(ix) (x);22.033333333333;89.516666666667;1
 800;Mount Kenya National Park;Kenya;natural;(vii) (ix);-0.12388888888889;37.336666666667;2
-801;Central Island;Kenya;natural;(viii) (x);3.5;36.05;6
+801;South Island;Kenya;natural;(viii) (x);2.63;36.6;6
 803;Zone principal de la mina de oro de Las Médulas;Spain;cultural;(i) (ii) (iii) (iv);42.46939;-6.77075;5
-804;Palau de la Música Catalana;Spain;cultural;(i) (ii) (iv);41.387666666667;2.1752777777778;6
-805;Monasteries of San Millán de la Cogolla;Spain;cultural;(ii) (iv) (vi);42.325833333333;-2.86505;3
+804;Hospital de Sant Pau;Spain;cultural;(i) (ii) (iv);41.412777777778;2.1744444444444;6
+805;Yuso Monastery and Monastic Kitchen Gardens;Spain;cultural;(ii) (iv) (vi);42.32583;-2.865;3
 806;Hallstatt-Dachstein Salzkammergut cultural landscape;Austria;cultural;(iii) (iv);47.5594;13.6464;1
 809;Euphrasian Basilica;Croatia;cultural;(ii) (iii) (iv);45.228611111111;13.593611111111;1
 810;Historic City of Trogir;Croatia;cultural;(ii) (iv);43.5125;16.25167;1
-811;Old Town of Lijiang;People's Republic of China;cultural;(ii) (iv) (v);26.8667;100.2333;5
+811;Old Town of Lijiang;People's Republic of China;cultural;(ii) (iv) (v);26.86666667;100.23333333;5
 812;Pingyao;People's Republic of China;cultural;(ii) (iii) (iv);37.198888888889;112.17666666667;4
-813;Humble Administrator's Garden;People's Republic of China;cultural;(i) (ii) (iii) (iv) (v);31.325833333333;120.62444444444;11
+813;Garden of Cultivation;People's Republic of China;cultural;(i) (ii) (iii) (iv) (v);31.31525;120.60472222;11
 814;Morne Trois Pitons National Park;Dominica;natural;(viii) (x);15.266667;-61.283333;1
 815;Hospicio Cabañas;Mexico;cultural;(i) (ii) (iii) (iv);20.676897222222;-103.33733333333;1
 816;Changdeokgung;South Korea;cultural;(ii) (iii) (iv);37.579444444444;126.99166666667;1
@@ -584,7 +584,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 823;Residences of the Royal House of Savoy;Italy;cultural;(i) (ii) (iv) (v);45.0725;7.68583;18
 824;Padova botanical garden;Italy;cultural;(ii) (iii);45.39953;11.880682;1
 825;Archaeological Area and the Patriarchal Basilica of Aquileia;Italy;cultural;(iii) (iv) (vi);45.7683;13.3675;3
-826;Tinetto;Italy;cultural;(ii) (iv) (v);44.023508333333;9.8512638888889;5
+826;Tino;Italy;cultural;(ii) (iv) (v);44.027222222222;9.8505555555556;5
 827;Cathedral, Torre Civica and Piazza Grande, Modena;Italy;cultural;(i) (ii) (iii) (iv);44.64624;10.92568;1
 828;Historic Centre of Urbino;Italy;cultural;(ii) (iv);43.725;12.63333;1
 829;Herculaneum;Italy;cultural;(iii) (iv) (v);40.806111;14.3475;10
@@ -598,7 +598,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 839;Alexander von Humboldt National Park;Cuba;natural;(ix) (x);20.496745;-74.857897;1
 840;Viñales Valley;Cuba;cultural;(iv);22.616666666667;-83.716666666667;1
 841;Castillo de San Pedro de la Roca;Cuba;cultural;(iv) (v);19.968705555556;-75.8703;1
-842;Paestum;Italy;cultural;(iii) (iv);40.422631;15.005569;6
+842;Paestum;Italy;cultural;(iii) (iv);40.42;15.005555555556;6
 846;Classical Weimar;Germany;cultural;(iii) (vi);50.98333333;11.31666667;2
 847;Malbork Castle;Poland;cultural;(ii) (iii) (iv);54.039722222222;19.027777777778;1
 848;Khirokitia;Cyprus;cultural;(ii) (iii) (iv);34.796725;33.343719444444;1
@@ -607,7 +607,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 852;Vecrīga;Latvia;cultural;(i) (ii);56.9485;24.1082;1
 853;Early Christian Necropolis of Pécs;Hungary;cultural;(iii) (iv);46.074444444444;18.227777777778;1
 854;East Rennell;Solomon Islands;natural;(ix);-11.683327777778;160.33332777778;1
-855;Béguinages in Flanders;Belgium;cultural;(ii) (iii) (iv);51.030972222222;4.47375;15
+855;Great Beguinage of Leuven;Belgium;cultural;(ii) (iii) (iv);50.871667;4.696944;15
 856;lifts on the old Canal du Centre;Belgium;cultural;(iii) (iv);50.4714;4.0945;1
 857;Grand-Place;Belgium;cultural;(ii) (iv);50.84670775;4.35253815;1
 859;Holy Trinity Column in Olomouc;Czech Republic;cultural;(i) (iv);49.59402;17.250492;1
@@ -623,10 +623,10 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 871;Naval City of Karlskrona;Sweden;cultural;(ii) (iv);56.166666666667;15.583333333333;1
 872;Vieux Lyon;France;cultural;(ii) (iv);45.763056;4.828056;1
 873;Provins;France;cultural;(ii) (iv);48.559722222222;3.2988888888889;2
-874;;Spain;cultural;(iii);38.76519;-0.45406;755
-875;Mausoleum of Centcelles;Spain;cultural;(ii) (iii);41.155781;1.226134;19
+874;abrigo derecho del Estrecho de Santonje;Spain;cultural;(iii);37.8401;-2.1698;755
+875;The Amphitheatre, basilica, and Romanesque church;Spain;cultural;(ii) (iii);41.11472;1.25931;19
 876;University and Historic Precinct of Alcalá de Henares;Spain;cultural;(ii) (iv) (vi);40.482925;-3.363131;1
-877;Auckland Islands;New Zealand;natural;(ix) (x);-50.7;166.1;6
+877;Antipodes Island Group;New Zealand;natural;(ix) (x);-49.6709;178.766403;6
 880;Summer Palace;People's Republic of China;cultural;(i) (ii) (iii);39.9975;116.2689;3
 881;Temple of Heaven;People's Republic of China;cultural;(i) (ii) (iii);39.8822;116.4066;1
 883;El Fuerte de Samaipata;Bolivia;cultural;(ii) (iii);-18.178355555556;-63.818988888889;1
@@ -636,27 +636,27 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 887;Kuk Swamp;Papua New Guinea;cultural;(iii) (iv);-5.7825;144.33;1
 889;Desembarco del Granma National Park;Cuba;natural;(vii) (viii);19.883333;-77.633333;1
 890;Historic Centre of the Town of Diamantina;Brazil;cultural;(ii) (iv);-18.23333333;-43.6;1
-892;Discovery Coast Atlantic Forest Reserves;Brazil;natural;(ix) (x);-16.5;-39.25;9
-893;Guaraguaçu ecological station;Brazil;natural;(vii) (ix) (x);-25.6216;-48.5059;21
+892;;Brazil;natural;(ix) (x);-16.360833333333;-39.153611111111;9
+893;Alto Ribeira State and Tourist Park;Brazil;natural;(vii) (ix) (x);-24.4334;-48.5795;21
 895;Historic Fortified Town of Campeche;Mexico;cultural;(ii) (iv);19.84722222;-90.54166667;1
 896;Museum Island;Germany;cultural;(ii) (iv);52.521388888889;13.395555555556;1
 897;Wartburg;Germany;cultural;(iii) (vi);50.966111111111;10.306388888889;1
-898;Kvarken Archipelago – zone B;Finland;natural;(viii);62.96667;20.95;7
+898;High Coast;Sweden;natural;(viii);63.0;18.416667;7
 899;Beemster;Netherlands;cultural;(i) (ii) (iv);52.55;4.9278;1
-900;Caucasus Biosphere Reserve;Russia;natural;(ix) (x);43.67;39.95;4
+900;Western Caucasus;Russia;natural;(ix) (x);44.0;40.0;4
 901;Litomyšl Chateau;Czech Republic;cultural;(ii) (iv);49.873437833333;16.312648833333;1
-902;Historic Centre of Sighișoara;Romania;cultural;(iii) (v);46.21777778;24.79222222;2
-904;Church of the Archangels Michael and Gabriel;Romania;cultural;(iv);47.596982479653;23.764494257119;9
+902;Church on the Hill;Romania;cultural;(iii) (v);46.21764;24.7906;2
+904;Wooden church in Desești, Maramureș;Romania;cultural;(iv);47.77405;23.85511;9
 905;Kalwaria Zebrzydowska park;Poland;cultural;(ii) (iv);49.860319444444;19.670719444444;1
 906;Bănița Fortress;Romania;cultural;(ii) (iii) (iv);45.448;23.2666;7
 907;Hadrian's Villa;Italy;cultural;(i) (ii) (iii);41.941944;12.775278;1
 908;Aeolian Islands;Italy;natural;(viii);38.496666666667;14.935833333333;1
 910;Brimstone Hill Fortress National Park;Saint Kitts and Nevis;cultural;(iii) (iv);17.347;-62.836;2
 911;Wuyi Mountains;People's Republic of China;mixto;(iii) (vi) (vii) (x);27.716667;117.683333;2
-912;Beishan Cliffside Carvings;People's Republic of China;cultural;(i) (ii) (iii);29.714134359055;105.70735338252;6
+912;Dazu Rock Carvings;People's Republic of China;cultural;(i) (ii) (iii);29.713333333333;105.70694444444;6
 913;Shrines and Temples of Nikkō;Japan;cultural;(i) (iv) (vi);36.7565;139.5994;2
 914;iSimangaliso Wetland Park;South Africa;natural;(vii) (ix) (x);-27.8389;32.55;3
-915;Cradle of Humankind;South Africa;cultural;(iii) (vi);-25.967231;27.66244;5
+915;Taung Skull Fossil Site;South Africa;cultural;(iii) (vi);-27.6194;24.6331;5
 916;Robben Island;South Africa;cultural;(iii) (vi);-33.805;18.37;1
 917;Greater Blue Mountains Area;Australia;natural;(ix) (x);-33.7;150.0;1
 922;Rani ki vav;India;cultural;(i) (iv);23.85892;72.10162;1
@@ -675,7 +675,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 940;Historic Inner City of Paramaribo;Suriname;cultural;(ii) (iv);5.826;-55.15387;2
 941;Mycenae;Greece;cultural;(i) (ii) (iii) (iv) (vi);37.730833333333;22.756111111111;4
 942;The Historic Centre (Chorá) with the Monastery of Saint-John the Theologian and the Cave of the Apocalypse on the Island of Pátmos;Greece;cultural;(iii) (iv) (vi);37.3;26.55;2
-943;St. Rumbold's Cathedral;Belgium;cultural;(ii) (iv);51.028888888889;4.4783333333333;65
+943;Belfry town hall Dendermonde;Belgium;cultural;(ii) (iv);51.031028;4.098681;65
 944;Nilgiri Mountain Railway;India;cultural;(ii) (iv);11.344316666667;76.791944444444;3
 945;Chhatrapati Shivaji Maharaj Terminus;India;cultural;(ii) (iv);18.9398;72.8355;1
 948;Hoi An Ancient Town;Vietnam;cultural;(ii) (v);15.877135;108.328631;2
@@ -694,8 +694,8 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 967;Noel Kempff Mercado National Park;Bolivia;natural;(ix) (x);-14.23028;-60.84667;1
 968;Southern Öland cultural landscape;Sweden;cultural;(iv) (v);56.466667;16.55;1
 970;Wachau;Austria;cultural;(ii) (iv);48.36444;15.43417;1
-971;Church of Chonchi;Chile;cultural;(ii) (iii);-42.624119;-73.77367;17
-972;Tamaudun;Japan;cultural;(ii) (iii) (vi);26.21833333;127.71472222;9
+971;Church of Rilán;Chile;cultural;(ii) (iii);-42.519752;-73.62843;17
+972;Nakijin Castle;Japan;cultural;(ii) (iii) (vi);26.690833333333;127.93027777778;9
 973;Bardejov Town Conservation Reserve;Slovakia;cultural;(iii) (iv);49.29333;21.27917;1
 974;Reichenau Island;Germany;cultural;(iii) (iv) (vi);47.693055555556;9.0630555555556;1
 975;Zollverein Coal Mine Industrial Complex;Germany;cultural;(ii) (iii);51.4865;7.04408;1
@@ -710,16 +710,16 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 985;Sehlabathebe National Park;Lesotho;mixto;(i) (iii) (vii) (x);-29.9;29.11666667;6
 986;University City of Caracas;Venezuela;cultural;(i) (iv);10.490833333333;-66.890555555556;1
 987;Roman Walls of Lugo;Spain;cultural;(iv);43.014194444444;-7.5598888888889;1
-988;Catalan Romanesque Churches of the Vall de Boí;Spain;cultural;(ii) (iv);42.50472222;0.80361111;10
+988;la Nativitat de Durro;Spain;cultural;(ii) (iv);42.498178;0.820745;10
 989;Atapuerca;Spain;cultural;(iii) (v);42.350092;-3.519466;1
 990;Assisi, the Basilica of San Francesco and Other Franciscan Sites;Italy;cultural;(i) (ii) (iii) (iv) (vi);43.06616667;12.62244444;3
 993;Historic Centre of the Town of Goiás;Brazil;cultural;(ii) (iv);-15.93328;-50.13336;1
 994;Curonian Spit;Lithuania;cultural;(v);55.274444444444;20.970833333333;2
-995;estancia of Jesús María;Argentina;cultural;(ii) (iv);-30.97025;-64.097472;8
+995;estancia of Alta Gracia;Argentina;cultural;(ii) (iv);-31.6575;-64.435;8
 996;Historic Centre of Brugge;Belgium;cultural;(ii) (iv) (vi);51.20891;3.22527;1
 998;Anavilhanas National Park;Brazil;natural;(vii) (ix) (x);-2.39472222;-60.92055556;3
 999;;Brazil;natural;(vii) (ix) (x);-17.4;-57.5;3
-1000;Rocas Atoll;Brazil;natural;(vii) (ix) (x);-3.8663888888889;-33.801944444444;4
+1000;Brazilian Atlantic Islands: Fernando de Noronha and Atol das Rocas Reserves;Brazil;natural;(vii) (ix) (x);-3.857944444;-32.42511111;4
 1001;Qingchengshan-Dujiangyan National Park;People's Republic of China;cultural;(ii) (iv) (vi);30.9068;103.5679;1
 1002;Ancient Villages in Southern Anhui - Xidi and Hongcun;People's Republic of China;cultural;(iii) (iv) (v);29.90444444;117.9875;3
 1003;Longmen Grottoes;People's Republic of China;cultural;(i) (ii) (iii);34.555555555556;112.46972222222;1
@@ -730,7 +730,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1008;Guantánamo;Cuba;cultural;(iii) (iv);20.138333;-75.206111;8
 1009;Tournai Cathedral;Belgium;cultural;(ii) (iv);50.606502;3.388903;1
 1010;Land of Frankincense;Oman;cultural;(iii) (iv);18.253333333333;53.647591666667;5
-1011;Cathedral and Churches of Echmiatsin and the Archaeological Site of Zvartnots;Armenia;cultural;(ii) (iii);40.159305555556;44.295138888889;5
+1011;Zvartnots Cathedral;Armenia;cultural;(ii) (iii);40.1597;44.3366;5
 1012;Kinabalu Park;Malaysia;natural;(ix) (x);6.15;116.65;1
 1013;Gunung Mulu National Park;Malaysia;natural;(vii) (viii) (ix) (x);4.0425;114.8125;1
 1014;Niah National Park;Malaysia;cultural;(iii) (v);3.813889;113.781389;1
@@ -743,7 +743,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1024;Caltagirone;Italy;cultural;(i) (ii) (iv) (v);37.233333333333;14.516666666667;16
 1025;Villa d'Este;Italy;cultural;(i) (ii) (iii) (iv) (vi);41.9625;12.796111111111;1
 1026;Val d'Orcia;Italy;cultural;(iv) (vi);43.066666666667;11.55;1
-1027;Falun Mine;Sweden;cultural;(ii) (iii) (iv) (v);60.604722222222;15.630833333333;2
+1027;Falun Mine;Sweden;cultural;(ii) (iii) (iv) (v);60.6004;15.615683;2
 1028;Saltaire;United Kingdom;cultural;(ii) (iv);53.83717;-1.79026;1
 1029;Jurassic Coast;United Kingdom;natural;(viii);50.70555556;-2.989888889;9
 1030;Derwent Valley Mills;United Kingdom;cultural;(ii) (iv);53.108;-1.556;1
@@ -757,23 +757,23 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1044;Aranjuez Cultural Landscape;Spain;cultural;(ii) (iv);40.0364;-3.60934;1
 1046;Alto Douro Wine Region;Portugal;cultural;(iii) (iv) (v);41.1657453;-7.5177429;1
 1052;Villa Tugendhat;Czech Republic;cultural;(ii) (iv);49.207222222222;16.615833333333;1
-1053;Wooden churches of Southern Lesser Poland;Poland;cultural;(iii) (iv);49.630591;21.186051;9
-1054;Peace Church in Świdnica;Poland;cultural;(iii) (iv) (vi);50.84625;16.49163889;3
-1055;Lamu;Kenya;cultural;(ii) (iv) (vi);-2.2686111111111;40.900277777778;2
+1053;Assumption of Holy Mary Church, Haczów;Poland;cultural;(iii) (iv);49.670361111111;21.890083333333;9
+1054;Peace Church in Jawor;Poland;cultural;(iii) (iv) (vi);51.05396;16.18901;3
+1055;Lamu Old Town;Kenya;cultural;(ii) (iv) (vi);-2.2844444444444;40.8525;2
 1056;Mahabodhi Temple;India;cultural;(i) (ii) (iii) (iv) (vi);24.696004;84.991358;1
 1058;Mazagan;Morocco;cultural;(ii) (iv);33.25656111;-8.502475;1
 1060;Lake Elmenteita;Kenya;natural;(vii) (ix) (x);-0.446;36.244;5
 1061;Calakmul;Mexico;mixto;(i) (ii) (iii) (iv) (ix) (x);18.105;-89.810555555556;2
 1063;Tokaj wine region;Hungary;cultural;(iii) (v);48.15;21.35;8
 1066;Rhine Gorge;Germany;cultural;(ii) (iv) (v);50.1736;7.6941694444444;1
-1067;Historic Centres of Stralsund and Wismar;Germany;cultural;(ii) (iv);54.3025;13.08527778;3
+1067;historic center of Stralsund;Germany;cultural;(ii) (iv);54.3025;13.08528;3
 1068;Sacro Monte di Oropa;Italy;cultural;(ii) (iv);45.624614;7.981322;10
 1070;Citadel, Ancient City and Fortress Buildings of Derbent;Russia;cultural;(iii) (iv);42.05297;48.29719;2
-1073;Zuma;Sudan;cultural;(i) (ii) (iii) (iv) (vi);18.36666667;31.75;6
+1073;Jebel Barkal;Sudan;cultural;(i) (ii) (iii) (iv) (vi);18.5368;31.8276;6
 1076;Gobustan State Historical and Cultural Reserve;Azerbaijan;cultural;(iii);40.10555556;49.38888889;2
 1077;Takht-e Soleyman;Iran;cultural;(i) (ii) (iii) (iv) (vi);36.604722222222;47.234166666667;1
 1078;Jewish Quarter of Třebíč;Czech Republic;cultural;(ii) (iii);49.216778;15.873361;5
-1079;Franciscan Missions in the Sierra Gorda;Mexico;cultural;(ii) (iii);21.203888888889;-99.463888888889;6
+1079;Santa María del Agua de Landa mission;Mexico;cultural;(ii) (iii);21.1692;-99.3108;6
 1081;Orkhon Valley;Mongolia;cultural;(ii) (iii) (iv);47.556666666667;102.83138888889;4
 1083;Three Parallel Rivers National Park;People's Republic of China;natural;(vii) (viii) (ix) (x);27.895;98.406388888889;1
 1084;Kew Gardens;United Kingdom;cultural;(ii) (iii) (iv);51.478888888889;-0.29361111111111;2
@@ -785,19 +785,19 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1096;White City;Israel;cultural;(ii) (iv);32.077777777778;34.773888888889;1
 1097;Novodevichy Convent;Russia;cultural;(i) (iv) (vi);55.725972222222;37.556583333333;1
 1099;Mapungubwe Cultural Landscape;South Africa;cultural;(ii) (iii) (iv) (v);-22.211667;29.387889;2
-1100;Tijuca Forest, Pretos Forros and Covanca – Tijuca National Park;Brazil;cultural;(v) (vi);-22.9478;-43.2914;6
+1100;Tijuca Forest;Brazil;cultural;(v) (vi);-22.963;-43.245;6
 1101;Champaner-Pavagadh Archaeological Park;India;cultural;(iii) (iv) (v) (vi);22.483333333333;73.533333333333;13
-1102;Saryarka – Steppe and Lakes of Northern Kazakhstan;Kazakhstan;natural;(ix) (x);50.433333333333;69.188888888889;2
+1102;Korgalzhyn Nature Reserve;Kazakhstan;natural;(ix) (x);50.43333333;69.18888889;2
 1103;Mausoleum of Khoja Ahmed Yasawi;Kazakhstan;cultural;(i) (iii) (iv);43.2976445;68.2710419;1
 1106;Pasargadae;Iran;cultural;(i) (ii) (iii) (iv);30.2;53.179444444444;1
 1107;Incense Route – Desert Cities in the Negev;Israel;cultural;(iii) (v);31.0975;34.657777777778;5
 1108;Tel Megiddo;Israel;cultural;(ii) (iii) (iv) (vi);32.585277777778;35.184444444444;5
-1110;Igreja da Sé;People's Republic of China;cultural;(ii) (iii) (iv) (vi);22.19361111;113.54166667;24
+1110;St. Dominic's Church;People's Republic of China;cultural;(ii) (iii) (iv) (vi);22.194681;113.540412;24
 1111;Honghe Hani Rice Terraces;People's Republic of China;cultural;(iii) (v);23.117187;102.7377;1
 1112;Yinglong Lou;People's Republic of China;cultural;(ii) (iii) (iv);22.3572;112.6139;5
 1113;Zhenfu Lou;People's Republic of China;cultural;(iii) (iv) (v);24.635339;116.950949;11
 1114;Yinxu;People's Republic of China;cultural;(ii) (iii) (iv) (vi);36.1225;114.31861111111;1
-1115;New Caledonia Barrier Reef;France;natural;(vii) (ix) (x);-20.411944444444;164.56638888889;7
+1115;Grand Lagon Sud;France;natural;(vii) (ix) (x);-22.5125;166.95972222222;7
 1116;Quebrada de Humahuaca;Argentina;cultural;(ii) (iv) (v);-23.1;-65.33333;2
 1117;Landscape of the Pico Island Vineyard Culture;Portugal;cultural;(iii) (iv);38.51333333;-28.54111111;4
 1118;Osun-Osogbo Grove;Nigeria;cultural;(ii) (iii) (vi);7.75491;4.550625;2
@@ -824,7 +824,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1153;The Causses and the Cévennes, Mediterranean agro-pastoral Cultural Landscape;France;cultural;(iii) (v);44.2203;3.4731;2
 1155;Old town of Regensburg with Stadtamhof;Germany;cultural;(ii) (iii) (iv);49.01956;12.09839;2
 1156;Dresden Elbe Valley;Germany;;;51.0498;13.8132;1
-1158;Necropolis of Monterozzi;Italy;cultural;(i) (iii) (iv);42.25008;11.767854;5
+1158;Etruscan Necropolises of Cerveteri and Tarquinia;Italy;cultural;(i) (iii) (iv);42.00683333;12.10188889;5
 1160;Madriu-Perafita-Claror Valley;Andorra;cultural;(v);42.492147;1.594426;1
 1161;Pitons;Saint Lucia;natural;(vii) (viii);13.807083333333;-61.070361111111;1
 1162;Vredefort crater;South Africa;natural;(viii);-26.816666666667;27.416666666667;6
@@ -835,7 +835,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1178;Humberstone and Santa Laura Saltpeter Works;Chile;cultural;(ii) (iii) (iv);-20.208333333333;-69.794444444444;2
 1179;Glarus thrust;Switzerland;natural;(viii);46.91667;9.25;1
 1181;reconstructed center of Le Havre;France;cultural;(ii) (iv);49.4891;0.115222;1
-1182;San Pedro Mártir Island;Mexico;natural;(vii) (ix) (x);28.38027778;-112.30694444;15
+1182;El Vizcaíno Biosphere Reserve;Mexico;natural;(vii) (ix) (x);27.792222;-114.227778;15
 1183;Kondoa Rock Art Sites;Tanzania;cultural;(iii) (vi);-4.72444;35.83389;1
 1185;Museum Plantin-Moretus;Belgium;cultural;(ii) (iii) (iv) (vi);51.218294444444;4.3981638888889;1
 1186;Wadi Al-Hitan;Egypt;natural;(viii);29.270833333333;30.043888888889;1
@@ -844,17 +844,17 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1189;Harar Jugol, the Fortified Historic Town;Ethiopia;cultural;(ii) (iii) (iv) (v);9.3091;42.1372;1
 1192;Qal’at al Bahrain;Bahrain;cultural;(ii) (iii) (iv);26.233611111111;50.520555555556;3
 1193;Shiretoko;Japan;natural;(ix) (x);43.933333333333;144.95;1
-1194;Cultural Landscape of Bali Province: the Subak System as a Manifestation of the Tri Hita Karana Philosophy;Indonesia;cultural;(ii) (iii) (v) (vi);-8.259166667;115.4027778;10
+1194;Lake Batur;Indonesia;cultural;(ii) (iii) (v) (vi);-8.2569;115.4088;10
 1195;Geirangerfjord;Norway;natural;(vii) (viii);62.094444444444;7.0805555555556;3
 1196;Architectural, Residential and Cultural Complex of the Radziwill Family at Nesvizh;Belarus;cultural;(ii) (iv) (vi);53.22278;26.69139;2
 1199;Konye-Urgench;Turkmenistan;cultural;(ii) (iii);42.316666666667;59.158611111111;1
-1200;Epipolae, Achradina, Tyche and Neapolis, Euryalus Castle, Dionysian fortiﬁcations and the Scala Greca area;Italy;cultural;(ii) (iii) (iv) (vi);37.09583;15.225;6
+1200;Syracuse and the Rocky Necropolis of Pantalica;Italy;cultural;(ii) (iii) (iv) (vi);37.05944;15.29306;6
 1201;Mulanje Massif;Malawi;cultural;(iii) (vi);-15.9;35.65;1
 1202;Historic Centre of Cienfuegos;Cuba;cultural;(ii) (iv);22.14555556;-80.43638889;1
 1203;Central Highlands of Sri Lanka;Sri Lanka;natural;(ix) (x);7.45245;80.8021;4
 1207;Falaj Al-Katmeen;Oman;cultural;(v);22.9333;57.6667;6
 1208;Bam;Iran;cultural;(ii) (iii) (iv) (v);29.106111111111;58.356944444444;3
-1209;guachimicaga;Mexico;cultural;(ii) (iv) (v) (vi);20.6951491;-103.8357192;3
+1209;Valle de Tequila and Amatitán;Mexico;cultural;(ii) (iv) (v) (vi);20.0;-103.7667;3
 1211;Genoa: Le Strade Nuove and the system of the Palazzi dei Rolli;Italy;cultural;(ii) (iv);44.412222222222;8.9311111111111;1
 1213;Sichuan Giant Panda Sanctuaries;People's Republic of China;natural;(x);30.833333333333;103.0;1
 1214;Sewell;Chile;cultural;(ii);-34.085;-70.3825;1
@@ -862,49 +862,49 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1216;Malpelo Fauna and Flora Sanctuary;Colombia;natural;(vii) (ix);4.0;-81.6;1
 1217;Vizcaya Bridge;Spain;cultural;(i) (ii);43.323055555556;-3.0169444444444;1
 1220;Bahá'í World Centre buildings;Israel;cultural;(iii) (vi);32.81378;34.98655;1
-1221;Fort Henry;Canada;cultural;(i) (iv);44.230263888889;-76.459680555556;7
+1221;Rideau Canal;Canada;cultural;(i) (iv);44.219830555556;-76.475144444444;7
 1222;Behistun;Iran;cultural;(ii) (iii);34.388222222222;47.434361111111;1
 1223;Malacca;Malaysia;cultural;(ii) (iii) (iv);2.1888888888889;102.25111111111;3
 1224;Preah Vihear Temple;Cambodia;cultural;(i);14.390555555556;104.68027777778;1
 1225;Ruins of Loropéni;Burkina Faso;cultural;(iii);10.310277777778;-3.5630555555556;1
-1226;Stone circles Sine Ngayène;Senegal;cultural;(i) (iii);13.7;-15.53;12
+1226;;The Gambia;cultural;(i) (iii);13.75;-15.1;12
 1227;Aapravasi Ghat;Mauritius;cultural;(vi);-20.158611;57.503056;1
-1229;Krak des Chevaliers;Syria;cultural;(ii) (iv) (vi);34.756944444444;36.294722222222;3
+1229;Crac des Chevaliers and Qal’at Salah El-Din;Syria;cultural;(ii) (iv) (vi);34.78166667;36.26305556;3
 1230;Sulaiman-Too;Kyrgyzstan;cultural;(iii) (vi);40.529444444444;72.783333333333;2
 1231;Sacred Mijikenda Kaya Forests;Kenya;cultural;(iii) (v) (vi);-3.9319444444444;39.596111111111;9
 1234;Putorana Plateau;Russia;natural;(vii) (ix);69.0;93.0;1
 1236;León Cathedral;Nicaragua;cultural;(ii) (iv);12.434997222222;-86.878097222222;2
 1237;Marmolada;Italy;natural;(vii) (viii);46.424444444444;11.85;11
-1239;Weiße Stadt;Germany;cultural;(ii) (iv);52.56916667;13.35277778;7
+1239;Falkenberg garden city;Germany;cultural;(ii) (iv);52.4103;13.5647;7
 1240;Stari Grad Plain;Croatia;cultural;(ii) (iii) (v);43.181666666667;16.638611111111;1
 1242;Nisa;Turkmenistan;cultural;(ii) (iii);37.951147222222;58.212408333333;1
 1243;Lavaux;Switzerland;cultural;(iii) (iv) (v);46.491944444444;6.7461111111111;1
 1245;San Marino Historic Centre and Mount Titano;San Marino;cultural;(iii);43.93277778;12.45194444;1
-1246;Iwami Ginzan Silver Mine;Japan;cultural;(ii) (iii) (v);35.107222;132.4375;6
-1248;Shibing Karst;People's Republic of China;natural;(vii) (viii) (ix);27.1711;108.0944;9
+1246;Iwami Silver Mine Museum;Japan;cultural;(ii) (iii) (v);35.12205556;132.44783333;6
+1248;Guilin Karst - Lijiang Fengcong Karst Section;People's Republic of China;natural;(vii) (viii) (ix);25.0022;110.4211;9
 1250;Ciudad Universitaria;Mexico;cultural;(i) (ii) (iv);19.33222222;-99.18805556;1
 1252;Pamir National Park;Tajikistan;natural;(vii) (viii);38.741231;72.119751;2
 1253;Gamzigrad;Serbia;cultural;(iii) (iv);43.899305555556;22.186166666667;1
 1255;Twyfelfontein;Namibia;cultural;(iii) (v);-20.595583333333;14.372583333333;1
 1256;port of the Moon;France;cultural;(ii) (iv);44.838888888889;-0.57222222222222;1
-1257;Andringitra National Park;Madagascar;natural;(ix) (x);-22.19496;46.88499;21
+1257;Rainforests of the Atsinanana;Madagascar;natural;(ix) (x);-14.459719444444;49.7025;21
 1258;Teide National Park;Spain;natural;(vii) (viii);28.2647;-16.6181;2
 1259;Le Morne Brabant;Mauritius;cultural;(iii) (vi);-20.460555555556;57.313611111111;2
 1260;Mehmed Paša Sokolović Bridge;Bosnia and Herzegovina;cultural;(ii) (iv);43.78248;19.28794;1
-1262;Dzordzor Chapel;Iran;cultural;(ii) (iii) (vi);39.187944444444;44.476222222222;9
-1263;Socotra;Yemen;natural;(x);12.51;53.92;11
-1264;Seongsan Ilchulbong;South Korea;natural;(vii) (viii);33.45805556;126.9425;9
+1262;Saint Stepanos Monastery;Iran;cultural;(ii) (iii) (vi);38.97907;45.473344;9
+1263;Abd al Kuri;Yemen;natural;(x);12.183333333333;52.233333333333;11
+1264;Jeju Volcanic Island and Lava Tubes;South Korea;natural;(vii) (viii);33.36138889;126.5325;9
 1265;Richtersveld;South Africa;cultural;(iv) (v);-28.6;17.203888888889;1
 1267;Surtsey;Iceland;natural;(ix);63.3040256609;-20.6047137915;1
 1268;Historic Center of Agadez;Niger;cultural;(ii) (iii);16.9744;7.9896;1
 1269;;Peru;cultural;(ii) (iii) (iv);-10.893611111111;-77.520277777778;1
 1270;Historic Centre of Camagüey;Cuba;cultural;(iv) (v);22.1424;-80.4531;1
 1272;São Francisco Square;Brazil;cultural;(ii) (iv);-11.01361111;-37.20555556;1
-1273;Church of the Transfer of the Relics of St. Nicholas (Ruská Bystrá);Slovakia;cultural;(iii) (iv);48.856819444444;22.296761111111;10
-1274;San Miguel de Allende;Mexico;cultural;(ii) (iv);20.915277777778;-100.74388888889;3
+1273;Church of the Holy Trinity;Slovakia;cultural;(iii) (iv);49.133333;20.428333;10
+1274;Protective town of San Miguel and the Sanctuary of Jesús Nazareno de Atotonilco;Mexico;cultural;(ii) (iv);20.91444444;-100.7463889;3
 1276;Rhaetian Railway in the Albula / Bernina Landscapes;Italy;cultural;(ii) (iv);46.4089;10.0197;2
 1277;Muryōkō-in Ato;Japan;cultural;(ii) (vi);38.9931;141.116;6
-1278;Sungyang Academy;North Korea;cultural;(ii) (iii);37.9739;126.5678;10
+1278;Historic Monuments and Sites in Kaesong;North Korea;cultural;(ii) (iii);37.981666666667;126.50805555556;10
 1279;Mount Wutai;People's Republic of China;cultural;(ii) (iii) (iv) (vi);39.081388888889;113.56694444444;4
 1280;Chief Roi Mata’s Domain;Vanuatu;cultural;(iii) (v) (vi);-17.69364;168.23399;1
 1282;Jon-Lars;Sweden;cultural;(v);61.39013;16.051579;9
@@ -916,21 +916,21 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1293;Hegra;Saudi Arabia;cultural;(ii) (iii);26.814166666667;37.9475;2
 1295;Fort Jesus Museum;Kenya;cultural;(ii) (v);-4.0711666666667;39.682055555556;1
 1298;Stoclet Palace;Belgium;cultural;(i) (ii);50.83514;4.41625;1
-1299;Lena Pillars;Russia;natural;(viii);61.106944444444;127.36166666667;4
+1299;Buotamsky plot;Russia;natural;(viii);60.66667;127.0;4
 1302;La Chaux-de-Fonds / Le Locle, Watchmaking Town Planning;Switzerland;cultural;(iv);47.08;6.78;1
 1303;Pontcysyllte Aqueduct and Canal;United Kingdom;cultural;(i) (ii) (iv);52.97212;-3.08727;1
-1305;Shaolin Monastery;People's Republic of China;cultural;(iii) (vi);34.50709;112.93569;9
+1305;Qimu Que;People's Republic of China;cultural;(iii) (vi);34.474172309012;113.04131167088;9
 1306;Australian Convict Sites;Australia;cultural;(iv) (vi);-33.37833333;150.9944444;14
-1308;Historical center of Paraty;Brazil;mixto;(v) (vii) (x);-23.218019;-44.713055;7
+1308;Praia do Sul Biological Reserve;Brazil;mixto;(v) (vii) (x);-23.17638889;-44.28861111;7
 1310;Cidade Velha;Cape Verde;cultural;(ii) (iii) (vi);14.916666666667;-23.604166666667;1
 1312;Tower of Hercules;Spain;cultural;(iii);43.385833333333;-8.4063888888889;1
-1313;Belca Water Barrier;Slovenia;cultural;(ii) (iv);45.969780997;13.945623173;37
+1313;Bullring of Almadén;Spain;cultural;(ii) (iv);38.775102777778;-4.8296444444444;37
 1314;Wadden Sea;Denmark;natural;(viii) (ix) (x);53.528611111111;8.5561111111111;11
 1315;Shushtar Historical Hydraulic System;Iran;cultural;(i) (ii) (v);32.053723;48.848687;1
 1317;Pitons, cirques and remparts of Reunion Island;France;natural;(vii) (x);-21.0994;55.48;1
-1318;The Gastaldaga area and the Episcopal complex;Italy;cultural;(ii) (iii) (vi);46.09417;13.43306;11
-1319;Samneung;South Korea;cultural;(iii) (iv) (vi);37.7453;126.8303;22
-1321;Les Peupliers;Belgium;cultural;(i) (ii) (vi);51.18364;4.39323;24
+1318;Torba Abbey;Italy;cultural;(ii) (iii) (vi);45.7294;8.86334;11
+1319;Tonggurung;South Korea;cultural;(iii) (iv) (vi);37.622608;127.132075;22
+1321;Notre Dame du Haut;France;cultural;(i) (ii) (vi);47.70451;6.62057;24
 1322;Grand-Bassam;Ivory Coast;cultural;(iii) (iv);5.2;-3.7333333333333;2
 1324;Yangdong Folk Village;South Korea;cultural;(iii) (iv);36.001111111111;129.25333333333;6
 1325;Phoenix Islands Protected Area;Kiribati;natural;(vii) (ix);-3.64972222;-172.8575;1
@@ -945,25 +945,25 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1337;Episcopal City of Albi;France;cultural;(iv) (v);43.9283;2.1425;1
 1338;Jantar Mantar;India;cultural;(iii) (iv);26.924722222222;75.825;2
 1339;Bikini Atoll;Marshall Islands;cultural;(iv) (vi);11.6;165.4;1
-1342;Silent Valley National Park;India;natural;(ix) (x);11.133333333333;76.466666666667;41
-1343;Hili Archaeological Park;United Arab Emirates;cultural;(iii) (iv) (v);24.294722222222;55.793888888889;18
-1344;Bois-du-Luc;Belgium;cultural;(ii) (iv);50.470461;4.149881;6
+1342;Periyar National Park;India;natural;(ix) (x);9.5775;77.18;41
+1343;Cultural Sites of Al Ain (Hafit, Hili, Bidaa Bint Saud and Oases Areas);United Arab Emirates;cultural;(iii) (iv) (v);24.06777778;55.80638889;18
+1344;Grand Hornu;Belgium;cultural;(ii) (iv);50.435278;3.839444;6
 1345;Sheikh Safi al-Din Khānegāh and Shrine Ensemble;Iran;cultural;(i) (ii) (iv);38.248611111111;48.291388888889;1
 1346;Tabriz Bazaar;Iran;cultural;(ii) (iii) (iv);38.080772222222;46.292286111111;1
-1348;Bara;Syria;cultural;(iii) (iv) (v);35.68333333;36.53333333;26
+1348;Dead Cities;Syria;cultural;(iii) (iv) (v);36.33416667;36.84416667;26
 1349;Grachtengordel;Netherlands;cultural;(i) (ii) (iv);52.366388888889;4.8858333333333;1
-1351;Historical centre of San Luis Potosí City;Mexico;cultural;(i) (ii) (iv) (vi);22.151666666667;-100.97638888889;63
+1351;Protective town of San Miguel and the Sanctuary of Jesús Nazareno de Atotonilco;Mexico;cultural;(i) (ii) (iv) (vi);20.91444444;-100.7463889;63
 1352;Prehistoric Caves of Yagul and Mitla in the Central Valley of Oaxaca;Mexico;cultural;(iii);16.95083333;-96.42111111;1
 1356;Blue and John Crow Mountains;Jamaica;mixto;(iii) (vi) (x);18.0775;-76.571111111111;1
 1358;Citadel of the Hồ Dynasty;Vietnam;cultural;(ii) (iv);20.078055555556;105.60472222222;1
 1359;Saloum Delta;Senegal;cultural;(iii) (iv) (v);13.835277777778;-16.498611111111;1
 1360;northern French coal mining region;France;cultural;(ii) (iv) (vi);50.4625;3.54611;110
 1361;Al-Balad, Jeddah;Saudi Arabia;cultural;(ii) (iv) (vi);21.4833;39.2;1
-1362;Anijima;Japan;natural;(ix);27.121388888889;142.21416666667;27
-1363;Rose Island;Germany;cultural;(iv) (v);47.941554206581;11.308772468044;119
+1362;Hahajima;Japan;natural;(ix);26.65;142.16666666667;27
+1363;Lagoni di Mercurago Natural Park;Italy;cultural;(iv) (v);45.735;8.552;119
 1364;Hayr Bū ‘Amāmah;Bahrain;cultural;(iii);26.8075;50.8037;19
 1366;Selimiye Mosque;Turkey;cultural;(i) (iv);41.678056;26.559444;1
-1367;historic centre of Elvas;Portugal;cultural;(iv);38.88062;-7.16332;9
+1367;Garrison Border Town of Elvas and its Fortifications;Portugal;cultural;(iv);38.88055556;-7.16333333;9
 1368;Fagus Factory;Germany;cultural;(ii) (iv);51.9837;9.81256;1
 1369;Ningaloo Reef;Australia;natural;(vii) (x);-22.739;113.628;1
 1370;Beit Guvrin National Park;Israel;cultural;(v);31.61305556;34.89833333;1
@@ -973,7 +973,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1376;Garrison Historic Area;Barbados;cultural;(ii) (iii) (iv);13.09666667;-59.61388889;2
 1377;Wadi Rum;Jordan;mixto;(iii) (v) (vii);29.5765;35.419927777778;1
 1379;Margravial Opera House;Germany;cultural;(i) (iv);49.944344697677;11.578663620864;1
-1380;Sangha Trinational;Central African Republic;natural;(ix) (x);2.6666666666667;16.333333333333;6
+1380;Sangha Trinational;Republic of the Congo;natural;(ix) (x);2.6666666666667;16.333333333333;6
 1382;Petroglyphic Complexes of the Mongolian Altai;Mongolia;cultural;(iii);49.333888888889;88.395277777778;4
 1386;Rock Islands Southern Lagoon;Palau;mixto;(iii) (v) (vii) (ix) (x);7.2469;134.3525;1
 1387;Universidade de Coimbra – Alta e Sofia;Portugal;cultural;(ii) (iv) (vi);40.20781111;-8.425775;1
@@ -981,7 +981,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1389;Xanadu;People's Republic of China;cultural;(ii) (iii) (iv) (vi);42.358021111111;116.18515888889;1
 1390;The Vineyard Landscape of Piedmont: Langhe-Roero and Monferrato;Italy;cultural;(iii) (v);44.651944444444;7.9941666666667;8
 1393;Nahal Me'arot Nature Reserve;Israel;cultural;(iii) (v);32.670833333333;34.966111111111;1
-1396;Bukit Bunuh;Malaysia;cultural;(iii) (iv);5.075;100.975;5
+1396;Bukit Gua Harimau;Malaysia;cultural;(iii) (iv);5.1494;100.9807;5
 1397;Jameh Mosque of Isfahan;Iran;cultural;(ii);32.669722222222;51.685277777778;1
 1398;Gonbad-e Qabus;Iran;cultural;(i) (ii) (iii) (iv);37.258121354303;55.16899113363;1
 1399;Levuka Historical Port Town;Fiji;cultural;(ii) (iv);-17.68337778;178.8345333;1
@@ -997,10 +997,10 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1411;Chersonesus;Ukraine;cultural;(ii) (v);44.611627;33.493302;18
 1412;Red Bay National Historic Site;Canada;cultural;(iii) (iv);51.726916666667;-56.429527777778;1
 1413;Bergpark Wilhelmshöhe;Germany;cultural;(iii) (iv);51.3167;9.4;1
-1414;Tomur;People's Republic of China;natural;(vii) (ix);41.9683;80.3542;6
+1414;Bayinbuluke National Natural Reserve;People's Republic of China;natural;(vii) (ix);42.7981;84.1639;6
 1415;Pimachiowin Aki;Canada;mixto;(iii) (vi) (ix);51.0;-95.0;1
 1416;Stevns Klint;Denmark;natural;(viii);55.2822;12.45;1
-1418;Hitoana Fuji-ko Iseki;Japan;cultural;(iii) (vi);35.3617;138.5914;28
+1418;Lake Kawaguchi;Japan;cultural;(iii) (vi);35.515;138.75666666667;28
 1422;Golestan Palace;Iran;cultural;(ii) (iii) (iv);35.679722222222;51.420277777778;1
 1423;Maymand;Iran;cultural;(v);30.168055555556;55.375555555556;1
 1424;St. Paraskevi Church, Radruż;Poland;cultural;(iii) (iv);50.17670149216;23.401607657812;18
@@ -1012,30 +1012,30 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1432;Okavango Delta;Botswana;natural;(vii) (ix) (x);-19.4;22.9;1
 1433;Church of the Nativity;Palestine;cultural;(iv) (vi);31.704305555556;35.207583333333;2
 1434;Chaîne des Puys - Limagne fault tectonic arena;France;natural;(viii);45.77939;2.96511;1
-1435;Poverty Point;United States;cultural;(iii);32.6425;-91.408333333333;2
+1435;Poverty Point;United States;cultural;(iii);32.6367;-91.4114;2
 1437;Citadel of Erbil;Iraq;cultural;(iv);36.191;44.009;1
 1438;Tràng An;Vietnam;mixto;(v) (vii) (viii);20.2557;105.9156;2
 1439;Namhansanseong;South Korea;cultural;(ii) (iv);37.47802778;127.18419444;1
 1440;Burkhan Khaldun;Mongolia;cultural;(iv) (vi);48.783333333333;109.16666666667;1
 1441;Van Nelle Factory;Netherlands;cultural;(ii) (iv);51.922778;4.433611;1
-1442;Bingling Temple;People's Republic of China;cultural;(ii) (iii) (v) (vi);35.80551;103.044378;41
+1442;Suyab;Kyrgyzstan;cultural;(ii) (iii) (v) (vi);42.8;75.2667;41
 1443;Grand Canal;People's Republic of China;cultural;(i) (iii) (iv) (vi);30.261388888889;120.22388888889;2
-1444;Beikthano;Myanmar;cultural;(ii) (iii) (iv);20.0;95.38333333;4
+1444;Pyu Ancient Cities;Myanmar;cultural;(ii) (iii) (iv);22.47;95.81861111;4
 1446;Al Maghtas;Jordan;cultural;(iii) (vi);31.837222222222;35.550277777778;1
 1447;Princely Abbey of Corvey;Germany;cultural;(ii) (iii) (iv);51.777778;9.41;1
 1448;Landscapes of Dauria;Russia;natural;(ix) (x);49.93022;115.42544;7
 1449;Takayama-sha;Japan;cultural;(ii) (iv);36.2033;139.0317;8
 1450;Thimlich Ohinga;Kenya;cultural;(iii) (iv) (v);-0.89133805555556;34.326106944444;1
-1452;Orhan Gazi Külliye;Turkey;cultural;(i) (ii) (iv) (vi);40.18473;29.06234;9
-1453;Precolumbian Chiefdom Settlements with Stone Spheres of the Diquís;Costa Rica;cultural;(iii);8.938453;-83.502539;5
-1455;Susa;Iran;cultural;(i) (ii) (iii) (iv);32.189444444444;48.256111111111;2
+1452;Muradiye Complex;Turkey;cultural;(i) (ii) (iv) (vi);40.190833333333;29.046111111111;9
+1453;El Silencio;Costa Rica;cultural;(iii);10.483333333333;-84.916666666667;5
+1455;Susa;Iran;cultural;(i) (ii) (iii) (iv);32.18922;48.257785;2
 1456;Shahr-e Sukhteh;Iran;cultural;(ii) (iii) (iv);30.595277777778;61.331944444444;1
-1457;Pergamon and its Multi-Layered Cultural Landscape;Turkey;cultural;(i) (ii) (iii) (iv) (vi);39.12583;27.18;12
-1459;CH-RP-26/S-2010;Chile;cultural;(ii) (iii) (iv) (vi);-26.427747222222;-69.683208333333;143
-1461;Kaeng Krachan National Park;Thailand;natural;(x);12.798888888889;99.453333333333;2
+1457;Ilyas Tepe Tumulus;Turkey;cultural;(i) (ii) (iii) (iv) (vi);39.13085;27.19862;12
+1459;Inca road system;Chile;cultural;(ii) (iii) (iv) (vi);-18.25;-69.59166667;143
+1461;Kaeng Krachan Forest Complex;Thailand;natural;(x);12.865666666667;99.400166666667;2
 1463;Aqueduct of Padre Tembleque;Mexico;cultural;(i) (ii) (iv);19.836388888889;-98.662222222222;1
 1464;Fray Bentos Industrial Landscape;Uruguay;cultural;(ii) (iv);-33.117778;-58.331667;1
-1465;Fort Chabrol;France;cultural;(iii) (iv) (vi);49.052244;3.948822;15
+1465;avenue de Champagne;France;cultural;(iii) (iv) (vi);49.041216;3.969669;15
 1466;Mission San Francisco de la Espada;United States;cultural;(ii);29.3178;-98.45;12
 1467;Speicherstadt and Kontorhaus District with Chilehaus;Germany;cultural;(iv);53.543333333333;9.9919444444444;1
 1468;Christiansfeld;Denmark;cultural;(iii) (iv);55.356667;9.483056;17
@@ -1046,84 +1046,84 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1473;Sculptural Ensemble of Constantin Brâncuși at Târgu Jiu;Romania;cultural;(i) (ii);45.037430555556;23.285375;1
 1474;Hailongtun Castle;People's Republic of China;cultural;(ii) (iii);27.8119;106.817;4
 1475;Ennedi Plateau;Chad;mixto;(iii) (vii) (ix);17.25;22.0;2
-1477;Archaeological Site in Gwanbuk-ri;South Korea;cultural;(ii) (iii);36.284444;126.9125;9
-1478;Red Tower of Death;Czech Republic;cultural;(ii) (iii) (iv);50.3288972;12.9534389;24
+1477;Gongsanseong;South Korea;cultural;(ii) (iii);36.46194444;127.12722222;9
+1478;Freiberg Mining Landscape;Germany;cultural;(ii) (iii) (iv);50.9183;13.3445;24
 1480;Victorian Gothic and Art Deco Ensembles of Mumbai;India;cultural;(ii) (iv);18.929806;72.830083;1
 1481;Eridu;Iraq;mixto;(iii) (v) (ix) (x);30.81583;45.99583;12
 1483;Singapore Botanic Gardens;Singapore;cultural;(ii) (iv);1.3151;103.8162;1
 1484;Hashima Island;Japan;cultural;(ii) (iv);32.627777777778;129.73833333333;23
 1485;Forth Bridge;United Kingdom;cultural;(i) (iv);55.9984;-3.3876;1
 1486;Rjukan–Notodden Industrial Heritage Site;Norway;cultural;(ii) (iv);59.878611111111;8.5936111111111;1
-1487;San Giovanni degli Eremiti;Italy;cultural;(ii) (iv);38.109722222222;13.354722222222;11
+1487;Zisa Palace;Italy;cultural;(ii) (iv);38.115776;13.341101;11
 1488;Hevsel Gardens;Turkey;cultural;(iv);37.9075;40.2475;4
-1490;Western Tian Shan;Kazakhstan;natural;(x);42.5;74.583333333333;11
+1490;Karatau Nature Reserve;Kazakhstan;natural;(x);43.71666667;68.73333333;11
 1492;Palestine: Land of Olives and Vines – Cultural Landscape of Southern Jerusalem, Battir;Palestine;cultural;(iv) (v);31.71972222;35.13055556;1
 1493;Pampulha Modern Ensemble;Brazil;cultural;(i) (ii) (iv);-19.851944444444;-43.973611111111;1
 1495;Hidden Christian Sites in the Nagasaki Region;Japan;cultural;(iii);32.802222;128.903889;13
 1496;Solomon R. Guggenheim Museum;United States;cultural;(ii);40.783055555556;-73.958888888889;9
 1497;Mistaken Point Ecological Reserve;Canada;natural;(viii);46.6319;-53.1903;1
-1498;Seowon, Korean Neo-Confucian Academies;South Korea;cultural;(iii) (iv);36.727297;128.843428;10
+1498;Sosu Seowon;South Korea;cultural;(iii) (iv);36.92555556;128.58;10
 1499;Antigua Naval Dockyard and Related Archaeological Sites;Antigua and Barbuda;cultural;(ii) (iv);17.00455;-61.76007;1
 1500;Gorham's Cave complex;United Kingdom;cultural;(iii);36.1225;-5.3419444444444;1
-1501;El Torcal de Antequera;Spain;cultural;(i) (iii) (iv);36.96361111;-4.54555556;6
+1501;The Manga Dolmen and The Viera Dolmen;Spain;cultural;(i) (iii) (iv);37.025;-4.54444;6
 1502;Nalanda Mahavihara;India;cultural;(iv) (vi);25.136797222222;85.443827777778;1
 1503;Nan Madol;Federated States of Micronesia;cultural;(i) (iii) (iv) (vi);6.841944;158.332222;1
 1504;Mramorje;Serbia;cultural;(iii) (vi);43.95043615;19.42748429;34
 1505;Dasht-e Lut;Iran;natural;(vii) (viii);30.263888888889;59.241111111111;1
 1506;Vazvan Qanat;Iran;cultural;(iii) (iv);33.429694444444;51.177083333333;12
 1507;Phu Phra Bat Historical Park;Thailand;cultural;(iii) (v);17.73333333;102.35833333;2
-1508;Rock Paintings of Hua Mountain;People's Republic of China;cultural;(iii) (vi);22.248327;107.042276;4
+1508;Ningming and Longzhou County rock art;People's Republic of China;cultural;(iii) (vi);22.2556;107.0314;4
 1509;Hubei Shennongjia;People's Republic of China;natural;(ix) (x);31.29;110.19;3
-1510;San Benedicto Island;Mexico;natural;(vii) (ix) (x);19.3;-110.81666666667;6
+1510;Revillagigedo Islands;Mexico;natural;(vii) (ix) (x);18.821388888889;-112.76388888889;6
 1511;M'banza-Kongo;Angola;cultural;(iii) (iv) (vi);-6.2666666666667;14.25;1
 1513;Khangchendzonga National Park;India;mixto;(iii) (vi) (vii) (x);27.6563;88.3123;1
 1517;Philippi;Greece;cultural;(iii) (iv);41.013056;24.286389;2
 1518;Ani;Turkey;cultural;(ii) (iii) (iv);40.5075;43.572777777778;1
 1519;Aphrodisias;Turkey;cultural;(ii) (iii) (iv) (vi);37.708964;28.722332;4
-1523;Church of Saint Basil of Caesarea on the Hill;Russia;cultural;(ii);57.815257;28.335757;18
+1523;Saints Michael and Gabriel Church s Gorodtsa;Russia;cultural;(ii);57.81808;28.33361;18
 1525;Sviyazhsk Assumption Monastery;Russia;cultural;(ii) (iv);55.770124;48.652451;1
 1526;Los Alerces National Park;Argentina;natural;(vii) (x);-42.8075;-71.89888889;1
-1527;Caves and Ice Age Art in the Swabian Jura;Germany;cultural;(iii);48.387777777778;9.7655555555556;3
+1527;Ach Valley;Germany;cultural;(iii);48.38778;9.76556;3
 1528;Talayotic Culture of Minorca;Spain;cultural;(i) (ii) (iv);39.9975;3.9088888888889;2
 1529;Taputapuatea marae;France;cultural;(iii) (iv) (vi);-16.836111111111;-151.35916666667;1
 1532;Sambor Prei Kuk;Cambodia;cultural;(ii) (iii) (vi);12.867283;105.040025;1
 1533;Palmanova Fortress;Italy;cultural;(iii) (iv);45.904971;13.310256;9
-1534;San Juan Raya;Mexico;mixto;(iv) (x);18.316111111111;-97.615;4
+1534;Purrón Dam;Mexico;mixto;(iv) (x);18.2004;-97.1188;4
 1535;Sacred Island of Okinoshima and Associated Sites in the Munakata Region;Japan;cultural;(ii) (iii);34.245;130.1056;8
-1536;Vatnahverfi;Greenland;cultural;(v);60.84778;-45.39;6
+1536;Kujataa;Greenland;cultural;(v);61.164444444444;-45.598055555556;6
 1537;Qalhat;Oman;cultural;(ii) (iii);22.699996;59.369896;1
 1538;Ivrea, industrial city of the 20th century;Italy;cultural;(iv);45.4575;7.8692;1
 1539;Tarnowskie Góry Lead-Silver-Zinc Mine and its Underground Water Management System;Poland;cultural;(i) (ii) (iv);50.4427;18.85123;1
 1540;Hoh Xil;People's Republic of China;natural;(vii) (x);35.15;91.0;1
 1541;Gulangyu;People's Republic of China;cultural;(ii) (iv);24.4475;118.06194444444;1
-1542;Madinat Hamad 1 Burial Mound Field (Buri);Bahrain;cultural;(iii) (iv);26.1403;50.5031;22
+1542;Dilmun Burial Mounds;Bahrain;cultural;(iii) (iv);26.14972222;50.51277778;22
 1544;Heritage district of Yazd;Iran;cultural;(iii) (v);31.900555555556;54.369583333333;1
 1545;Khomani Cultural Landscape;South Africa;cultural;(v) (vi);-25.687611111111;20.374583055556;1
 1548;Valongo Wharf;Brazil;cultural;(vi);-22.897111;-43.187394;1
-1549;Shaki;Azerbaijan;cultural;(ii) (v);41.191944444444;47.170555555556;5
+1549;Round temple in Shaki;Azerbaijan;cultural;(ii) (v);41.203362;47.196835;5
 1550;Asmara: A Modernist African City;Eritrea;cultural;(ii) (iv);15.335278;38.935833;1
 1551;Historic City of Ahmadabad;India;cultural;(ii) (v);23.0256;72.5875;2
 1552;Roșia Montană Mining Landscape;Romania;cultural;(ii) (iii) (iv);46.306111111111;23.130555555556;1
 1553;Hedeby;Germany;cultural;(iii) (iv);54.491111111111;9.5652777777778;21
-1555;;Netherlands;cultural;(ii) (iv);52.8431;6.1872;6
+1555;Wortel Kolonie;Belgium;cultural;(ii) (iv);51.402817;4.824315;6
 1557;Aasivissuit–Nipisat;Greenland;cultural;(v);67.063930555556;-51.433205555556;2
 1558;Žatec;Czech Republic;cultural;(iii) (iv) (v);50.327264913574;13.545859487384;7
 1559;Fanjingshan;People's Republic of China;natural;(x);27.883333333333;108.76666666667;1
 1560;Madinat Al-Zahra;Spain;cultural;(iii) (iv);37.886080468889;-4.8677854722573;1
-1561;Wanshou Pagoda;People's Republic of China;cultural;(iv);24.7225;118.6725;18
+1561;Anping Bridge;People's Republic of China;cultural;(iv);24.71013889;118.44366667;18
 1562;Beopjusa;South Korea;cultural;(iii);36.5415;127.833;8
 1563;Al-Ahsa Oasis;Saudi Arabia;cultural;(iii) (iv) (v);25.429444;49.621944;14
 1564;Tr'ondëk-Klondike;Canada;cultural;(iv) (vi);64.0;-139.0;1
 1565;Old City of Hebron;Palestine;cultural;(ii) (iv) (vi);31.525277777778;35.108333333333;1
-1568;Sarvestan Palace;Iran;cultural;(ii) (iii) (v);29.195556;53.230833;11
+1568;Bishapur;Iran;cultural;(ii) (iii) (v);29.777778;51.570833;11
 1569;Maison Carrée;France;cultural;(iv);43.838194;4.356111;1
 1570;Ramappa Temple;India;cultural;(i) (iii);18.259444444444;79.9425;1
 1571;Le Colline del Prosecco di Conegliano e Valdobbiadene;Italy;cultural;(v);45.953;12.2261;1
 1572;Göbekli Tepe;Turkey;cultural;(i) (ii) (iv);37.223055555556;38.9225;1
 1573;Royal Building of Mafra;Portugal;cultural;(iv);38.936922;-9.326395;1
-1574;Amami-Ōshima Island, Tokunoshima Island, northern part of Okinawa Island, and Iriomote Island;Japan;natural;(x);28.279166666667;129.37833333333;6
+1574;Iriomote Island;Japan;natural;(x);24.34;123.81;6
 1575;Makhonjwa Mountains;South Africa;natural;(viii);-33.4;22.0;1
-1577;Budj Bim;Australia;cultural;(iii) (v);-38.0667;141.917;3
+1577;Budj Bim National Heritage Landscape - Tyrendarra Area;Australia;cultural;(iii) (v);-38.193877;141.764301;3
 1578;Risco Caido;Spain;cultural;(iii) (v);28.043558333333;-15.661255555556;1
 1580;Water Management System of Augsburg;Germany;cultural;(ii) (iv) (v);48.3655;10.902;1
 1582;The Colonial Transisthmian Route of Panamá;Panama;cultural;(iv) (v) (vi);8.9524305555556;-79.534741666667;1
@@ -1136,34 +1136,34 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1590;Bom Jesus do Monte;Portugal;cultural;(iv);41.5546;-8.3775;1
 1591;Gochang tidal flats;South Korea;natural;(x);35.551852777778;126.53370277778;4
 1592;Liangzhu site;People's Republic of China;cultural;(iii) (iv);30.396666666667;119.98527777778;5
-1593;Itasuke Kofun;Japan;cultural;(iii) (iv);34.553333;135.485556;46
+1593;Magodayūyama Kofun;Japan;cultural;(iii) (iv);34.56;135.485;46
 1594;Jodrell Bank Observatory;United Kingdom;cultural;(i) (ii) (iv) (vi);53.23625;-2.3071388888889;1
 1595;Port Royal;Jamaica;cultural;(iv) (vi);17.9375;-76.841388888889;1
 1597;Writing-on-Stone Provincial Park;Canada;cultural;(iii);49.0819;-111.617;1
 1599;Krzemionki;Poland;cultural;(iii) (iv);50.97277778;21.49416667;5
-1602;Békuy;Burkina Faso;cultural;(iii) (iv) (vi);11.6224;-3.8919;6
+1602;Douroula;Burkina Faso;cultural;(iii) (iv) (vi);12.583333333333;-3.3;6
 1603;Crozet Islands;France;natural;(vii) (ix) (x);-46.38;51.67;5
 1604;Vatnajökull National Park;Iceland;natural;(viii);64.5;-17.0;1
 1605;Jaipur;India;cultural;(ii) (iv) (vi);26.915;75.82;1
 1606;Jiangsu Dafeng National Nature Reserve, and the Southern Section and Dongsha Experimental Zone of Jiangsu Yancheng National Nature Reserve;People's Republic of China;natural;(x);32.9319;121.0168;3
 1608;Frontiers of the Roman Empire – The Danube Limes (Western Segment);Austria;cultural;(ii) (iii) (iv);48.115;16.861;3
-1610;Ombilin coal mine;Indonesia;cultural;(ii) (iv);-0.683333;100.767;13
+1610;Kayu Tanam railway station;Indonesia;cultural;(ii) (iv);-0.5480563;100.3311725;13
 1611;Lençóis Maranhenses National Park;Brazil;natural;(vii) (viii) (x);-2.4833333333333;-43.133333333333;1
 1612;Church of Cristo Obrero y Nuestra Señora de Lourdes;Uruguay;cultural;(iv);-34.744;-55.766;1
 1613;The Great Spa Towns of Europe;Belgium;cultural;(ii) (iii);51.381305555556;-2.3590555555556;77
 1614;Artists' Colony in Darmstadt;Germany;cultural;(ii) (iv);49.87543334529;8.6665039701752;1
-1616;Mtirala National Park;Georgia;natural;(ix) (x);41.684194;41.859856;8
+1616;Ispani peat bogs;Georgia;natural;(ix) (x);41.862016666667;41.801527777778;8
 1618;Paseo del Prado and Buen Retiro, a landscape of Arts and Sciences;Spain;cultural;(ii) (iv) (vi);40.414139;-3.686528;1
 1619;Bir Hima Rock Petroglyphs and Inscriptions;Saudi Arabia;cultural;(iii);18.249239;44.451839;7
 1620;Sítio Roberto Burle Marx;Brazil;cultural;(ii) (iv);-23.02385;-43.54474;1
 1621;Deer Stone Monuments, the Heart of Bronze Age Culture;Mongolia;cultural;(i) (iii);47.742777777778;101.22583333333;1
 1622;Arslantepe;Turkey;cultural;(iii);38.38194444;38.36111111;1
 1623;Padua's fourteenth-century fresco cycles;Italy;cultural;(ii);45.411888888889;11.879611111111;1
-1624;Chankillo;Peru;cultural;(i) (iv);-9.55666667;-78.23583333;3
+1624;Cerro Mucho Malo;Peru;cultural;(i) (iv);-9.51835;-78.18245;3
 1625;Cordouan Lighthouse;France;cultural;(i) (iv);45.5863198;-1.1733254;1
 1627;Buddhistic cloister of Ajina-Tepa;Tajikistan;cultural;(ii) (iii);37.79802778;68.85436111;4
-1631;Castra Novaesium;Germany;cultural;(ii) (iii) (iv);51.1839;6.72194;52
-1632;Kiusu Earthwork Burial Circles;Japan;cultural;(iii) (v);42.885278;141.716111;16
+1631;Castra Herculis;Netherlands;cultural;(ii) (iii) (iv);51.970833333333;5.8736111111111;52
+1632;Futatsumori Site;Japan;cultural;(iii) (v);40.748055555556;141.23;16
 1633;Penrhyn Slate Quarry and Bethesda, and the Ogwen valley to Port Penrhyn;United Kingdom;cultural;(ii) (v);53.1761;-4.0736;7
 1634;Chinchorro mummies;Chile;cultural;(iii) (v);-18.480596;-70.321114;5
 1635;Nice, Winter Resort Town of the Riviera;France;cultural;(ii);43.701694444444;7.2723055555556;1
@@ -1175,10 +1175,10 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1643;Žale Central Cemetery;Slovenia;cultural;(iv);46.070781083;14.531855141;7
 1645;Dholavira;India;cultural;(iii) (iv);23.88611111;70.21666667;1
 1647;Cultural Landscape of Hawraman/Uramanat;Iran;cultural;(iii) (v);35.107358333333;46.47785;1
-1648;Kaouara mosque;Ivory Coast;cultural;(ii) (iv);10.0897;-5.1945;9
-1650;Portico di San Luca;Italy;cultural;(iv);44.4854;11.3019;14
+1648;Kong mosque;Ivory Coast;cultural;(ii) (iv);9.1491987;-4.6094513;9
+1650;porticoes of Bologna;Italy;cultural;(iv);44.491388888889;11.332777777778;14
 1653;Ivindo National Park;Gabon;natural;(ix);0.088;12.63;1
-1654;Onega petroglyphs;Russia;cultural;(iii);61.673;36.029;3
+1654;Belomorsk petroglyphs;Russia;cultural;(iii);64.4946;34.6951;3
 1656;Old Synagogue (Erfurt);Germany;cultural;(iv);50.9786;11.0293;5
 1657;Volcanoes and Forests of Mount Pelée and the Pitons of Northern Martinique;France;natural;(viii) (x);14.7582;-61.0731;1
 1658;Old town of Kuldīga;Latvia;cultural;(v);56.9675;21.970555555555;1
@@ -1189,7 +1189,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1665;Cultural Landscape of Old Tea Forests of the Jingmai Mountain in Pu’er;People's Republic of China;cultural;(iii) (iv) (v);22.201885;100.014545;1
 1666;Gaya Tumuli;South Korea;cultural;(iii);35.237263888889;128.873725;1
 1667;Koh Ker;Cambodia;cultural;(ii);13.78333333;104.53333333;1
-1668;Sharaf Caravanserai;Iran;cultural;(ii) (iii);36.266388888889;60.655277777778;39
+1668;Zein-o-Din Caravanserai;Iran;cultural;(ii) (iii);31.411777777778;54.706916666667;39
 1669;Gordion;Turkey;cultural;(iii);39.6504791;31.9784831;2
 1670;Sacred Ensembles of the Hoysalas;India;cultural;(i) (ii) (iv);13.212453;75.994072;1
 1671;The Cosmological Axis of Yogyakarta and its Historic Landmarks;Indonesia;;;-7.8013889;110.3647778;1
@@ -1198,7 +1198,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1676;Human Rights, Liberation and Reconciliation: Nelson Mandela Legacy Sites;South Africa;cultural;(vi);-26.043536111111;28.053616666667;19
 1678;Astronomical Observatory of the University of Kazan;Russia;cultural;(ii) (iv);55.79083333;49.11916667;3
 1680;Jodensavanne;Suriname;cultural;(iv) (vi);5.4132770237679;-54.952979323445;1
-1681;ESMA Museum and Site of Memory – Former Clandestine Center of Detention, Torture and Extermination;Argentina;cultural;(vi);-34.536627777778;-58.465475;2
+1681;Navy Petty-Officers School of Mechanics;Argentina;cultural;(vi);-34.53841667;-58.46361111;2
 1683;Eise Eisinga Planetarium;Netherlands;cultural;(iv);53.187375;5.5437527777778;1
 1685;Tigrovaya Balka Nature Reserve;Tajikistan;natural;(ix);37.25;68.5;1
 1686;Anticosti;Canada;natural;(viii);49.538611111111;-63.245277777778;1
@@ -1206,7 +1206,7 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1688;Cultural Landscape of Kenozero Lake;Russia;cultural;(iii);61.928;38.172611;1
 1689;Fort Ancient;United States;cultural;(iii) (vi);39.407783333333;-84.090252777778;3
 1692;Evaporitic Karst and Caves of Northern Apennines;Italy;natural;(viii);44.379944444444;10.388916666667;1
-1693;Cold Winter Deserts of Turan;Uzbekistan;natural;(ix) (x);44.025833333333;79.034166666667;3
+1693;Cold Winter Deserts of Turan;Kazakhstan;natural;(ix) (x);44.025833333333;79.034166666667;3
 1694;Wooden Hypostyle Mosques of Medieval Anatolia;Turkey;cultural;(ii) (iv);38.755036111111;30.529575;1
 1695;Zagori;Greece;cultural;(v);39.8667;20.7;1
 1696;Cultural Landscape of Khinalig People and “Köç Yolu” Transhumance Route;Azerbaijan;cultural;(iii) (v);40.7059;48.8854;1
@@ -1235,9 +1235,9 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1726;The Palaces of King Ludwig II of Bavaria: Neuschwanstein, Linderhof, Schachen and Herrenchiemsee;Germany;cultural;(iv);47.557488888889;10.749441944444;5
 1728;;Denmark;natural;(viii);54.964167;12.552222;1
 1730;Necropolis of Su Crucifissu Mannu;Italy;cultural;(iii);40.81029722;8.44417778;4
-1731;Sardis;Turkey;cultural;(iii);38.488314;28.040286;4
+1731;Sardis and the Lydian Tumuli of Bin Tepe;Turkey;cultural;(iii);38.481944444444;28.045277777778;4
 1732;The Complex of Yen Tu Monuments and Landscape;Vietnam;cultural;(iii) (vi);21.0768;106.719;1
-1733;Zominthos;Greece;cultural;(ii) (iii) (iv) (vi);35.24869444;24.88713889;6
+1733;Minoan Palatial Centres;Greece;cultural;(ii) (iii) (iv) (vi);35.297222222222;25.1625;6
 1734;Forest Research Institute Malaysia Forest Park Selangor;Malaysia;cultural;(iv);3.2333333333333;101.63333333333;1
 1735;Jabal Al Fayah;United Arab Emirates;cultural;(iii) (iv);25.111404;55.838957;1
 1736;Western Xia Mausoleums;People's Republic of China;cultural;(ii) (iii);38.435035;105.987167;1
@@ -1249,4 +1249,4 @@ whc_id;nombre;pais;categoria;criterios;lat;lon;n_componentes
 1746;Gola-Tiwai complex;Sierra Leone;natural;(ix) (x);7.3666666666667;-11.2;4
 1747;Cavernas do Peruaçu Environmental Protection Area;Brazil;natural;(vii) (viii);-14.9;-44.05;1
 1748;Cambodian Memorial Sites: From centres of repression to places of peace and reflection;Cambodia;cultural;(vi);11.484388888889;104.90196944444;2
-1749;Tell Umm el-'Amr;Palestine;cultural;(ii) (iii) (vi);31.447222222222;34.366388888889;2
+1749;Saint Hilarion monastery;Palestine;cultural;(ii) (iii) (vi);31.4472;34.3663;2
