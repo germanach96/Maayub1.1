@@ -140,11 +140,19 @@ def visitas_mensuales(titulo):
     Excluye años COVID y exige un mínimo de meses."""
     url = PAGEVIEWS.format(art=quote(titulo, safe=""),
                            ini=f"{ANIO_INI}010100", fin=f"{ANIO_FIN}123100")
-    try:
-        r = requests.get(url, headers=HTTP_HEADERS, timeout=60)
-    except Exception:
-        return None
-    if r.status_code != 200:
+    r = None
+    for intento in range(5):
+        try:
+            r = requests.get(url, headers=HTTP_HEADERS, timeout=60)
+        except Exception:
+            time.sleep(2 * (intento + 1))
+            continue
+        if r.status_code == 200:
+            break
+        if r.status_code == 404:
+            return None                       # el artículo no existe: sin dato real
+        time.sleep(2 * (intento + 1))         # 429/5xx: backoff y reintento
+    if r is None or r.status_code != 200:
         return None
     por_mes = defaultdict(list)
     for it in r.json().get("items", []):
