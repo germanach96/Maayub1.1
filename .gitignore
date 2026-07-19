@@ -8,3 +8,9 @@ clima_destinos.csv
 failed_airports.txt
 resultado_*.csv
 resultado.csv
+
+# Frontend
+frontend/node_modules/
+
+# Entorno
+.env

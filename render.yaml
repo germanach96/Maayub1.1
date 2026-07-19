@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: muuyal
+    runtime: python
+    plan: free
+    # Se compila el frontend en el deploy si hay Node disponible (el runtime
+    # de Python de Render lo incluye); si fallara, se usa el build de React
+    # ya committeado en frontend/dist.
+    buildCommand: |
+      pip install -r backend/requirements.txt
+      (cd frontend && npm install && npm run build) || echo "npm no disponible: se usa frontend/dist committeado"
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: TP_TOKEN
+        sync: false # se introduce a mano en el dashboard de Render, nunca en el repo
+      - key: PYTHON_VERSION
+        value: 3.11.10
