@@ -27,6 +27,11 @@ el disco de Render se borra al dormirse). Cuando pulsa **"Descargar mis
 valoraciones"** se baja un CSV con una fila por vuelo valorado, y ese es el
 archivo que te manda.
 
+El deslizador arranca en la nota que puso muuyal, así que valorar es
+corregirla. **Si se separa 10 puntos o más, la web le obliga a decir por qué**,
+eligiendo de una lista (una para subir y otra para bajar). Ese motivo es la
+información más valiosa del archivo: ver §2.1.
+
 Cada fila lleva su nota **y los números del vuelo tal y como estaban en el
 momento de valorarlo**. Eso es lo que permite reajustar los pesos sin volver a
 buscar nada: el "chollo" depende de la búsqueda concreta en la que salió el
@@ -38,6 +43,10 @@ Columnas que importan:
 |---|---|
 | `nota_usuario` | **Su nota, de 0 a 100. Es lo que hay que aprender a predecir.** |
 | `score_muuyal` | La nota 0–100 que le puso la fórmula en ese momento |
+| `motivo` | **Por qué corrigió la nota** (código: `clima_ideal`, `ya_estuve`…). Vacío si su nota y la de muuyal se parecían |
+| `motivo_texto` | Ese mismo motivo en cristiano, para leerlo en Excel |
+| `motivo_sentido` | `sube` o `baja`: si su nota fue más alta o más baja que la de muuyal |
+| `motivo_senales` | Con qué señales de la fórmula tiene que ver ese motivo, separadas por `\|`. **Vacío = algo que la fórmula no puede saber** |
 | `norm_<señal>` | Valor normalizado (0–1) de cada señal en ese vuelo. Vacío = señal neutra ahí |
 | `peso_<señal>` | El peso que tenía esa señal cuando valoró |
 | `id_vuelo` | Identifica la oferta; sirve para no duplicar |
@@ -67,6 +76,24 @@ El script:
 - avisa de las señales de las que no fiarse (pocos datos, casi sin variación,
   o que el ajuste querría apagar del todo).
 
+### 2.1 Qué hace el script con los motivos
+
+Dos cosas, y las dos importan:
+
+1. **Aparta del cálculo** las valoraciones cuyo motivo no apunta a ninguna señal
+   (`destino_me_atrae`, `fechas_bien`, `destino_no_interesa`, `ya_estuve`,
+   `fechas_mal`, `otro`). Son cosas que la fórmula no puede saber con los datos
+   que tiene: dejarlas dentro sería pedirle que aprenda lo imposible, y solo
+   añadiría ruido. **No se borran del maestro**, solo se apartan del ajuste, y
+   el informe dice cuántas.
+2. **Comprueba que el ajuste le da la razón.** Si en 15 correcciones al alza
+   dijo "el clima", el peso del clima debería subir. Si el ajuste lo baja, sale
+   un `⚠ no encaja` y **eso hay que contárselo en vez de aplicar los pesos a
+   ciegas**: o los datos no dan para tanto, o hay algo mal entendido.
+
+Si te llega un CSV viejo sin columna `motivo`, el script funciona igual: se
+limita a no apartar nada y a no imprimir ese informe.
+
 **Cómo funciona el ajuste, por si tienes que defenderlo:** busca los pesos
 `w ≥ 0` que minimizan la diferencia entre `nota_usuario` y la fórmula real
 `100 × Σ w·valor ÷ Σ w_con_dato`. Como es un cociente (las señales sin dato
@@ -85,6 +112,10 @@ Dilo claramente en vez de tocar los pesos igualmente:
   aprender: pídele que valore también vuelos que le parezcan malos.
 - **La predicción no mejora** sobre las valoraciones reservadas. Mejor quedarse
   como está.
+- **Casi todas las correcciones son por motivos que la fórmula no mira.** Si
+  después de apartarlas quedan menos de 40, no hay ajuste que valga: lo que te
+  está diciendo es que su criterio depende de cosas que muuyal no conoce
+  (ganas de ir, fechas, si ya estuvo). Díselo tal cual.
 - **Todas las valoraciones vienen de una sola búsqueda.** Los pesos saldrían
   ajustados a ese origen y esa zona. Avísale y pídele valoraciones de otras
   búsquedas.
@@ -124,7 +155,10 @@ En castellano llano y sin jerga:
 - cuánto mejora la predicción de sus notas (el número de antes y el de después);
 - de qué **no** fiarse: señales con pocos datos o que apenas varían;
 - si hay alguna decisión que tenga que tomar él (una dirección que parece del
-  revés, una señal que el ajuste apaga del todo).
+  revés, una señal que el ajuste apaga del todo);
+- **qué motivos ha dado y si el ajuste les da la razón**, incluidos los
+  `⚠ no encaja`, y cuántas valoraciones se han apartado por motivos que la
+  fórmula no puede aprender.
 
 Y recuérdale que el maestro `valoraciones/valoraciones_maestro.csv` queda
 actualizado en el repo con todas sus valoraciones acumuladas, así que puede

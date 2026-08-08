@@ -38,6 +38,34 @@ SUELTA_DEL_TODO = 150
 # Porcentaje de valoraciones que se reserva para medir si mejora de verdad.
 RESERVA = 0.25
 
+# Motivos por los que el dueño corrige la nota de muuyal. Los que NO apuntan a
+# ninguna señal son cosas que la fórmula no puede saber jamás (que le apetezca
+# ese destino, que las fechas le vengan bien, que ya haya estado). Esas
+# valoraciones se dejan FUERA del ajuste: no hay nada que aprender de ellas y
+# solo meterían ruido. Siguen guardadas en el maestro, eso sí.
+MOTIVOS = {
+    # --- suben la nota ---
+    "destino_me_atrae":     [],
+    "precio_chollo":        ["oportunidad", "price_abs"],
+    "clima_ideal":          ["temp_media", "horas_sol_dia", "dias_lluvia"],
+    "barato_alli":          ["indice_coste"],
+    "mucho_que_ver":        ["unesco_100km"],
+    "poco_turistico":       ["popularidad_0_100", "turismo_idx"],
+    "vuelo_comodo":         ["duration", "transfers"],
+    "fechas_bien":          [],
+    # --- bajan la nota ---
+    "destino_no_interesa":  [],
+    "ya_estuve":            [],
+    "caro_para_lo_que_es":  ["oportunidad", "price_abs"],
+    "clima_malo":           ["temp_media", "horas_sol_dia", "dias_lluvia"],
+    "caro_alli":            ["indice_coste"],
+    "masificado":           ["popularidad_0_100", "turismo_idx"],
+    "vuelo_incomodo":       ["duration", "transfers"],
+    "precio_dudoso":        ["antiguedad_en_dias"],
+    "fechas_mal":           [],
+    "otro":                 [],
+}
+
 
 def leer(ruta):
     return pd.read_csv(ruta, sep=SEP, encoding="utf-8-sig", dtype=str,
@@ -78,6 +106,20 @@ def pesos_actuales(df, señales):
     return out
 
 
+def utilizables(df):
+    """Máscara de las valoraciones que SÍ se pueden usar para ajustar.
+
+    Se caen las que el dueño corrigió por un motivo que la fórmula no mira
+    (le apetece ese destino, las fechas, ya estuvo allí, "otro"): por mucho que
+    se muevan los pesos, esa nota no se puede reproducir con los datos que hay.
+    """
+    if "motivo" not in df.columns:
+        return pd.Series(True, index=df.index)
+    motivo = df["motivo"].fillna("")
+    fuera = [m for m, s in MOTIVOS.items() if not s]
+    return ~motivo.isin(fuera)
+
+
 def matriz(df, señales):
     """X (valores normalizados, NaN = señal neutra) e y (nota 0–100).
 
@@ -88,6 +130,52 @@ def matriz(df, señales):
     y = pd.to_numeric(df["nota_usuario"], errors="coerce").to_numpy()
     ok = ~np.isnan(y)
     return X[ok], y[ok]
+
+
+def informe_motivos(df, señales, actuales, nuevos):
+    """Qué dicen los motivos y si el ajuste les da la razón.
+
+    Si el dueño sube la nota diciendo "el clima", el peso del clima debería
+    subir. Si el ajuste hace lo contrario, no se aplica a ciegas: se avisa.
+    """
+    if "motivo" not in df.columns:
+        return
+    usados = df[df["motivo"].fillna("") != ""]
+    if usados.empty:
+        print("\nNo hay ningún motivo apuntado todavía.")
+        return
+
+    print("\nPor qué corriges la nota")
+    cuenta = usados["motivo"].value_counts()
+    for motivo, n in cuenta.items():
+        etiqueta = (usados.loc[usados["motivo"] == motivo, "motivo_texto"].iloc[0]
+                    if "motivo_texto" in usados.columns else motivo)
+        cuenta_señales = MOTIVOS.get(motivo, [])
+        marca = "" if cuenta_señales else "   (la fórmula no puede saberlo: fuera del ajuste)"
+        print(f"  {n:>4} × {etiqueta}{marca}")
+
+    print("\n¿El ajuste le da la razón a tus motivos?")
+    # Para cada señal: cuántas veces pediste subirla y cuántas bajarla.
+    votos = {s: [0, 0] for s in señales}
+    for _, fila in usados.iterrows():
+        for s in MOTIVOS.get(fila["motivo"], []):
+            if s in votos:
+                votos[s][0 if fila.get("motivo_sentido") == "sube" else 1] += 1
+    algo = False
+    for s, (sube, baja) in votos.items():
+        if sube + baja < 3:
+            continue
+        algo = True
+        pedido = "subir" if sube > baja else "bajar" if baja > sube else "ni fu ni fa"
+        hizo = ("sube" if nuevos[s] > actuales[s] else
+                "baja" if nuevos[s] < actuales[s] else "no la mueve")
+        encaja = ((pedido == "subir" and nuevos[s] > actuales[s]) or
+                  (pedido == "bajar" and nuevos[s] < actuales[s]))
+        print(f"  {s:<22} pediste {pedido:<11} ({sube}↑ {baja}↓) · el ajuste la "
+              f"{hizo:<11} {'✓' if encaja else '⚠ no encaja'}")
+    if not algo:
+        print("  (aún no hay ninguna señal con 3 motivos o más; hacen falta más "
+              "valoraciones para poder cruzarlo)")
 
 
 def predecir(X, w):
@@ -175,8 +263,14 @@ def main():
                     lineterminator="\r\n")
         print(f"Maestro actualizado: {MAESTRO.relative_to(RAIZ)}")
 
-    X, y = matriz(todo, señales)
+    # Fuera las corregidas por algo que la fórmula no puede aprender.
+    sirven = utilizables(todo)
+    descartadas = int((~sirven).sum())
+    X, y = matriz(todo[sirven], señales)
     print(f"Valoraciones utilizables: {len(y)}")
+    if descartadas:
+        print(f"  ({descartadas} apartadas del cálculo: las corregiste por algo "
+              f"que la fórmula no mira. Siguen guardadas en el maestro.)")
 
     actuales = pesos_actuales(todo, señales)
     w0 = np.array([actuales[s] for s in señales], dtype=float)
@@ -230,6 +324,8 @@ def main():
         if actuales[s] >= 4 and nuevos[s] == 0 and var >= 0.05:
             print("      ↳ el ajuste la apaga del todo. O no le importa, o su "
                   "DIRECCIÓN está al revés: pregúntaselo antes de tocarla.")
+
+    informe_motivos(todo, señales, actuales, nuevos)
 
     print("\nQué hacer ahora: ver ACTUALIZAR_FORMULA.md (paso 4 en adelante).")
 

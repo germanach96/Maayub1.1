@@ -58,6 +58,46 @@ const SENAL_LABELS = {
   return_transfers: "Pocas escalas de vuelta",
 };
 
+// Cuando tu nota se separa de la de muuyal por esto o más, se te pregunta por
+// qué. Por debajo se entiende que estás de acuerdo y no se pregunta nada.
+const DIFERENCIA_MOTIVO = 10;
+
+// Motivos por los que corriges la nota. El `senales` de cada uno dice con qué
+// parte de la fórmula tiene que ver; lista vacía = algo que la fórmula no
+// puede saber (y que por eso el ajustador de pesos deja fuera del cálculo).
+const MOTIVOS_SUBE = [
+  { id: "destino_me_atrae", texto: "Ese destino me llama, mire lo que mire", senales: [] },
+  { id: "precio_chollo", texto: "Está muy bien de precio para ese destino",
+    senales: ["oportunidad", "price_abs"] },
+  { id: "clima_ideal", texto: "El clima de ese mes es el que busco",
+    senales: ["temp_media", "horas_sol_dia", "dias_lluvia"] },
+  { id: "barato_alli", texto: "Allí se vive barato", senales: ["indice_coste"] },
+  { id: "mucho_que_ver", texto: "Hay mucho que ver cerca", senales: ["unesco_100km"] },
+  { id: "poco_turistico", texto: "Es poco turístico, y eso me gusta",
+    senales: ["popularidad_0_100", "turismo_idx"] },
+  { id: "vuelo_comodo", texto: "El vuelo es cómodo: corto o sin escalas",
+    senales: ["duration", "transfers"] },
+  { id: "fechas_bien", texto: "Las fechas me vienen bien", senales: [] },
+  { id: "otro", texto: "Otro motivo", senales: [] },
+];
+
+const MOTIVOS_BAJA = [
+  { id: "destino_no_interesa", texto: "Ese destino no me interesa", senales: [] },
+  { id: "ya_estuve", texto: "Ya he estado y no quiero repetir", senales: [] },
+  { id: "caro_para_lo_que_es", texto: "Caro para lo que es",
+    senales: ["oportunidad", "price_abs"] },
+  { id: "clima_malo", texto: "El clima de ese mes no me convence",
+    senales: ["temp_media", "horas_sol_dia", "dias_lluvia"] },
+  { id: "caro_alli", texto: "Estar allí sale caro", senales: ["indice_coste"] },
+  { id: "masificado", texto: "Demasiado turístico o masificado",
+    senales: ["popularidad_0_100", "turismo_idx"] },
+  { id: "vuelo_incomodo", texto: "El vuelo es incómodo: largo, con escalas o a malas horas",
+    senales: ["duration", "transfers"] },
+  { id: "precio_dudoso", texto: "No me fío de ese precio", senales: ["antiguedad_en_dias"] },
+  { id: "fechas_mal", texto: "Las fechas no me vienen bien", senales: [] },
+  { id: "otro", texto: "Otro motivo", senales: [] },
+];
+
 const PAGE_SIZE = 50;
 
 // Dónde guarda el navegador tus valoraciones. Quedan en este dispositivo:
@@ -355,7 +395,20 @@ function leerValoraciones() {
 // Todo lo que hace falta para reajustar los pesos más adelante. Se guardan los
 // datos del vuelo TAL Y COMO ESTABAN al valorarlo: el "chollo" depende de la
 // búsqueda concreta en la que salió y no se puede reconstruir después.
-function registroValoracion(f, nota, meta, senales) {
+// Si corriges la nota de muuyal, ¿hacia dónde y con qué lista de motivos?
+function correccion(f, nota) {
+  if (f.score == null) return { hace_falta: false, sentido: "", lista: [] };
+  const dif = Math.round(nota) - f.score;
+  if (Math.abs(dif) < DIFERENCIA_MOTIVO) return { hace_falta: false, sentido: "", lista: [] };
+  return {
+    hace_falta: true,
+    dif,
+    sentido: dif > 0 ? "sube" : "baja",
+    lista: dif > 0 ? MOTIVOS_SUBE : MOTIVOS_BAJA,
+  };
+}
+
+function registroValoracion(f, nota, motivo, meta, senales) {
   const e = f.enrichment || {};
   const clima = e.clima || {};
   const turismo = e.turismo || {};
@@ -367,6 +420,13 @@ function registroValoracion(f, nota, meta, senales) {
     fecha_valoracion: new Date().toISOString(),
     nota_usuario: String(Math.round(nota)),   // 0–100, igual que score_muuyal
     score_muuyal: f.score ?? "",
+    // Por qué corriges la nota. Vacío = tu nota y la de muuyal se parecen y no
+    // se preguntó nada. `motivo_senales` dice con qué parte de la fórmula tiene
+    // que ver: vacío significa "esto la fórmula no puede saberlo".
+    motivo: motivo?.id ?? "",
+    motivo_texto: motivo?.texto ?? "",
+    motivo_sentido: motivo ? correccion(f, nota).sentido : "",
+    motivo_senales: (motivo?.senales || []).join("|"),
     score_flags: (f.score_flags || []).join("|"),
     enrichment_gaps: (f.enrichment_gaps || []).join("|"),
     busqueda_origen: meta?.origin ?? "",
@@ -442,10 +502,12 @@ function descargarTexto(nombre, texto) {
 // Subpantalla de un vuelo: todos sus datos, el desglose de la nota, el enlace
 // a Aviasales y el deslizador para ponerle tu nota del 0 al 10.
 function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto, onGuardar, onBorrar, onCerrar }) {
-  // El deslizador arranca en la nota que ya tuviera ese vuelo, o en 5 si aún
-  // no lo has valorado. Al abrir otro vuelo, el padre remonta esta pantalla
-  // (le pasa una `key` distinta), así que el estado se rehace solo.
-  const [nota, setNota] = useState(valoracion ? Number(valoracion.nota_usuario) : 50);
+  // El deslizador arranca donde lo dejaste, o en la nota de muuyal si es la
+  // primera vez: así valorar es "corregirle". Al abrir otro vuelo, el padre
+  // remonta esta pantalla (le pasa una `key` distinta) y el estado se rehace.
+  const [nota, setNota] = useState(
+    valoracion ? Number(valoracion.nota_usuario) : (f.score ?? 50));
+  const [motivo, setMotivo] = useState(valoracion?.motivo || "");
   const [guardado, setGuardado] = useState(false);
 
   useEffect(() => {
@@ -459,6 +521,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
   }, [onCerrar]);
 
   const e = f.enrichment || {};
+  const corrijo = correccion(f, nota);
   const desglose = desgloseDe(f, senales);
   // Extremos de la ruta. Se usan el origen de la búsqueda y el aeropuerto
   // enriquecido (no `origin`/`destination` del vuelo, que a veces vienen como
@@ -540,12 +603,48 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
               <input
                 type="range" min="0" max="100" step="1" value={nota}
                 aria-label="Tu nota del 0 al 100"
-                onChange={(ev) => { setNota(Number(ev.target.value)); setGuardado(false); }}
+                onChange={(ev) => {
+                  const nueva = Number(ev.target.value);
+                  // Al cruzar de subir a bajar (o al dejar de corregir), el
+                  // motivo elegido ya no vale: la lista es otra.
+                  if (correccion(f, nueva).sentido !== corrijo.sentido) setMotivo("");
+                  setNota(nueva);
+                  setGuardado(false);
+                }}
               />
               <div className="valorar-escala muted small"><span>0</span><span>100</span></div>
             </div>
+
+            {/* Solo se pregunta el motivo cuando de verdad estás corrigiendo:
+                a menos de 10 puntos de diferencia se entiende que coincides. */}
+            {corrijo.hace_falta && (
+              <div className="motivo">
+                <label htmlFor="motivo-correccion">
+                  Le pones <b>{Math.abs(corrijo.dif)} puntos {corrijo.sentido === "sube" ? "más" : "menos"}</b>
+                  {" "}que muuyal ({f.score}/100). ¿Por qué?
+                </label>
+                <select
+                  id="motivo-correccion"
+                  value={motivo}
+                  onChange={(ev) => { setMotivo(ev.target.value); setGuardado(false); }}
+                >
+                  <option value="">— elige el motivo —</option>
+                  {corrijo.lista.map((m) => (
+                    <option key={m.id} value={m.id}>{m.texto}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="valorar-acciones">
-              <button type="button" onClick={() => { onGuardar(f, nota); setGuardado(true); }}>
+              <button
+                type="button"
+                disabled={corrijo.hace_falta && !motivo}
+                onClick={() => {
+                  onGuardar(f, nota, corrijo.lista.find((m) => m.id === motivo) || null);
+                  setGuardado(true);
+                }}
+              >
                 {guardado ? "Guardado ✓" : "Guardar valoración"}
               </button>
               {valoracion && (
@@ -557,7 +656,8 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
             {valoracion && !guardado && (
               <p className="muted small">
                 Ya la valoraste con un {Math.round(Number(valoracion.nota_usuario))}/100
-                {" "}el {fmtDia(valoracion.fecha_valoracion.slice(0, 10))}.
+                {" "}el {fmtDia(valoracion.fecha_valoracion.slice(0, 10))}
+                {valoracion.motivo_texto && <> · «{valoracion.motivo_texto}»</>}.
               </p>
             )}
           </section>
@@ -786,8 +886,8 @@ export default function App() {
   const aeropuertoOrigen = aeropuerto(origin);
 
   // --- valoraciones manuales ------------------------------------------
-  const guardarValoracion = (f, nota) => {
-    const reg = registroValoracion(f, nota, result?.meta, senales);
+  const guardarValoracion = (f, nota, motivo) => {
+    const reg = registroValoracion(f, nota, motivo, result?.meta, senales);
     setValoraciones((prev) => {
       const next = { ...prev, [reg.id_vuelo]: reg };
       try { localStorage.setItem(LS_VALORACIONES, JSON.stringify(next)); } catch {}
