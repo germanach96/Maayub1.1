@@ -799,7 +799,46 @@ export default function App() {
     descargarTexto(`valoraciones_muuyal_${hoy}.csv`, csvDeValoraciones(regs));
   };
 
+  // Borrar es irreversible y las valoraciones cuestan tiempo: se pregunta
+  // antes, y se avisa si aún no se han descargado.
+  const borrarTodasLasValoraciones = () => {
+    const n = Object.keys(valoraciones).length;
+    if (n === 0) return;
+    const aviso = `Vas a borrar tus ${n} valoraciones guardadas en este dispositivo.\n\n`
+      + "No se pueden recuperar. Si aún no las has descargado, cancela y "
+      + "descárgalas primero.\n\n¿Seguro que quieres borrarlas?";
+    if (!window.confirm(aviso)) return;
+    setValoraciones({});
+    try {
+      localStorage.removeItem(LS_VALORACIONES);
+      localStorage.removeItem(LS_VALORACIONES_V1);
+    } catch {}
+  };
+
   const nValoraciones = Object.keys(valoraciones).length;
+
+  // Los mismos dos botones valen en la portada y en la barra de filtros.
+  const BotonesValoraciones = () => (
+    <>
+      <button
+        type="button"
+        className="btn-sec"
+        onClick={descargarValoraciones}
+        title="Descarga un CSV con tus valoraciones para afinar la fórmula"
+      >
+        ⭳ Descargar mis valoraciones
+        <span className="badge-filtros">{nValoraciones}</span>
+      </button>
+      <button
+        type="button"
+        className="btn-sec btn-borrar"
+        onClick={borrarTodasLasValoraciones}
+        title="Borra tus valoraciones de este dispositivo (descárgalas antes)"
+      >
+        Borrar
+      </button>
+    </>
+  );
 
   // Países presentes en los resultados, con su número de vuelos.
   const paises = useMemo(() => {
@@ -951,10 +990,7 @@ export default function App() {
           minutos: si hay valoraciones guardadas, el botón también está aquí. */}
       {!result && nValoraciones > 0 && (
         <div className="descarga-portada">
-          <button type="button" className="btn-sec" onClick={descargarValoraciones}>
-            ⭳ Descargar mis valoraciones
-            <span className="badge-filtros">{nValoraciones}</span>
-          </button>
+          <BotonesValoraciones />
         </div>
       )}
 
@@ -969,16 +1005,14 @@ export default function App() {
       )}
       </div>
 
+      {/* Mientras busca, solo el cronómetro, en una pastilla legible por encima
+          del globo: el texto suelto quedaba detrás del planeta y no se leía. */}
       {loading && (
         <div className="loading">
-          <div className="spinner" />
-          <p>
-            Consultando la API de Aviasales… <Cronometro desde={loadingDesde} />
-          </p>
-          <p className="muted">
-            Se lanzan cientos de consultas (3 por destino). En el servidor gratuito
-            la primera búsqueda puede tardar 1–3 minutos, y más si estaba dormido.
-          </p>
+          <div className="loading-pastilla">
+            <div className="spinner" />
+            <span>Buscando vuelos… <Cronometro desde={loadingDesde} /></span>
+          </div>
         </div>
       )}
 
@@ -992,6 +1026,12 @@ export default function App() {
             <b>{result.meta.origin}</b> ({result.meta.group}) ·{" "}
             {result.meta.elapsed_seconds}s
             {fechaConsulta && <> · búsqueda del {fmtDia(fechaConsulta)}</>}
+            {/* Decir siempre de qué no fiarse: aquí, lo que se ha dejado fuera */}
+            {result.meta.descartados_sin_datos > 0 && (
+              <> · <span title="Aviasales devolvió vuelos a aeropuertos que no están en los datos de destino: se dejan fuera porque no se puede saber nada de ellos">
+                {result.meta.descartados_sin_datos} fuera por no tener datos del destino
+              </span></>
+            )}
             {nFiltrosActivos > 0 && (
               <> · <b>{vuelosFiltrados.length.toLocaleString("es-ES")}</b> tras filtrar</>
             )}
@@ -1040,17 +1080,7 @@ export default function App() {
                 Limpiar
               </button>
             )}
-            {nValoraciones > 0 && (
-              <button
-                type="button"
-                className="btn-sec"
-                onClick={descargarValoraciones}
-                title="Descarga un CSV con tus valoraciones para afinar la fórmula"
-              >
-                ⭳ Descargar mis valoraciones
-                <span className="badge-filtros">{nValoraciones}</span>
-              </button>
-            )}
+            {nValoraciones > 0 && <BotonesValoraciones />}
           </div>
 
           {panelAbierto && (

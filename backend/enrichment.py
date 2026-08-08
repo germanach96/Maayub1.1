@@ -96,3 +96,19 @@ def enrich_flight(vuelo: dict, origen_usuario: str, data: MasterData) -> dict:
 
 def enrich_all(vuelos: list[dict], origen_usuario: str, data: MasterData) -> list[dict]:
     return [enrich_flight(v, origen_usuario, data) for v in vuelos]
+
+
+def descartar_no_mapeados(vuelos: list[dict], data: MasterData) -> list[dict]:
+    """Quita los vuelos cuyo destino no está en los CSVs maestros.
+
+    Aviasales devuelve a veces vuelos a aeropuertos que no están entre los 575
+    del maestro (TFU en Chengdú, NLU en Ciudad de México, códigos de ciudad sin
+    resolver...). De esos no se sabe nada del destino: ni clima, ni coste, ni
+    turismo, ni patrimonio. La puntuación se calcula con lo poco que queda
+    (precio, duración, escalas) y les salía una nota altísima, así que
+    encabezaban la lista siendo justo los vuelos de los que menos sabemos.
+
+    Se quitan de la respuesta, y además ANTES de puntuar: si no, sus precios
+    contaminarían las medianas por destino con las que se mide el chollo.
+    """
+    return [v for v in vuelos if v.get("enrich_airport") in data.airport_names]

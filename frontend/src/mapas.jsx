@@ -9,13 +9,13 @@
  *
  * Rendimiento: el globo gira redibujándose muchas veces por segundo, así que
  * NO se repinta con React. El bucle escribe directamente el atributo `d` de
- * tres rutas (tierra, fronteras y meridianos), que es lo único que cambia.
+ * tres rutas (tierra, fronteras y aeropuertos), que es lo único que cambia.
  * Además se para solo cuando la pestaña no se ve o cuando el sistema pide
  * menos animaciones.
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { geoOrthographic, geoEquirectangular, geoPath, geoGraticule10, geoDistance } from "d3-geo";
+import { geoOrthographic, geoEquirectangular, geoPath, geoDistance } from "d3-geo";
 import { feature, mesh } from "topojson-client";
 
 // El radio con el que se proyecta es fijo y el tamaño real lo pone el CSS:
@@ -69,7 +69,6 @@ export function Globo({ destino, etiqueta, aeropuertos }) {
   const [mundo, setMundo] = useState(null);
   const tierraRef = useRef(null);
   const fronterasRef = useRef(null);
-  const mallaRef = useRef(null);
   const puntosRef = useRef(null);
   const marcaRef = useRef(null);
   const anilloRef = useRef(null);
@@ -109,7 +108,6 @@ export function Globo({ destino, etiqueta, aeropuertos }) {
     const proyeccion = geoOrthographic().translate([R, R]).scale(R - 1).precision(1);
     const dibujo = geoPath(proyeccion);
     const dibujoPuntos = geoPath(proyeccion).pointRadius(0.9);
-    const malla = geoGraticule10();
     const quieto = menosAnimaciones();
 
     let animacion = 0;
@@ -143,7 +141,6 @@ export function Globo({ destino, etiqueta, aeropuertos }) {
       proyeccion.rotate(rot.current);
       tierraRef.current?.setAttribute("d", dibujo(mundo.tierra) || "");
       fronterasRef.current?.setAttribute("d", dibujo(mundo.fronteras) || "");
-      mallaRef.current?.setAttribute("d", dibujo(malla) || "");
       if (puntos.coordinates.length) {
         puntosRef.current?.setAttribute("d", dibujoPuntos(puntos) || "");
       }
@@ -180,13 +177,11 @@ export function Globo({ destino, etiqueta, aeropuertos }) {
     <div className="globo">
       <svg viewBox={`0 0 ${LADO} ${LADO}`} role="img"
            aria-label={destino ? `Globo terráqueo centrado en ${destino.code}` : "Globo terráqueo girando"}>
-        {/* océano */}
-        <circle cx={R} cy={R} r={R - 1} className="globo-mar" />
-        <path ref={mallaRef} className="globo-malla" />
+        {/* océano: sin línea de borde ni meridianos, solo el disco de color */}
+        <circle cx={R} cy={R} r={R} className="globo-mar" />
         <path ref={tierraRef} className="globo-tierra" />
         <path ref={fronterasRef} className="globo-fronteras" />
         <path ref={puntosRef} className="globo-puntos" />
-        <circle cx={R} cy={R} r={R - 1} className="globo-borde" />
         <circle ref={anilloRef} r="7" className="globo-anillo" style={{ display: "none" }} />
         <circle ref={marcaRef} r="3.2" className="globo-marca" style={{ display: "none" }} />
       </svg>
