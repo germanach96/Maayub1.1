@@ -9,6 +9,7 @@ Endpoints:
 """
 
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -65,6 +66,10 @@ def search(req: SearchRequest):
         "meta": {
             "origin": origen,
             "group": req.group,
+            # Día en que se lanza esta búsqueda. El frontend lo usa como
+            # referencia para calcular la antigüedad de cada precio cacheado
+            # (dia_busqueda), en vez de fiarse del reloj del navegador.
+            "fecha_consulta": datetime.now(timezone.utc).date().isoformat(),
             "destinations_queried": len(destinos),
             "api_calls": len(destinos) * 3,
             "flights_found": len(enriquecidos),

@@ -36,6 +36,54 @@ function fmtNum(v, dec = 0, suffix = "") {
   return Number(v).toFixed(dec) + suffix;
 }
 
+// "2026-07-07" -> "07 jul 2026". Se construye la fecha en horario local para
+// que no se desplace un día en zonas horarias negativas.
+function fmtDia(d) {
+  if (!d) return "—";
+  const [y, m, dd] = String(d).split("-");
+  if (!y || !m || !dd) return d;
+  return new Date(Number(y), Number(m) - 1, Number(dd))
+    .toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+// Antigüedad del precio: los precios de Aviasales salen de su caché, y
+// `dia_busqueda` es el día en que ese precio se guardó. Cuanto más viejo,
+// menos fiable. Se compara contra la fecha de la consulta (la da el backend).
+function diasCache(f, fechaConsulta) {
+  if (!f.dia_busqueda || !fechaConsulta) return null;
+  const guardado = Date.parse(f.dia_busqueda + "T00:00:00Z");
+  const consulta = Date.parse(fechaConsulta + "T00:00:00Z");
+  if (isNaN(guardado) || isNaN(consulta)) return null;
+  return Math.max(0, Math.round((consulta - guardado) / 86400000));
+}
+
+function nivelCache(dias) {
+  if (dias == null) return "";
+  if (dias <= 1) return "fresco";
+  if (dias <= 3) return "medio";
+  return "viejo";
+}
+
+function textoCache(dias) {
+  if (dias == null) return "—";
+  if (dias === 0) return "hoy";
+  if (dias === 1) return "ayer";
+  return `hace ${dias} días`;
+}
+
+function Frescura({ f, fechaConsulta, chip = false }) {
+  const dias = diasCache(f, fechaConsulta);
+  if (dias == null) return <span className="muted">—</span>;
+  return (
+    <span
+      className={(chip ? "chip cache " : "cache ") + nivelCache(dias)}
+      title={`Aviasales guardó este precio el ${fmtDia(f.dia_busqueda)}`}
+    >
+      {chip ? "precio " : ""}{textoCache(dias)}
+    </span>
+  );
+}
+
 function Cronometro({ desde }) {
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -92,6 +140,7 @@ export default function App() {
   // filtros / orden / paginación de resultados
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroDestino, setFiltroDestino] = useState("");
+  const [maxCache, setMaxCache] = useState("");
   const [orden, setOrden] = useState("price");
   const [page, setPage] = useState(0);
 
@@ -124,6 +173,7 @@ export default function App() {
     setPage(0);
     setFiltroTipo("");
     setFiltroDestino("");
+    setMaxCache("");
     try {
       const resp = await fetch("/api/search", {
         method: "POST",
@@ -142,6 +192,8 @@ export default function App() {
     }
   }
 
+  const fechaConsulta = result?.meta?.fecha_consulta;
+
   const vuelosFiltrados = useMemo(() => {
     if (!result) return [];
     let v = result.flights;
@@ -154,14 +206,22 @@ export default function App() {
           (f.enrich_airport_name || "").toLowerCase().includes(q)
       );
     }
+    if (maxCache) {
+      const tope = Number(maxCache);
+      v = v.filter((f) => {
+        const d = diasCache(f, fechaConsulta);
+        return d != null && d <= tope;
+      });
+    }
     const key = {
       price: (f) => Number(f.price) || Infinity,
       duration: (f) => Number(f.duration) || Infinity,
       temp: (f) => -(f.enrichment?.clima?.temp_media ?? -Infinity),
       popularidad: (f) => -(f.enrichment?.turismo?.popularidad_0_100 ?? -Infinity),
+      cache: (f) => diasCache(f, fechaConsulta) ?? Infinity,
     }[orden];
     return [...v].sort((a, b) => key(a) - key(b));
-  }, [result, filtroTipo, filtroDestino, orden]);
+  }, [result, filtroTipo, filtroDestino, maxCache, orden, fechaConsulta]);
 
   const totalPages = Math.max(1, Math.ceil(vuelosFiltrados.length / PAGE_SIZE));
   const pagina = vuelosFiltrados.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -244,6 +304,7 @@ export default function App() {
             {result.meta.destinations_queried} destinos consultados desde{" "}
             <b>{result.meta.origin}</b> ({result.meta.group}) ·{" "}
             {result.meta.elapsed_seconds}s
+            {fechaConsulta && <> · búsqueda del {fmtDia(fechaConsulta)}</>}
           </div>
 
           <div className="filtros">
@@ -259,11 +320,18 @@ export default function App() {
               value={filtroDestino}
               onChange={(e) => { setFiltroDestino(e.target.value); setPage(0); }}
             />
+            <select value={maxCache} onChange={(e) => { setMaxCache(e.target.value); setPage(0); }}>
+              <option value="">Precio de cualquier fecha</option>
+              <option value="0">Solo precios de hoy</option>
+              <option value="1">Precios de hoy o ayer</option>
+              <option value="3">Precios de 3 días o menos</option>
+            </select>
             <select value={orden} onChange={(e) => setOrden(e.target.value)}>
               <option value="price">Más baratos</option>
               <option value="duration">Más cortos</option>
               <option value="temp">Más cálidos</option>
               <option value="popularidad">Más populares</option>
+              <option value="cache">Precio más reciente</option>
             </select>
           </div>
 
@@ -283,6 +351,7 @@ export default function App() {
                   <th>Turismo</th>
                   <th>Coste</th>
                   <th>UNESCO</th>
+                  <th>Precio de</th>
                   <th>Precio</th>
                 </tr>
               </thead>
@@ -339,6 +408,9 @@ export default function App() {
                           <span className="muted">—</span>
                         )}
                       </td>
+                      <td>
+                        <Frescura f={f} fechaConsulta={fechaConsulta} />
+                      </td>
                       <td className="precio-cell">
                         <a href={f.link} target="_blank" rel="noreferrer" className="precio">
                           {fmtNum(f.price, 0)} €
@@ -378,6 +450,7 @@ export default function App() {
                     {" · "}{f.transfers ?? "?"} escala(s)
                   </div>
                   <div className="card-chips">
+                    <Frescura f={f} fechaConsulta={fechaConsulta} chip />
                     {e.clima && (
                       <span className="chip">🌡 {fmtNum(e.clima.temp_media, 0, "°")} · ☀ {fmtNum(e.clima.horas_sol_dia, 1)}h</span>
                     )}

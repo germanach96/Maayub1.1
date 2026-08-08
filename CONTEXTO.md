@@ -13,8 +13,9 @@ convirtió en una app desplegable.
 
 ## Estado actual
 
-Todo en la rama `claude/muuyal-flight-search-enrichment-ejlfrb`, commit
-"Fase 1: web app de búsqueda de vuelos con enriquecimiento". Sin PR abierto.
+Fase 1 fusionada a `main` (PRs #16 y #17) y **desplegada en Render**, donde el
+usuario la ha probado y funciona. Render redespliega solo con cada push a
+`main`; el trabajo nuevo va en ramas aparte y entra por PR.
 
 ```
 backend/
@@ -88,6 +89,18 @@ hueco se lista en `enrichment_gaps`, que el frontend muestra como etiqueta.
   frontend se sirven correctamente.
 - **No verificado**: el deploy real en Render, ni la app abierta en un
   navegador de verdad (solo se comprobó que el HTML y los assets se sirven).
+
+## Antigüedad del precio (añadido tras la Fase 1)
+
+Los precios de Aviasales salen de su caché: `dia_busqueda` (ya se extraía del
+link) es el día en que se guardó ese precio. El backend añade
+`meta.fecha_consulta` (fecha UTC de la búsqueda) y el frontend calcula contra
+ella la antigüedad: columna "Precio de" en la tabla, chip en móvil, filtro por
+antigüedad máxima y orden "Precio más reciente".
+
+Umbrales: ≤1 día verde, 2–3 ámbar, ≥4 rojo. Medido sobre el CSV de ejemplo,
+Aviasales nunca devuelve caché de más de ~7 días, pero el 30% de los vuelos
+traía precios de 4 días o más.
 
 ## Pendientes
 
