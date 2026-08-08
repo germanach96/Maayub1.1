@@ -104,6 +104,75 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
 .meta { margin: 1rem 0 0.5rem; color: var(--muted); }
 .filtros { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
 
+/* botones secundarios de la barra de filtros */
+.btn-sec {
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-weight: 500;
+  padding: 0.55rem 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.btn-sec:hover { background: var(--bg); }
+.badge-filtros {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+  min-width: 1.2em;
+  text-align: center;
+}
+
+/* panel de filtros avanzados */
+.panel-filtros {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem 1.5rem;
+}
+.grupo-filtros h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+.rango { margin-bottom: 0.5rem; }
+.rango > label { display: block; font-size: 0.82rem; margin-bottom: 0.15rem; }
+.rango-inputs { display: flex; align-items: center; gap: 0.35rem; }
+.rango-inputs input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: #fff;
+  color: var(--text);
+}
+.nota-filtros { grid-column: 1 / -1; margin: 0; }
+
+.vacio {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+.vacio button { margin-top: 0.75rem; }
+
+.nowrap { white-space: nowrap; }
+
 .tipo-badge {
   display: inline-block;
   color: #fff;
@@ -128,6 +197,12 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
 
 .idx.alta { color: #dc2626; font-weight: 600; }
 .idx.baja { color: #059669; }
+
+/* antigüedad del precio cacheado de Aviasales */
+.cache { white-space: nowrap; font-weight: 600; }
+.cache.fresco { color: #047857; }
+.cache.medio { color: #b45309; }
+.cache.viejo { color: #b91c1c; }
 
 .precio { font-weight: 700; color: var(--accent); text-decoration: none; white-space: nowrap; }
 .precio:hover { text-decoration: underline; }
@@ -197,5 +272,8 @@ tbody tr:hover { background: #f1f5f9; }
     padding: 0.15rem 0.55rem;
     white-space: nowrap;
   }
+  .chip.cache.fresco { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+  .chip.cache.medio { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+  .chip.cache.viejo { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
   .search-form { flex-direction: column; align-items: stretch; }
 }

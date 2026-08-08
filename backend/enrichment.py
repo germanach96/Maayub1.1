@@ -24,7 +24,7 @@ Si algún CSV no tiene match, el vuelo NO se descarta: sus campos van a null
 y el hueco queda registrado en `enrichment_gaps`.
 """
 
-from .data import MasterData
+from .data import MasterData, distancia_km
 
 
 def _mes_de(fecha_iso):
@@ -81,7 +81,14 @@ def enrich_flight(vuelo: dict, origen_usuario: str, data: MasterData) -> dict:
     out = dict(vuelo)
     out["enrich_airport"] = enrich_airport
     out["enrich_airport_name"] = data.airport_names.get(enrich_airport)
+    out["enrich_country"] = data.airport_country.get(enrich_airport)
     out["enrich_month"] = mes
+    # Aviasales no devuelve distancia, solo duración. Se calcula en línea recta
+    # entre las coordenadas de los dos aeropuertos (ambos en el CSV maestro).
+    out["distancia_km"] = distancia_km(
+        data.airport_coords.get(origen_usuario),
+        data.airport_coords.get(enrich_airport),
+    )
     out["enrichment"] = enrichment
     out["enrichment_gaps"] = gaps
     return out

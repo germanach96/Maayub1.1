@@ -13,8 +13,9 @@ convirtió en una app desplegable.
 
 ## Estado actual
 
-Todo en la rama `claude/muuyal-flight-search-enrichment-ejlfrb`, commit
-"Fase 1: web app de búsqueda de vuelos con enriquecimiento". Sin PR abierto.
+Fase 1 fusionada a `main` (PRs #16 y #17) y **desplegada en Render**, donde el
+usuario la ha probado y funciona. Render redespliega solo con cada push a
+`main`; el trabajo nuevo va en ramas aparte y entra por PR.
 
 ```
 backend/
@@ -88,6 +89,43 @@ hueco se lista en `enrichment_gaps`, que el frontend muestra como etiqueta.
   frontend se sirven correctamente.
 - **No verificado**: el deploy real en Render, ni la app abierta en un
   navegador de verdad (solo se comprobó que el HTML y los assets se sirven).
+
+## Antigüedad del precio (añadido tras la Fase 1)
+
+Los precios de Aviasales salen de su caché: `dia_busqueda` (ya se extraía del
+link) es el día en que se guardó ese precio. El backend añade
+`meta.fecha_consulta` (fecha UTC de la búsqueda) y el frontend calcula contra
+ella la antigüedad: columna "Precio de" en la tabla, chip en móvil, filtro por
+antigüedad máxima y orden "Precio más reciente".
+
+Umbrales: ≤1 día verde, 2–3 ámbar, ≥4 rojo. Medido sobre el CSV de ejemplo,
+Aviasales nunca devuelve caché de más de ~7 días, pero el 30% de los vuelos
+traía precios de 4 días o más.
+
+## Filtros (añadido tras la Fase 1)
+
+Panel plegable "Más filtros" con 11 rangos mín/máx (precio, duración, escalas,
+distancia, temperatura, horas de sol, días de lluvia, popularidad, índice
+turístico del mes, índice de coste, UNESCO), más selector de país, el filtro de
+antigüedad del precio y "Limpiar". Todo se filtra en el navegador: los vuelos ya
+están descargados, no se vuelve a llamar a la API.
+
+Criterio: un vuelo **sin dato** en el campo filtrado queda FUERA mientras ese
+filtro esté puesto (no se puede afirmar que lo cumpla).
+
+Dos datos que no existían y se crearon para esto:
+
+- **`distancia_km`**: Aviasales no devuelve distancia, solo duración. Se calcula
+  con el semiverseno entre las coordenadas de origen y destino, que están en
+  `airports_flightable_categorized.csv` (columna `coordinates`, texto con forma
+  de dict). Los 575 aeropuertos tienen coordenadas.
+- **`enrich_country`**: código ISO del país del destino. El nombre en español lo
+  resuelve el navegador con `Intl.DisplayNames`, sin lista que mantener.
+
+**Trampa de pandas encontrada aquí**: el código de país de Namibia es `NA` y
+pandas lo leía como nulo, dejando a Windhoek (WDH) sin país. Se lee el CSV de
+aeropuertos con `keep_default_na=False, na_values=[""]`. Si alguien quita eso,
+WDH vuelve a romperse.
 
 ## Pendientes
 
