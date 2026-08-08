@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Globo, MapaRuta } from "./mapas";
 
 // Colores de la paleta de marca. Cada par cumple el contraste AA indicado en
 // handoff/CONTEXT.md: texto oscuro sobre naranja, texto crema sobre
@@ -415,7 +416,7 @@ function descargarTexto(nombre, texto) {
 
 // Subpantalla de un vuelo: todos sus datos, el desglose de la nota, el enlace
 // a Aviasales y el deslizador para ponerle tu nota del 0 al 10.
-function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, onGuardar, onBorrar, onCerrar }) {
+function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto, onGuardar, onBorrar, onCerrar }) {
   // El deslizador arranca en la nota que ya tuviera ese vuelo, o en 5 si aún
   // no lo has valorado. Al abrir otro vuelo, el padre remonta esta pantalla
   // (le pasa una `key` distinta), así que el estado se rehace solo.
@@ -434,6 +435,15 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, onGuardar, 
 
   const e = f.enrichment || {};
   const desglose = desgloseDe(f, senales);
+  // Extremos de la ruta. Se usan el origen de la búsqueda y el aeropuerto
+  // enriquecido (no `origin`/`destination` del vuelo, que a veces vienen como
+  // código de ciudad y no están en el maestro), girados según el sentido:
+  // en las vueltas el vuelo va del destino a casa.
+  const ida = f.tipo_llamada !== "OW_VUELTA";
+  const casa = aeropuerto?.(meta?.origin);
+  const lejos = aeropuerto?.(f.enrich_airport);
+  const rutaA = ida ? casa : lejos;
+  const rutaB = ida ? lejos : casa;
   const pesoPresente = desglose.reduce((s, d) => s + d.peso, 0);
   const dato = (label, valor) => (
     <div className="dato">
@@ -482,6 +492,8 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, onGuardar, 
               Ver en Aviasales · {fmtNum(f.price, 0)} €
             </a>
           </section>
+
+          <MapaRuta origen={rutaA} destino={rutaB} />
 
           {(f.score_flags?.length > 0 || f.enrichment_gaps?.length > 0) && (
             <div className="modal-avisos">
@@ -642,6 +654,7 @@ export default function App() {
   const [valoraciones, setValoraciones] = useState({});
 
   const inputRef = useRef(null);
+  const peticionRef = useRef(null);
 
   useEffect(() => {
     fetch("/api/airports").then((r) => r.json()).then(setAirports).catch(() => {});
@@ -674,11 +687,14 @@ export default function App() {
     setMaxCache("");
     setPais("");
     setRangos({});
+    const control = new AbortController();
+    peticionRef.current = control;
     try {
       const resp = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ origin, group }),
+        signal: control.signal,
       });
       if (!resp.ok) {
         const body = await resp.json().catch(() => ({}));
@@ -686,14 +702,47 @@ export default function App() {
       }
       setResult(await resp.json());
     } catch (err) {
-      setError(err.message);
+      // Si la búsqueda se cortó al volver a la portada, no es un error que
+      // haya que enseñar: es lo que el usuario acaba de pedir.
+      if (err.name !== "AbortError") setError(err.message);
     } finally {
-      setLoading(false);
+      if (peticionRef.current === control) {
+        peticionRef.current = null;
+        setLoading(false);
+      }
     }
+  }
+
+  // El logo devuelve a la portada: se corta la búsqueda en curso si la hay y
+  // se deja todo como recién abierta la página (el globo vuelve a girar).
+  function volverAPortada() {
+    peticionRef.current?.abort();
+    peticionRef.current = null;
+    setLoading(false);
+    setResult(null);
+    setError(null);
+    setDetalle(null);
+    setOrigin("");
+    setOriginQuery("");
+    setGroup("");
+    setPanelAbierto(false);
+    setFiltroTipo(""); setFiltroDestino(""); setMaxCache("");
+    setPais(""); setRangos({}); setPage(0); setOrden("price");
+    window.scrollTo({ top: 0 });
   }
 
   const fechaConsulta = result?.meta?.fecha_consulta;
   const senales = result?.meta?.score_senales;
+
+  // Búsqueda rápida de aeropuerto por código: la usan el globo (para saber
+  // adónde girar) y el mapa de ruta de la ficha de cada vuelo.
+  const porCodigo = useMemo(() => {
+    const m = new Map();
+    for (const a of airports) m.set(a.code, a);
+    return m;
+  }, [airports]);
+  const aeropuerto = (code) => (code ? porCodigo.get(code) || null : null);
+  const aeropuertoOrigen = aeropuerto(origin);
 
   // --- valoraciones manuales ------------------------------------------
   const guardarValoracion = (f, nota) => {
@@ -806,13 +855,24 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <Logo className="logo" />
-        <div>
-          <h1>Muuyal</h1>
-          <p className="subtitle">búsqueda de vuelos con datos de destino</p>
-        </div>
+        {/* La marca entera es el botón de volver a la portada. */}
+        <a
+          href="/"
+          className="marca"
+          title="Volver a la portada"
+          onClick={(ev) => { ev.preventDefault(); volverAPortada(); }}
+        >
+          <Logo className="logo" />
+          <div>
+            <h1>Muuyal</h1>
+            <p className="subtitle">búsqueda de vuelos con datos de destino</p>
+          </div>
+        </a>
       </header>
 
+      {/* Portada: el buscador y el globo, uno al lado del otro. En cuanto hay
+          resultados el globo desaparece y la lista se queda toda la anchura. */}
+      <div className={result ? "" : "portada"}>
       <form className="search-form" onSubmit={buscar}>
         <div className="field origen-field">
           <label>Aeropuerto de origen</label>
@@ -861,6 +921,16 @@ export default function App() {
           {loading ? "Buscando…" : "Buscar vuelos"}
         </button>
       </form>
+
+      {!result && (
+        <Globo
+          destino={aeropuertoOrigen}
+          etiqueta={aeropuertoOrigen
+            ? `${aeropuertoOrigen.code} — ${aeropuertoOrigen.name}`
+            : "Elige tu aeropuerto de origen"}
+        />
+      )}
+      </div>
 
       {loading && (
         <div className="loading">
@@ -1200,6 +1270,7 @@ export default function App() {
           senales={senales}
           fechaConsulta={fechaConsulta}
           valoracion={valoraciones[idVuelo(detalle)]}
+          aeropuerto={aeropuerto}
           onGuardar={guardarValoracion}
           onBorrar={borrarValoracion}
           onCerrar={() => setDetalle(null)}

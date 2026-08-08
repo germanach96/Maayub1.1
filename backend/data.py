@@ -75,17 +75,21 @@ class MasterData:
         airports["code"] = airports["code"].astype(str).str.upper().str.strip()
         self.airports_df = airports
 
-        # Listado para el autocomplete del frontend
-        self.airports_list = [
-            {
+        # Listado para el autocomplete del frontend. Lleva también lat/lon
+        # (redondeadas a 3 decimales, ~100 m) porque el globo de la portada
+        # necesita saber dónde cae cada aeropuerto para girar hasta él.
+        self.airports_list = []
+        for r in airports.itertuples(index=False):
+            coords = _coords(r.coordinates)
+            self.airports_list.append({
                 "code": r.code,
                 "name": _clean(r.name),
                 "country_code": _clean(r.country_code),
                 "zone": _clean(r.Zone),
                 "top151": bool(r.Top151 == 1),
-            }
-            for r in airports.itertuples(index=False)
-        ]
+                "lat": round(coords[0], 3) if coords else None,
+                "lon": round(coords[1], 3) if coords else None,
+            })
         # code -> nombre legible, para mostrar el aeropuerto enriquecido
         self.airport_names = {a["code"]: a["name"] for a in self.airports_list}
 

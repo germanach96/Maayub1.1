@@ -1,0 +1,13 @@
+countries-110m.json
+-------------------
+Contorno de los países del mundo, simplificado (escala 1:110 millones).
+
+Origen: paquete `world-atlas` (Mike Bostock, licencia ISC), construido a
+partir de **Natural Earth**, que es de dominio público
+(https://www.naturalearthdata.com).
+
+Está guardado dentro del repo a propósito, igual que las tipografías: la web
+no debe depender de que un servidor de fuera esté vivo para dibujarse.
+
+Formato TopoJSON: pesa la mitad que el GeoJSON equivalente (108 KB frente a
+~250 KB) y el servidor de Render no comprime lo que envía.

@@ -36,6 +36,86 @@ h1 {
 }
 .subtitle { color: var(--mu-ink-soft); }
 
+/* la marca entera es el botón de "volver a la portada" */
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 12px;
+}
+.marca:hover .logo { color: var(--mu-orange); }
+.marca:focus-visible { outline: 2px solid var(--mu-orange); outline-offset: 4px; }
+
+/* ---------- portada: buscador y globo ---------- */
+.portada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  /* que el conjunto ocupe buena parte de la pantalla: si no, el buscador y el
+     globo se quedan pegados arriba con un vacío enorme debajo */
+  min-height: min(62vh, 520px);
+}
+.portada .search-form { flex: 1 1 380px; }
+
+.globo {
+  flex: 0 0 auto;
+  margin: 0 auto;
+  text-align: center;
+  width: min(360px, 72vw);
+}
+.globo svg { display: block; width: 100%; height: auto; overflow: visible; }
+.globo-mar { fill: var(--mu-earth); }
+.globo-malla { fill: none; stroke: var(--mu-clay); stroke-width: 0.4; opacity: 0.55; }
+.globo-tierra { fill: var(--mu-sand); }
+.globo-fronteras { fill: none; stroke: var(--mu-earth); stroke-width: 0.5; opacity: 0.65; }
+.globo-borde { fill: none; stroke: var(--mu-clay); stroke-width: 1.2; }
+.globo-marca { fill: var(--mu-orange); stroke: var(--mu-surface); stroke-width: 1.2; }
+.globo-anillo { fill: none; stroke: var(--mu-orange); stroke-width: 1.5; opacity: 0.75; }
+.globo-etiqueta {
+  margin-top: 0.6rem;
+  font-weight: 600;
+  color: var(--mu-ink-soft);
+  font-size: 0.9rem;
+}
+
+/* ---------- mapa de la ruta (ficha del vuelo) ---------- */
+.mapa-ruta { margin: 0.9rem 0 0; }
+.mapa-ruta svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--mu-border);
+  border-radius: 10px;
+}
+.mapa-mar { fill: var(--mu-cream); }
+.mapa-tierra { fill: var(--mu-sand); }
+.mapa-fronteras { fill: none; stroke: var(--mu-border); stroke-width: 0.4; }
+.mapa-linea {
+  fill: none;
+  stroke: var(--mu-terracotta);
+  stroke-width: 1.6;
+  stroke-dasharray: 4 3;
+  stroke-linecap: round;
+}
+.mapa-punto { stroke: var(--mu-surface); stroke-width: 1.2; }
+.mapa-punto.origen { fill: var(--mu-earth); }
+.mapa-punto.destino { fill: var(--mu-orange); }
+.mapa-texto {
+  font-size: 9px;
+  font-weight: 700;
+  fill: var(--mu-ink);
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--mu-cream);
+  stroke-width: 2.5;
+}
+.mapa-texto.destino { fill: var(--mu-clay); }
+.mapa-ruta p { margin-top: 0.3rem; }
+
 .muted { color: var(--mu-ink-soft); }
 .small { font-size: 0.8em; }
 .nowrap { white-space: nowrap; }
@@ -516,4 +596,8 @@ table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
   .search-form .field { flex: none; }
   .logo { width: 54px; height: 38px; }
   h1 { font-size: 1.7rem; }
+  /* en el móvil el globo va debajo del buscador y algo más pequeño, para que
+     el botón de buscar siga cayendo dentro de la primera pantalla */
+  .portada { gap: 1rem; min-height: 0; }
+  .globo { width: min(300px, 78vw); margin-top: 0.25rem; }
 }
