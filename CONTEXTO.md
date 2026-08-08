@@ -127,6 +127,32 @@ pandas lo leía como nulo, dejando a Windhoek (WDH) sin país. Se lee el CSV de
 aeropuertos con `keep_default_na=False, na_values=[""]`. Si alguien quita eso,
 WDH vuelve a romperse.
 
+## Marca (logo y paleta)
+
+El paquete de marca vive en `handoff/` (logo SVG, `palette.css`, `palette.json`
+y su `CONTEXT.md`, que fija el alcance: aplicar **solo** logo y paleta, sin
+pantallas ni features nuevas). Aplicado así:
+
+- `frontend/src/palette.css` — copia de `handoff/palette.css`. **Todos** los
+  colores de `index.css` salen de estas variables `--mu-*`; no hay ningún color
+  escrito a mano. Si cambia la paleta, se sustituye este archivo y ya está.
+- `frontend/public/favicon.svg` — icono de pestaña. Es una versión **cuadrada y
+  con fondo crema** del logo, con el trazo engrosado (12 en vez de 9): el logo
+  original es apaisado (~1.5:1) y en trazo fino se pierde a 16 px sobre una
+  barra de pestañas oscura.
+- `frontend/public/apple-touch-icon.png` — 180×180, para "añadir a pantalla de
+  inicio" en iOS, que no admite SVG. Generado renderizando el favicon.
+- El logo de la cabecera va **inline** en `App.jsx` (componente `Logo`) con
+  `currentColor`, así lo tiñe el CSS.
+- Tipografías **servidas desde el repo** (`frontend/public/fonts/`, ~200 KB):
+  Bricolage Grotesque 700 para titulares y wordmark, Instrument Sans 400/600
+  para el texto. Se descargaron de Google Fonts (SIL OFL) en vez de enlazarlas
+  para que la página no dependa de Google en cada visita. El subconjunto
+  latin-ext solo lo baja el navegador si algún texto lo necesita.
+- Rampa de temperatura: cortes en 12 / 19 / 26 °C, que son los cuartiles reales
+  del CSV de clima. Escala de coste €→€€€€ con los colores de la paleta; el
+  número de símbolos ya distingue el nivel, el color es redundante (daltonismo).
+
 ## Pendientes
 
 1. **Rotar el token de Travelpayouts**. El token está hardcodeado en

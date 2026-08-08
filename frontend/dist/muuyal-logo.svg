@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" role="img" aria-label="Muuyal — glifo maya de nube">
+  
+  <g fill="none" stroke="#B8502D" stroke-width="9" stroke-linecap="round">
+    <path d="M 100 70 C 116 50 142 46 154 58 C 164 68 160 82 148 84 C 139 85.5 133 78 137 71"></path>
+    <path d="M 100 70 C 116 50 142 46 154 58 C 164 68 160 82 148 84 C 139 85.5 133 78 137 71" transform="rotate(180 100 70)"></path>
+  </g>
+  
+  <g fill="#B8502D">
+    <circle cx="100" cy="32" r="9"></circle>
+    <circle cx="100" cy="108" r="9"></circle>
+  </g>
+</svg>

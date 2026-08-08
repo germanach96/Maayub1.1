@@ -1,29 +1,44 @@
+/* Estilos de la app. Los colores salen todos de la paleta de marca
+   (handoff/palette.css, importada como palette.css): ningún color se escribe
+   a mano aquí. Neutros con base ámbar, nunca gris azulado. */
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --border: #e2e8f0;
-  --text: #0f172a;
-  --muted: #64748b;
-  --accent: #2563eb;
-}
-
 body {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--mu-cream);
+  color: var(--mu-ink);
   line-height: 1.45;
 }
 
 .app { max-width: 1400px; margin: 0 auto; padding: 1rem; }
 
-header { margin: 1rem 0 1.5rem; }
-h1 { font-size: 1.8rem; letter-spacing: -0.02em; }
-.subtitle { color: var(--muted); }
+/* ---------- cabecera con logo ---------- */
+header {
+  margin: 1rem 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.logo {
+  width: 68px;
+  height: 48px;
+  flex: none;
+  color: var(--mu-terracotta);
+}
+h1 {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--mu-earth);
+}
+.subtitle { color: var(--mu-ink-soft); }
 
-.muted { color: var(--muted); }
+.muted { color: var(--mu-ink-soft); }
 .small { font-size: 0.8em; }
+.nowrap { white-space: nowrap; }
 
 /* ---------- formulario ---------- */
 .search-form {
@@ -31,20 +46,29 @@ h1 { font-size: 1.8rem; letter-spacing: -0.02em; }
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: flex-end;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-border);
   border-radius: 12px;
   padding: 1rem;
+  box-shadow: 0 1px 2px rgba(92, 53, 32, 0.06);
 }
 .field { display: flex; flex-direction: column; gap: 0.25rem; position: relative; }
-.field label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.field label { font-size: 0.8rem; font-weight: 600; color: var(--mu-ink-soft); }
 .field input, .field select, .filtros input, .filtros select {
   padding: 0.55rem 0.7rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--mu-border);
   border-radius: 8px;
   font-size: 1rem;
-  background: #fff;
-  color: var(--text);
+  font-family: inherit;
+  background: var(--mu-surface);
+  color: var(--mu-ink);
+}
+.field input:focus, .field select:focus,
+.filtros input:focus, .filtros select:focus,
+.rango-inputs input:focus {
+  outline: 2px solid var(--mu-orange);
+  outline-offset: 1px;
+  border-color: var(--mu-orange);
 }
 .origen-field { flex: 2 1 260px; }
 .field:not(.origen-field) { flex: 1 1 200px; }
@@ -55,36 +79,39 @@ h1 { font-size: 1.8rem; letter-spacing: -0.02em; }
   left: 0;
   right: 0;
   z-index: 10;
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-border);
   border-radius: 8px;
   margin-top: 2px;
   list-style: none;
   max-height: 260px;
   overflow-y: auto;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 20px rgba(92, 53, 32, 0.16);
 }
 .sugerencias li { padding: 0.5rem 0.7rem; cursor: pointer; }
-.sugerencias li:hover { background: var(--bg); }
+.sugerencias li:hover { background: var(--mu-sand); }
 
+/* botón principal (CTA): naranja atardecer con texto oscuro (4.8:1) */
 button {
   padding: 0.6rem 1.4rem;
   border: none;
   border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
+  background: var(--mu-orange);
+  color: var(--mu-ink);
   font-size: 1rem;
+  font-family: inherit;
   font-weight: 600;
   cursor: pointer;
 }
-button:disabled { background: #94a3b8; cursor: not-allowed; }
+button:hover { background: var(--mu-terracotta); color: var(--mu-surface); }
+button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor: not-allowed; }
 
 /* ---------- loading ---------- */
 .loading { text-align: center; padding: 3rem 1rem; }
 .spinner {
   width: 44px; height: 44px;
-  border: 4px solid var(--border);
-  border-top-color: var(--accent);
+  border: 4px solid var(--mu-border);
+  border-top-color: var(--mu-orange);
   border-radius: 50%;
   margin: 0 auto 1rem;
   animation: spin 0.9s linear infinite;
@@ -94,31 +121,32 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
 .error {
   margin: 1rem 0;
   padding: 0.8rem 1rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-error);
+  border-left-width: 4px;
   border-radius: 8px;
-  color: #b91c1c;
+  color: var(--mu-error);
 }
 
 /* ---------- resultados ---------- */
-.meta { margin: 1rem 0 0.5rem; color: var(--muted); }
+.meta { margin: 1rem 0 0.5rem; color: var(--mu-ink-soft); }
 .filtros { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
 
 /* botones secundarios de la barra de filtros */
 .btn-sec {
-  background: #fff;
-  color: var(--text);
-  border: 1px solid var(--border);
+  background: var(--mu-surface);
+  color: var(--mu-ink);
+  border: 1px solid var(--mu-border);
   font-weight: 500;
   padding: 0.55rem 0.9rem;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
 }
-.btn-sec:hover { background: var(--bg); }
+.btn-sec:hover { background: var(--mu-sand); color: var(--mu-ink); }
 .badge-filtros {
-  background: var(--accent);
-  color: #fff;
+  background: var(--mu-terracotta);
+  color: var(--mu-surface);
   font-size: 0.7rem;
   font-weight: 700;
   border-radius: 999px;
@@ -129,8 +157,8 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
 
 /* panel de filtros avanzados */
 .panel-filtros {
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-border);
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 0.75rem;
@@ -139,13 +167,14 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
   gap: 1rem 1.5rem;
 }
 .grupo-filtros h3 {
-  font-size: 0.75rem;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--muted);
+  letter-spacing: 0.04em;
+  color: var(--mu-ink-soft);
   margin-bottom: 0.5rem;
   padding-bottom: 0.3rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--mu-border);
 }
 .rango { margin-bottom: 0.5rem; }
 .rango > label { display: block; font-size: 0.82rem; margin-bottom: 0.15rem; }
@@ -154,28 +183,27 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
   width: 100%;
   min-width: 0;
   padding: 0.35rem 0.5rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--mu-border);
   border-radius: 6px;
   font-size: 0.9rem;
-  background: #fff;
-  color: var(--text);
+  font-family: inherit;
+  background: var(--mu-surface);
+  color: var(--mu-ink);
 }
 .nota-filtros { grid-column: 1 / -1; margin: 0; }
 
 .vacio {
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-border);
   border-radius: 12px;
   padding: 2rem 1rem;
   text-align: center;
 }
 .vacio button { margin-top: 0.75rem; }
 
-.nowrap { white-space: nowrap; }
-
 .tipo-badge {
   display: inline-block;
-  color: #fff;
+  color: var(--mu-surface);
   font-size: 0.7rem;
   font-weight: 700;
   padding: 0.15rem 0.45rem;
@@ -187,48 +215,83 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
 .gaps { display: inline-flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.2rem; }
 .gap-badge {
   font-size: 0.65rem;
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fde68a;
+  background: var(--mu-sand);
+  color: var(--mu-earth);
+  border: 1px solid var(--mu-border);
   padding: 0.05rem 0.35rem;
   border-radius: 999px;
   white-space: nowrap;
 }
 
-.idx.alta { color: #dc2626; font-weight: 600; }
-.idx.baja { color: #059669; }
+.idx.alta { color: var(--mu-terracotta); font-weight: 600; }
+.idx.baja { color: var(--mu-success); }
 
 /* antigüedad del precio cacheado de Aviasales */
 .cache { white-space: nowrap; font-weight: 600; }
-.cache.fresco { color: #047857; }
-.cache.medio { color: #b45309; }
-.cache.viejo { color: #b91c1c; }
+.cache.fresco { color: var(--mu-success); }
+.cache.medio { color: var(--mu-orange); }
+.cache.viejo { color: var(--mu-error); }
 
-.precio { font-weight: 700; color: var(--accent); text-decoration: none; white-space: nowrap; }
+/* clima: color + icono siempre juntos, nunca solo color */
+.clima { white-space: nowrap; }
+.temp { font-weight: 600; }
+.temp.frio { color: var(--mu-ink-soft); }
+.temp.templado { color: var(--mu-warm); }
+.temp.calido { color: var(--mu-orange); }
+.temp.calor { color: var(--mu-hot); }
+.sol { color: var(--mu-earth); }
+.lluvia { color: var(--mu-rain); }
+
+/* coste: escala monotónica en luminosidad; el nº de € ya distingue el nivel */
+.coste-badge {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.coste-badge.n1 { background: var(--mu-cost-1); color: var(--mu-ink); }
+.coste-badge.n2 { background: var(--mu-cost-2); color: var(--mu-ink); }
+.coste-badge.n3 { background: var(--mu-cost-3); color: var(--mu-surface); }
+.coste-badge.n4 { background: var(--mu-cost-4); color: var(--mu-surface); }
+
+.precio {
+  font-weight: 600;
+  color: var(--mu-terracotta);
+  text-decoration: none;
+  white-space: nowrap;
+}
 .precio:hover { text-decoration: underline; }
 
 /* tabla (desktop) */
 .tabla-wrap {
   overflow-x: auto;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-border);
   border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(92, 53, 32, 0.06);
 }
 table { border-collapse: collapse; width: 100%; font-size: 0.87rem; }
 th, td { padding: 0.55rem 0.7rem; text-align: left; vertical-align: top; }
 thead th {
   position: sticky; top: 0;
-  background: var(--card);
-  border-bottom: 2px solid var(--border);
+  background: var(--mu-surface);
+  border-bottom: 2px solid var(--mu-border);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--muted);
+  color: var(--mu-ink-soft);
   white-space: nowrap;
 }
-tbody tr { border-bottom: 1px solid var(--border); }
-tbody tr:hover { background: #f1f5f9; }
-.clima { white-space: nowrap; }
+tbody tr { border-bottom: 1px solid var(--mu-border); }
+tbody tr:nth-child(even) { background: var(--mu-sand); }
+/* hover: tinte del color de selección, no el naranja pleno (ilegible en una
+   fila entera). El color-mix se ignora en navegadores viejos y queda el sand. */
+tbody tr:hover {
+  background: color-mix(in srgb, var(--mu-selected) 14%, var(--mu-surface));
+  box-shadow: inset 3px 0 0 var(--mu-earth);
+}
 .precio-cell { text-align: right; }
 
 /* cards (móvil) — ocultas en desktop */
@@ -240,7 +303,7 @@ tbody tr:hover { background: #f1f5f9; }
   justify-content: center;
   gap: 1rem;
   margin: 1rem 0 2rem;
-  color: var(--muted);
+  color: var(--mu-ink-soft);
 }
 .paginacion button { padding: 0.4rem 0.9rem; }
 
@@ -249,10 +312,11 @@ tbody tr:hover { background: #f1f5f9; }
   .tabla-wrap { display: none; }
   .cards { display: flex; flex-direction: column; gap: 0.75rem; }
   .card {
-    background: var(--card);
-    border: 1px solid var(--border);
+    background: var(--mu-surface);
+    border: 1px solid var(--mu-border);
     border-radius: 12px;
     padding: 0.85rem;
+    box-shadow: 0 1px 2px rgba(92, 53, 32, 0.06);
   }
   .card-top {
     display: flex;
@@ -266,14 +330,20 @@ tbody tr:hover { background: #f1f5f9; }
   .card-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
   .chip {
     font-size: 0.75rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--mu-sand);
+    border: 1px solid var(--mu-border);
     border-radius: 999px;
     padding: 0.15rem 0.55rem;
     white-space: nowrap;
   }
-  .chip.cache.fresco { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
-  .chip.cache.medio { background: #fffbeb; border-color: #fde68a; color: #92400e; }
-  .chip.cache.viejo { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+  .chip.coste-badge { border-color: transparent; border-radius: 999px; }
+  .chip.cache.fresco { background: var(--mu-sand); border-color: var(--mu-success); color: var(--mu-success); }
+  .chip.cache.medio { background: var(--mu-sand); border-color: var(--mu-orange); color: var(--mu-clay); }
+  .chip.cache.viejo { background: var(--mu-sand); border-color: var(--mu-error); color: var(--mu-error); }
   .search-form { flex-direction: column; align-items: stretch; }
+  /* Apilados en columna, los `flex: 1 1 200px` de los campos hacían que cada
+     uno se estirase a lo alto y dejase huecos enormes entre ellos. */
+  .search-form .field { flex: none; }
+  .logo { width: 54px; height: 38px; }
+  h1 { font-size: 1.7rem; }
 }
