@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+// Colores de la paleta de marca. Cada par cumple el contraste AA indicado en
+// handoff/CONTEXT.md: texto oscuro sobre naranja, texto crema sobre
+// terracota y tierra.
 const TIPOS = {
-  OW_IDA: { label: "Ida", color: "#2563eb" },
-  OW_VUELTA: { label: "Vuelta", color: "#7c3aed" },
-  RD: { label: "Ida y vuelta", color: "#059669" },
+  OW_IDA: { label: "Ida", color: "var(--mu-orange)", texto: "var(--mu-ink)" },
+  OW_VUELTA: { label: "Vuelta", color: "var(--mu-earth)", texto: "var(--mu-surface)" },
+  RD: { label: "Ida y vuelta", color: "var(--mu-terracotta)", texto: "var(--mu-surface)" },
 };
 
 const GAP_LABELS = {
@@ -154,20 +157,68 @@ function GapsBadges({ gaps }) {
 }
 
 function TipoBadge({ tipo }) {
-  const t = TIPOS[tipo] || { label: tipo, color: "#6b7280" };
+  const t = TIPOS[tipo] || { label: tipo, color: "var(--mu-ink-soft)", texto: "var(--mu-surface)" };
   return (
-    <span className="tipo-badge" style={{ background: t.color }}>
+    <span className="tipo-badge" style={{ background: t.color, color: t.texto }}>
       {t.label}
     </span>
   );
 }
 
+// Rampa de temperatura de la paleta. Los cortes siguen los cuartiles reales
+// del CSV de clima (11.6 / 19.0 / 25.5 °C).
+function nivelTemp(t) {
+  if (t == null) return null;
+  if (t < 12) return "frio";
+  if (t < 19) return "templado";
+  if (t < 26) return "calido";
+  return "calor";
+}
+
 function Clima({ c }) {
   if (!c) return <span className="muted">—</span>;
+  const nivel = nivelTemp(num(c.temp_media));
   return (
     <span className="clima">
-      🌡 {fmtNum(c.temp_media, 0, "°")} · ☔ {fmtNum(c.dias_lluvia, 0)}d · ☀ {fmtNum(c.horas_sol_dia, 1)}h
+      <span className={"temp " + (nivel || "")}>🌡 {fmtNum(c.temp_media, 0, "°")}</span>
+      {" · "}
+      <span className="lluvia">☔ {fmtNum(c.dias_lluvia, 0)}d</span>
+      {" · "}
+      <span className="sol">☀ {fmtNum(c.horas_sol_dia, 1)}h</span>
     </span>
+  );
+}
+
+// Escala de coste de la paleta. El número de símbolos € ya distingue los
+// niveles por sí solo, así que el color es información redundante (y por eso
+// sigue leyéndose bien en daltonismo).
+function Coste({ c }) {
+  if (!c) return <span className="muted">—</span>;
+  return (
+    <>
+      <span className={"coste-badge n" + String(c.categoria || "").length}>
+        {c.categoria}
+      </span>
+      <span className="muted small"> {fmtNum(c.indice_coste, 0)}</span>
+    </>
+  );
+}
+
+function Logo({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 200 140" role="img" aria-label="Muuyal">
+      <g fill="none" stroke="currentColor" strokeWidth="9" strokeLinecap="round">
+        <path d="M 100 70 C 116 50 142 46 154 58 C 164 68 160 82 148 84 C 139 85.5 133 78 137 71" />
+        <path
+          d="M 100 70 C 116 50 142 46 154 58 C 164 68 160 82 148 84 C 139 85.5 133 78 137 71"
+          transform="rotate(180 100 70)"
+        />
+      </g>
+      <g fill="currentColor">
+        <circle cx="100" cy="32" r="9" />
+        <circle cx="100" cy="108" r="9" />
+      </g>
+    </svg>
   );
 }
 
@@ -323,8 +374,11 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h1>muuyal</h1>
-        <p className="subtitle">búsqueda de vuelos con datos de destino</p>
+        <Logo className="logo" />
+        <div>
+          <h1>Muuyal</h1>
+          <p className="subtitle">búsqueda de vuelos con datos de destino</p>
+        </div>
       </header>
 
       <form className="search-form" onSubmit={buscar}>
@@ -553,16 +607,7 @@ export default function App() {
                           <span className="muted">—</span>
                         )}
                       </td>
-                      <td>
-                        {e.coste ? (
-                          <>
-                            <b>{e.coste.categoria}</b>{" "}
-                            <span className="muted small">({fmtNum(e.coste.indice_coste, 0)})</span>
-                          </>
-                        ) : (
-                          <span className="muted">—</span>
-                        )}
-                      </td>
+                      <td><Coste c={e.coste} /></td>
                       <td>
                         {e.unesco ? (
                           <>
@@ -622,7 +667,11 @@ export default function App() {
                     {e.clima && (
                       <span className="chip">🌡 {fmtNum(e.clima.temp_media, 0, "°")} · ☀ {fmtNum(e.clima.horas_sol_dia, 1)}h</span>
                     )}
-                    {e.coste && <span className="chip">{e.coste.categoria}</span>}
+                    {e.coste && (
+                      <span className={"chip coste-badge n" + String(e.coste.categoria || "").length}>
+                        {e.coste.categoria}
+                      </span>
+                    )}
                     {e.turismo && <span className="chip">★ {fmtNum(e.turismo.popularidad_0_100, 0)}/100</span>}
                     {e.turismo_mes && <span className="chip">turismo ×{fmtNum(e.turismo_mes.turismo_idx, 2)}</span>}
                     {e.unesco && <span className="chip">🏛 {e.unesco.unesco_100km} UNESCO</span>}
