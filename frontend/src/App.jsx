@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 // Colores de la paleta de marca. Cada par cumple el contraste AA indicado en
 // handoff/CONTEXT.md: texto oscuro sobre naranja, texto crema sobre
@@ -17,7 +17,44 @@ const GAP_LABELS = {
   unesco: "unesco",
 };
 
+// Avisos sobre la fiabilidad de la nota (los pone backend/scoring.py).
+const FLAG_LABELS = {
+  chollo_pocos_datos: "pocos vuelos para saber si es chollo",
+  temporada_no_fiable: "temporada poco fiable (ciudad grande)",
+  datos_incompletos: "puntuación con datos incompletos",
+};
+
+// Nombre en castellano llano de cada señal de la puntuación. El backend manda
+// los nombres técnicos en meta.score_senales; aquí se traducen para el
+// desglose que se ve al abrir un vuelo.
+const SENAL_LABELS = {
+  oportunidad: "Chollo: más barato de lo normal para ese destino",
+  price_abs: "Precio bajo",
+  popularidad_0_100: "Destino conocido",
+  turismo_idx: "Temporada alta allí",
+  temp_media: "Temperatura agradable",
+  indice_coste: "Vida barata en el destino",
+  horas_sol_dia: "Horas de sol",
+  dias_lluvia: "Pocos días de lluvia",
+  unesco_100km: "Patrimonio UNESCO cerca",
+  duration: "Vuelo corto",
+  transfers: "Pocas escalas",
+  antiguedad_en_dias: "Precio reciente",
+  distancia_km: "Destino cercano",
+  temp_max_media: "Máximas agradables",
+  unesco_cercano_km: "UNESCO muy cerca",
+  precip_mm: "Poca lluvia acumulada",
+  duration_to: "Ida corta",
+  duration_back: "Vuelta corta",
+  return_transfers: "Pocas escalas de vuelta",
+};
+
 const PAGE_SIZE = 50;
+
+// Dónde guarda el navegador tus valoraciones. Quedan en este dispositivo:
+// no se pierden aunque el servidor se duerma, y salen del navegador solo
+// cuando pulsas "Descargar mis valoraciones".
+const LS_VALORACIONES = "muuyal_valoraciones_v1";
 
 // Nombre del país en español a partir del código ISO ("ES" -> "España").
 // Lo resuelve el propio navegador; si no soporta la API, se enseña el código.
@@ -47,6 +84,11 @@ const RANGOS = [
     get: (f) => num(f.transfers) },
   { id: "distancia", grupo: "Vuelo", label: "Distancia", unidad: "km", paso: 500,
     get: (f) => num(f.distancia_km) },
+  // Único filtro de tipo fecha: se compara como texto AAAA-MM-DD, que ordena
+  // igual que la fecha real y no depende de la zona horaria del navegador.
+  { id: "salida", grupo: "Vuelo", label: "Fecha de salida", tipo: "fecha",
+    get: (f) => (typeof f.departure_at === "string" && f.departure_at.length >= 10
+      ? f.departure_at.slice(0, 10) : null) },
   { id: "temp", grupo: "Clima del mes de salida", label: "Temperatura media", unidad: "°C", paso: 1,
     get: (f) => num(f.enrichment?.clima?.temp_media) },
   { id: "sol", grupo: "Clima del mes de salida", label: "Horas de sol al día", unidad: "h", paso: 1,
@@ -204,6 +246,357 @@ function Coste({ c }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Puntuación (la calcula backend/scoring.py; aquí solo se pinta)
+// ---------------------------------------------------------------------------
+
+// Tramos de la nota. El color acompaña al número, nunca lo sustituye.
+function nivelNota(s) {
+  if (s == null) return "";
+  if (s >= 65) return "n4";
+  if (s >= 50) return "n3";
+  if (s >= 35) return "n2";
+  return "n1";
+}
+
+function Nota({ score, chip = false }) {
+  if (score == null) {
+    return <span className="muted" title="Sin datos suficientes para puntuar">—</span>;
+  }
+  return (
+    <span className={(chip ? "chip nota " : "nota ") + nivelNota(score)}>
+      <b>{score}</b>
+      <span className="nota-de">/100</span>
+      {!chip && (
+        <span className="nota-barra" aria-hidden="true">
+          <span style={{ width: `${score}%` }} />
+        </span>
+      )}
+    </span>
+  );
+}
+
+// Recompone el desglose legible. El backend manda los valores sueltos
+// (`score_desglose`) y la leyenda una sola vez (`meta.score_senales`), para no
+// repetir los nombres de las señales en cada uno de los miles de vuelos.
+function desgloseDe(f, senales) {
+  if (!f.score_desglose || !senales) return [];
+  return senales
+    .map(([senal, peso], i) => {
+      const norm = f.score_desglose[i];
+      return norm == null
+        ? null
+        : { senal, peso, norm, aporte: peso * norm,
+            label: SENAL_LABELS[senal] || senal };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.aporte - a.aporte);
+}
+
+function FlagsBadges({ flags }) {
+  if (!flags || flags.length === 0) return null;
+  return (
+    <span className="gaps">
+      {flags.map((g) => (
+        <span key={g} className="gap-badge flag-badge">{FLAG_LABELS[g] || g}</span>
+      ))}
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Valoraciones manuales (se guardan en este navegador y se descargan en CSV)
+// ---------------------------------------------------------------------------
+
+// Identifica una oferta concreta. No entra el precio: si Aviasales refresca el
+// precio del mismo vuelo, tu valoración sigue siendo la de ese vuelo.
+function idVuelo(f) {
+  return [
+    f.tipo_llamada, f.origin_airport || f.origin, f.destination_airport || f.destination,
+    (f.departure_at || "").slice(0, 16), (f.return_at || "").slice(0, 16),
+    f.airline, f.flight_number,
+  ].join("|");
+}
+
+function leerValoraciones() {
+  try {
+    return JSON.parse(localStorage.getItem(LS_VALORACIONES) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+// Todo lo que hace falta para reajustar los pesos más adelante. Se guardan los
+// datos del vuelo TAL Y COMO ESTABAN al valorarlo: el "chollo" depende de la
+// búsqueda concreta en la que salió y no se puede reconstruir después.
+function registroValoracion(f, nota, meta, senales) {
+  const e = f.enrichment || {};
+  const clima = e.clima || {};
+  const turismo = e.turismo || {};
+  const turismoMes = e.turismo_mes || {};
+  const coste = e.coste || {};
+  const unesco = e.unesco || {};
+  const reg = {
+    id_vuelo: idVuelo(f),
+    fecha_valoracion: new Date().toISOString(),
+    nota_usuario: nota.toFixed(1),
+    score_muuyal: f.score ?? "",
+    score_flags: (f.score_flags || []).join("|"),
+    enrichment_gaps: (f.enrichment_gaps || []).join("|"),
+    busqueda_origen: meta?.origin ?? "",
+    busqueda_grupo: meta?.group ?? "",
+    busqueda_fecha: meta?.fecha_consulta ?? "",
+    tipo_llamada: f.tipo_llamada ?? "",
+    origen: f.origin_airport || f.origin || "",
+    destino: f.destination_airport || f.destination || "",
+    enrich_airport: f.enrich_airport ?? "",
+    enrich_country: f.enrich_country ?? "",
+    enrich_month: f.enrich_month ?? "",
+    departure_at: f.departure_at ?? "",
+    return_at: f.return_at ?? "",
+    airline: f.airline ?? "",
+    flight_number: f.flight_number ?? "",
+    price: f.price ?? "",
+    oportunidad_base: f.oportunidad_base ?? "",
+    duration: f.duration ?? "",
+    transfers: f.transfers ?? "",
+    return_transfers: f.return_transfers ?? "",
+    distancia_km: f.distancia_km ?? "",
+    dia_busqueda: f.dia_busqueda ?? "",
+    antiguedad_en_dias: f.antiguedad_en_dias ?? "",
+    temp_media: clima.temp_media ?? "",
+    temp_max_media: clima.temp_max_media ?? "",
+    dias_lluvia: clima.dias_lluvia ?? "",
+    horas_sol_dia: clima.horas_sol_dia ?? "",
+    precip_mm: clima.precip_mm ?? "",
+    popularidad_0_100: turismo.popularidad_0_100 ?? "",
+    turismo_idx: turismoMes.turismo_idx ?? "",
+    indice_coste: coste.indice_coste ?? "",
+    categoria_coste: coste.categoria ?? "",
+    unesco_100km: unesco.unesco_100km ?? "",
+    link: f.link ?? "",
+  };
+  // Valor normalizado (0–1) de cada señal en el momento de valorar: es lo que
+  // permite recalcular los pesos con estos datos y sin volver a buscar.
+  (senales || []).forEach(([senal, peso], i) => {
+    reg[`norm_${senal}`] = f.score_desglose?.[i] ?? "";
+    reg[`peso_${senal}`] = peso;
+  });
+  return reg;
+}
+
+// CSV con ";" (como los CSVs maestros del repo) y BOM, para que Excel lo abra
+// bien en español sin tener que importar nada a mano.
+function csvDeValoraciones(registros) {
+  const cols = [];
+  for (const r of registros) {
+    for (const k of Object.keys(r)) if (!cols.includes(k)) cols.push(k);
+  }
+  const celda = (v) => {
+    const s = v == null ? "" : String(v);
+    return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  return "﻿" + [
+    cols.join(";"),
+    ...registros.map((r) => cols.map((c) => celda(r[c])).join(";")),
+  ].join("\r\n");
+}
+
+function descargarTexto(nombre, texto) {
+  const url = URL.createObjectURL(new Blob([texto], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Subpantalla de un vuelo: todos sus datos, el desglose de la nota, el enlace
+// a Aviasales y el deslizador para ponerle tu nota del 0 al 10.
+function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, onGuardar, onBorrar, onCerrar }) {
+  // El deslizador arranca en la nota que ya tuviera ese vuelo, o en 5 si aún
+  // no lo has valorado. Al abrir otro vuelo, el padre remonta esta pantalla
+  // (le pasa una `key` distinta), así que el estado se rehace solo.
+  const [nota, setNota] = useState(valoracion ? Number(valoracion.nota_usuario) : 5);
+  const [guardado, setGuardado] = useState(false);
+
+  useEffect(() => {
+    const esc = (ev) => { if (ev.key === "Escape") onCerrar(); };
+    document.addEventListener("keydown", esc);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", esc);
+      document.body.style.overflow = "";
+    };
+  }, [onCerrar]);
+
+  const e = f.enrichment || {};
+  const desglose = desgloseDe(f, senales);
+  const pesoPresente = desglose.reduce((s, d) => s + d.peso, 0);
+  const dato = (label, valor) => (
+    <div className="dato">
+      <span className="dato-label">{label}</span>
+      <span className="dato-valor">{valor}</span>
+    </div>
+  );
+
+  return (
+    <div className="modal-fondo" onClick={onCerrar} role="presentation">
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Detalle del vuelo"
+        onClick={(ev) => ev.stopPropagation()}
+      >
+        <div className="modal-cabecera">
+          <div>
+            <TipoBadge tipo={f.tipo_llamada} />{" "}
+            <span className="ruta">
+              {f.origin_airport || f.origin} → {f.destination_airport || f.destination}
+            </span>
+            <div className="modal-dest">
+              <b>{f.enrich_airport}</b> {f.enrich_airport_name || ""}
+              {f.enrich_country && (
+                <span className="muted"> · {NOMBRES_PAIS(f.enrich_country)}</span>
+              )}
+            </div>
+          </div>
+          <button type="button" className="btn-cerrar" onClick={onCerrar} aria-label="Cerrar">
+            ✕
+          </button>
+        </div>
+
+        <div className="modal-cuerpo">
+          <section className="modal-nota">
+            <div className="modal-nota-num">
+              <span className={"nota grande " + nivelNota(f.score)}>
+                {f.score == null ? "—" : f.score}
+                <span className="nota-de">/100</span>
+              </span>
+              <span className="muted small">puntuación muuyal</span>
+            </div>
+            <a href={f.link} target="_blank" rel="noreferrer" className="btn-aviasales">
+              Ver en Aviasales · {fmtNum(f.price, 0)} €
+            </a>
+          </section>
+
+          {(f.score_flags?.length > 0 || f.enrichment_gaps?.length > 0) && (
+            <div className="modal-avisos">
+              <FlagsBadges flags={f.score_flags} />
+              <GapsBadges gaps={f.enrichment_gaps} />
+            </div>
+          )}
+
+          <section>
+            <h3>Tu valoración</h3>
+            <p className="muted small">
+              Mueve la barra y pulsa Guardar. Se queda en este dispositivo hasta
+              que la descargues.
+            </p>
+            <div className="valorar">
+              <span className="valorar-num">{nota.toFixed(1).replace(".", ",")}</span>
+              <input
+                type="range" min="0" max="10" step="0.1" value={nota}
+                aria-label="Tu nota del 0 al 10"
+                onChange={(ev) => { setNota(Number(ev.target.value)); setGuardado(false); }}
+              />
+              <div className="valorar-escala muted small"><span>0</span><span>10</span></div>
+            </div>
+            <div className="valorar-acciones">
+              <button type="button" onClick={() => { onGuardar(f, nota); setGuardado(true); }}>
+                {guardado ? "Guardado ✓" : "Guardar valoración"}
+              </button>
+              {valoracion && (
+                <button type="button" className="btn-sec" onClick={() => { onBorrar(f); onCerrar(); }}>
+                  Borrar
+                </button>
+              )}
+            </div>
+            {valoracion && !guardado && (
+              <p className="muted small">
+                Ya la valoraste con un {Number(valoracion.nota_usuario).toFixed(1).replace(".", ",")}
+                {" "}el {fmtDia(valoracion.fecha_valoracion.slice(0, 10))}.
+              </p>
+            )}
+          </section>
+
+          <section>
+            <h3>Por qué puntúa lo que puntúa</h3>
+            {desglose.length === 0 ? (
+              <p className="muted">No hay datos suficientes para puntuar este vuelo.</p>
+            ) : (
+              <>
+                <table className="desglose">
+                  <thead>
+                    <tr><th>Señal</th><th>Peso</th><th>Nota (0–1)</th><th>Aporta</th></tr>
+                  </thead>
+                  <tbody>
+                    {desglose.map((d) => (
+                      <tr key={d.senal}>
+                        <td>{d.label}</td>
+                        <td>{d.peso}</td>
+                        <td>{d.norm.toFixed(2).replace(".", ",")}</td>
+                        <td className="nowrap">
+                          <span className="aporte-barra" aria-hidden="true">
+                            <span style={{ width: `${(d.aporte / d.peso) * 100}%` }} />
+                          </span>
+                          {" "}{d.aporte.toFixed(1).replace(".", ",")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="muted small">
+                  Suma de lo aportado ÷ suma de pesos con dato ({pesoPresente}) × 100 = {f.score}.
+                  Las señales sin dato no penalizan: se reparte su peso entre las demás.
+                </p>
+              </>
+            )}
+          </section>
+
+          <section>
+            <h3>El vuelo</h3>
+            <div className="datos">
+              {dato("Salida", fmtFecha(f.departure_at))}
+              {dato("Vuelta", f.tipo_llamada === "RD" ? fmtFecha(f.return_at) : "—")}
+              {dato("Aerolínea", `${f.airline || "—"} ${f.flight_number || ""}`)}
+              {dato("Duración", fmtDuracion(f.duration))}
+              {dato("Escalas", `${f.transfers ?? "—"}${f.tipo_llamada === "RD" ? ` + ${f.return_transfers ?? "—"}` : ""}`)}
+              {dato("Distancia", f.distancia_km != null ? `${f.distancia_km.toLocaleString("es-ES")} km` : "—")}
+              {dato("Precio", `${fmtNum(f.price, 0)} €`)}
+              {dato("Precio guardado", <Frescura f={f} fechaConsulta={fechaConsulta} />)}
+              {dato("Normal a ese destino",
+                f.oportunidad_base != null
+                  ? `${fmtNum(f.oportunidad_base, 0)} € (mediana)`
+                  : <span className="muted">pocos vuelos para saberlo</span>)}
+              {dato("Vendido por", f.gate || "—")}
+            </div>
+          </section>
+
+          <section>
+            <h3>El destino en el mes de salida</h3>
+            <div className="datos">
+              {dato("Temperatura media", e.clima ? fmtNum(e.clima.temp_media, 1, " °C") : "—")}
+              {dato("Máximas", e.clima ? fmtNum(e.clima.temp_max_media, 1, " °C") : "—")}
+              {dato("Horas de sol al día", e.clima ? fmtNum(e.clima.horas_sol_dia, 1, " h") : "—")}
+              {dato("Días de lluvia al mes", e.clima ? fmtNum(e.clima.dias_lluvia, 0, " d") : "—")}
+              {dato("Lluvia acumulada", e.clima ? fmtNum(e.clima.precip_mm, 0, " mm") : "—")}
+              {dato("Coste de vida", e.coste ? <Coste c={e.coste} /> : "—")}
+              {dato("Popularidad", e.turismo ? `${fmtNum(e.turismo.popularidad_0_100, 0)}/100` : "—")}
+              {dato("Turismo ese mes", e.turismo_mes ? `×${fmtNum(e.turismo_mes.turismo_idx, 2)}` : "—")}
+              {dato("UNESCO a 100 km", e.unesco ? e.unesco.unesco_100km : "—")}
+              {dato("UNESCO a 60 km", e.unesco ? e.unesco.unesco_60km : "—")}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Logo({ className }) {
   return (
     <svg className={className} viewBox="0 0 200 140" role="img" aria-label="Muuyal">
@@ -244,11 +637,16 @@ export default function App() {
   const [orden, setOrden] = useState("price");
   const [page, setPage] = useState(0);
 
+  // vuelo abierto en la subpantalla y valoraciones guardadas en este navegador
+  const [detalle, setDetalle] = useState(null);
+  const [valoraciones, setValoraciones] = useState({});
+
   const inputRef = useRef(null);
 
   useEffect(() => {
     fetch("/api/airports").then((r) => r.json()).then(setAirports).catch(() => {});
     fetch("/api/zones").then((r) => r.json()).then(setZones).catch(() => {});
+    setValoraciones(leerValoraciones());
   }, []);
 
   const sugerencias = useMemo(() => {
@@ -295,6 +693,36 @@ export default function App() {
   }
 
   const fechaConsulta = result?.meta?.fecha_consulta;
+  const senales = result?.meta?.score_senales;
+
+  // --- valoraciones manuales ------------------------------------------
+  const guardarValoracion = (f, nota) => {
+    const reg = registroValoracion(f, nota, result?.meta, senales);
+    setValoraciones((prev) => {
+      const next = { ...prev, [reg.id_vuelo]: reg };
+      try { localStorage.setItem(LS_VALORACIONES, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const borrarValoracion = (f) => {
+    setValoraciones((prev) => {
+      const next = { ...prev };
+      delete next[idVuelo(f)];
+      try { localStorage.setItem(LS_VALORACIONES, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const descargarValoraciones = () => {
+    const regs = Object.values(valoraciones)
+      .sort((a, b) => a.fecha_valoracion.localeCompare(b.fecha_valoracion));
+    if (regs.length === 0) return;
+    const hoy = new Date().toISOString().slice(0, 10);
+    descargarTexto(`valoraciones_muuyal_${hoy}.csv`, csvDeValoraciones(regs));
+  };
+
+  const nValoraciones = Object.keys(valoraciones).length;
 
   // Países presentes en los resultados, con su número de vuelos.
   const paises = useMemo(() => {
@@ -345,8 +773,10 @@ export default function App() {
     // Filtros de rango. Un vuelo sin dato en ese campo queda FUERA mientras el
     // filtro esté puesto: no se puede afirmar que cumpla lo que se pide.
     for (const r of RANGOS) {
-      const min = num(rangos[`${r.id}_min`]);
-      const max = num(rangos[`${r.id}_max`]);
+      // Las fechas se comparan como texto AAAA-MM-DD; el resto, como números.
+      const conv = r.tipo === "fecha" ? (x) => x || null : num;
+      const min = conv(rangos[`${r.id}_min`]);
+      const max = conv(rangos[`${r.id}_max`]);
       if (min == null && max == null) continue;
       v = v.filter((f) => {
         const x = r.get(f);
@@ -364,6 +794,8 @@ export default function App() {
       temp: (f) => -(f.enrichment?.clima?.temp_media ?? -Infinity),
       popularidad: (f) => -(f.enrichment?.turismo?.popularidad_0_100 ?? -Infinity),
       cache: (f) => diasCache(f, fechaConsulta) ?? Infinity,
+      // Mejor puntuación primero. Los vuelos sin nota (null) van al final.
+      score: (f) => (f.score == null ? Infinity : -f.score),
     }[orden];
     return [...v].sort((a, b) => key(a) - key(b));
   }, [result, filtroTipo, filtroDestino, maxCache, pais, rangos, orden, fechaConsulta]);
@@ -478,6 +910,7 @@ export default function App() {
               <option value="3">Precios de 3 días o menos</option>
             </select>
             <select value={orden} onChange={(e) => setOrden(e.target.value)}>
+              <option value="score">Mejor puntuación</option>
               <option value="price">Más baratos</option>
               <option value="duration">Más cortos</option>
               <option value="temp">Más cálidos</option>
@@ -500,6 +933,17 @@ export default function App() {
                 Limpiar
               </button>
             )}
+            {nValoraciones > 0 && (
+              <button
+                type="button"
+                className="btn-sec"
+                onClick={descargarValoraciones}
+                title="Descarga un CSV con tus valoraciones para afinar la fórmula"
+              >
+                ⭳ Descargar mis valoraciones
+                <span className="badge-filtros">{nValoraciones}</span>
+              </button>
+            )}
           </div>
 
           {panelAbierto && (
@@ -511,17 +955,26 @@ export default function App() {
                     <div className="rango" key={r.id}>
                       <label>{r.label}{r.unidad && <span className="muted"> ({r.unidad})</span>}</label>
                       <div className="rango-inputs">
-                        <input
-                          type="number" inputMode="decimal" step={r.paso} placeholder="mín"
-                          value={rangos[`${r.id}_min`] ?? ""}
-                          onChange={(e) => setRango(r.id, "min", e.target.value)}
-                        />
-                        <span className="muted">–</span>
-                        <input
-                          type="number" inputMode="decimal" step={r.paso} placeholder="máx"
-                          value={rangos[`${r.id}_max`] ?? ""}
-                          onChange={(e) => setRango(r.id, "max", e.target.value)}
-                        />
+                        {["min", "max"].map((extremo, i) => (
+                          <Fragment key={extremo}>
+                            {i === 1 && <span className="muted">–</span>}
+                            {r.tipo === "fecha" ? (
+                              <input
+                                type="date"
+                                aria-label={`${r.label} ${extremo === "min" ? "desde" : "hasta"}`}
+                                value={rangos[`${r.id}_${extremo}`] ?? ""}
+                                onChange={(e) => setRango(r.id, extremo, e.target.value)}
+                              />
+                            ) : (
+                              <input
+                                type="number" inputMode="decimal" step={r.paso}
+                                placeholder={extremo === "min" ? "mín" : "máx"}
+                                value={rangos[`${r.id}_${extremo}`] ?? ""}
+                                onChange={(e) => setRango(r.id, extremo, e.target.value)}
+                              />
+                            )}
+                          </Fragment>
+                        ))}
                       </div>
                     </div>
                   ))}
@@ -549,6 +1002,7 @@ export default function App() {
             <table>
               <thead>
                 <tr>
+                  <th>Puntuación</th>
                   <th>Vuelo</th>
                   <th>Salida</th>
                   <th>Vuelta</th>
@@ -568,8 +1022,28 @@ export default function App() {
               <tbody>
                 {pagina.map((f, i) => {
                   const e = f.enrichment || {};
+                  const mia = valoraciones[idVuelo(f)];
                   return (
-                    <tr key={i}>
+                    <tr
+                      key={i}
+                      className="fila-vuelo"
+                      onClick={() => setDetalle(f)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label="Ver detalle y valorar este vuelo"
+                      onKeyDown={(ev) => {
+                        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); setDetalle(f); }
+                      }}
+                    >
+                      <td className="nota-cell">
+                        <Nota score={f.score} />
+                        {mia && (
+                          <div className="mi-nota" title="Tu valoración">
+                            ★ {Number(mia.nota_usuario).toFixed(1).replace(".", ",")}
+                          </div>
+                        )}
+                        <FlagsBadges flags={f.score_flags} />
+                      </td>
                       <td>
                         <TipoBadge tipo={f.tipo_llamada} />
                         <div className="ruta">{f.origin_airport || f.origin} → {f.destination_airport || f.destination}</div>
@@ -621,7 +1095,11 @@ export default function App() {
                         <Frescura f={f} fechaConsulta={fechaConsulta} />
                       </td>
                       <td className="precio-cell">
-                        <a href={f.link} target="_blank" rel="noreferrer" className="precio">
+                        {/* El enlace a Aviasales no debe abrir además el detalle */}
+                        <a
+                          href={f.link} target="_blank" rel="noreferrer" className="precio"
+                          onClick={(ev) => ev.stopPropagation()}
+                        >
                           {fmtNum(f.price, 0)} €
                         </a>
                       </td>
@@ -636,8 +1114,17 @@ export default function App() {
           <div className="cards">
             {pagina.map((f, i) => {
               const e = f.enrichment || {};
+              const mia = valoraciones[idVuelo(f)];
               return (
-                <div className="card" key={i}>
+                <div
+                  className="card" key={i}
+                  onClick={() => setDetalle(f)}
+                  role="button" tabIndex={0}
+                  aria-label="Ver detalle y valorar este vuelo"
+                  onKeyDown={(ev) => {
+                    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); setDetalle(f); }
+                  }}
+                >
                   <div className="card-top">
                     <div>
                       <TipoBadge tipo={f.tipo_llamada} />
@@ -645,7 +1132,10 @@ export default function App() {
                         {" "}{f.origin_airport || f.origin} → {f.destination_airport || f.destination}
                       </span>
                     </div>
-                    <a href={f.link} target="_blank" rel="noreferrer" className="precio">
+                    <a
+                      href={f.link} target="_blank" rel="noreferrer" className="precio"
+                      onClick={(ev) => ev.stopPropagation()}
+                    >
                       {fmtNum(f.price, 0)} €
                     </a>
                   </div>
@@ -663,6 +1153,12 @@ export default function App() {
                     {f.distancia_km != null && <> · {f.distancia_km.toLocaleString("es-ES")} km</>}
                   </div>
                   <div className="card-chips">
+                    <Nota score={f.score} chip />
+                    {mia && (
+                      <span className="chip mi-nota-chip">
+                        ★ tu nota {Number(mia.nota_usuario).toFixed(1).replace(".", ",")}
+                      </span>
+                    )}
                     <Frescura f={f} fechaConsulta={fechaConsulta} chip />
                     {e.clima && (
                       <span className="chip">🌡 {fmtNum(e.clima.temp_media, 0, "°")} · ☀ {fmtNum(e.clima.horas_sol_dia, 1)}h</span>
@@ -677,6 +1173,7 @@ export default function App() {
                     {e.unesco && <span className="chip">🏛 {e.unesco.unesco_100km} UNESCO</span>}
                   </div>
                   <GapsBadges gaps={f.enrichment_gaps} />
+                  <FlagsBadges flags={f.score_flags} />
                 </div>
               );
             })}
@@ -693,6 +1190,20 @@ export default function App() {
             </div>
           )}
         </>
+      )}
+
+      {detalle && (
+        <DetalleVuelo
+          key={idVuelo(detalle)}
+          f={detalle}
+          meta={result?.meta}
+          senales={senales}
+          fechaConsulta={fechaConsulta}
+          valoracion={valoraciones[idVuelo(detalle)]}
+          onGuardar={guardarValoracion}
+          onBorrar={borrarValoracion}
+          onCerrar={() => setDetalle(null)}
+        />
       )}
     </div>
   );

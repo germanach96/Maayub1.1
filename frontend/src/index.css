@@ -294,8 +294,169 @@ tbody tr:hover {
 }
 .precio-cell { text-align: right; }
 
+/* toda la fila abre la subpantalla del vuelo */
+.fila-vuelo { cursor: pointer; }
+.fila-vuelo:focus-visible {
+  outline: 2px solid var(--mu-orange);
+  outline-offset: -2px;
+}
+
+/* ---------- puntuación ---------- */
+/* El número siempre se ve: el color y la barra son información redundante,
+   para que la nota se lea igual en daltonismo. */
+.nota { white-space: nowrap; font-weight: 700; }
+.nota.n1 { color: var(--mu-ink-soft); }
+.nota.n2 { color: var(--mu-gold); }
+.nota.n3 { color: var(--mu-orange); }
+.nota.n4 { color: var(--mu-success); }
+.nota-de { font-weight: 400; font-size: 0.75em; color: var(--mu-ink-soft); }
+.nota-barra {
+  display: block;
+  width: 100%;
+  min-width: 46px;
+  height: 4px;
+  margin-top: 0.2rem;
+  background: var(--mu-sand);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.nota-barra > span { display: block; height: 100%; background: currentColor; }
+.nota.grande { font-size: 2.4rem; line-height: 1; }
+
+.nota-cell { min-width: 92px; }
+.mi-nota {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--mu-terracotta);
+}
+.chip.mi-nota-chip { border-color: var(--mu-terracotta); color: var(--mu-terracotta); }
+.flag-badge { background: var(--mu-surface); color: var(--mu-clay); }
+
 /* cards (móvil) — ocultas en desktop */
 .cards { display: none; }
+.card { cursor: pointer; }
+.card:focus-visible { outline: 2px solid var(--mu-orange); outline-offset: 2px; }
+
+/* ---------- subpantalla de un vuelo ---------- */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(44, 27, 16, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal {
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 18px 50px rgba(44, 27, 16, 0.35);
+}
+.modal-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem 0.8rem;
+  border-bottom: 1px solid var(--mu-border);
+}
+.modal-dest { margin-top: 0.3rem; }
+.btn-cerrar {
+  background: var(--mu-sand);
+  color: var(--mu-ink);
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  font-size: 1rem;
+  line-height: 1;
+  flex: none;
+}
+.modal-cuerpo { overflow-y: auto; padding: 1rem 1.1rem 1.4rem; }
+.modal-cuerpo section { margin-top: 1.3rem; }
+.modal-cuerpo section:first-child { margin-top: 0; }
+.modal-cuerpo h3 {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mu-ink-soft);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--mu-border);
+}
+.modal-nota {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.modal-nota-num { display: flex; flex-direction: column; gap: 0.15rem; }
+.btn-aviasales {
+  background: var(--mu-orange);
+  color: var(--mu-ink);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.btn-aviasales:hover { background: var(--mu-terracotta); color: var(--mu-surface); }
+.modal-avisos { margin-top: 0.7rem; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+/* deslizador de tu nota: sin teclear nada */
+.valorar { margin: 0.5rem 0 0.2rem; }
+.valorar-num {
+  display: block;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--mu-terracotta);
+  text-align: center;
+}
+.valorar input[type="range"] {
+  width: 100%;
+  margin: 0.5rem 0 0.1rem;
+  accent-color: var(--mu-orange);
+  background: transparent;
+  height: 2.2rem;
+}
+.valorar-escala { display: flex; justify-content: space-between; }
+.valorar-acciones { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+
+/* desglose de la nota */
+table.desglose { font-size: 0.85rem; }
+table.desglose th, table.desglose td { padding: 0.3rem 0.5rem; }
+table.desglose thead th { text-transform: none; letter-spacing: 0; position: static; }
+table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
+.aporte-barra {
+  display: inline-block;
+  width: 56px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--mu-sand);
+  overflow: hidden;
+  vertical-align: middle;
+}
+.aporte-barra > span { display: block; height: 100%; background: var(--mu-orange); }
+
+/* fichas de datos del vuelo y del destino */
+.datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.5rem 1rem;
+}
+.dato { display: flex; flex-direction: column; }
+.dato-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--mu-ink-soft); }
+.dato-valor { font-weight: 600; }
 
 .paginacion {
   display: flex;
@@ -340,6 +501,15 @@ tbody tr:hover {
   .chip.cache.fresco { background: var(--mu-sand); border-color: var(--mu-success); color: var(--mu-success); }
   .chip.cache.medio { background: var(--mu-sand); border-color: var(--mu-orange); color: var(--mu-clay); }
   .chip.cache.viejo { background: var(--mu-sand); border-color: var(--mu-error); color: var(--mu-error); }
+  /* la subpantalla ocupa la pantalla entera en el móvil */
+  .modal-fondo { padding: 0; align-items: stretch; }
+  .modal { max-width: none; max-height: 100vh; border-radius: 0; border: none; }
+  .modal-cuerpo { padding-bottom: 2.5rem; }
+  .modal-nota { justify-content: space-between; }
+  .btn-aviasales { flex: 1; text-align: center; }
+  .datos { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  /* diana grande para el dedo en el deslizador */
+  .valorar input[type="range"] { height: 2.8rem; }
   .search-form { flex-direction: column; align-items: stretch; }
   /* Apilados en columna, los `flex: 1 1 200px` de los campos hacían que cada
      uno se estirase a lo alto y dejase huecos enormes entre ellos. */

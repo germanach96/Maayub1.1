@@ -14,3 +14,7 @@ Tres reglas que valen siempre:
    enséñale capturas en vez de código, y no le pidas que ejecute comandos.
 3. **Nunca hagas push a `main`.** Trabaja en una rama, abre un PR y déjalo
    listo para que él pulse "Merge". Render despliega solo desde `main`.
+
+**Si te manda un archivo `valoraciones_muuyal_*.csv`** (sus notas a los vuelos,
+descargadas de la web), lee `ACTUALIZAR_FORMULA.md`: ahí está paso a paso qué
+hacer con él para reajustar los pesos de la puntuación.
