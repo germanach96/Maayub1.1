@@ -9,6 +9,7 @@ Cada CSV se lee con su formato real (verificado archivo por archivo):
   - unesco_destinos.csv                  sep=";"  utf-8-sig  llave: iata
 """
 
+import ast
 import math
 from pathlib import Path
 
@@ -27,6 +28,28 @@ def _clean(value):
     return value
 
 
+def _coords(valor):
+    """La columna `coordinates` del CSV de aeropuertos viene como texto con
+    forma de dict: "{'lat': 8.98, 'lon': 38.79}". Devuelve (lat, lon) o None."""
+    try:
+        d = ast.literal_eval(valor)
+        return (float(d["lat"]), float(d["lon"]))
+    except Exception:
+        return None
+
+
+def distancia_km(a, b):
+    """Distancia en línea recta (fórmula del semiverseno) entre dos pares
+    (lat, lon), en km. None si falta alguna coordenada."""
+    if not a or not b:
+        return None
+    lat1, lon1 = math.radians(a[0]), math.radians(a[1])
+    lat2, lon2 = math.radians(b[0]), math.radians(b[1])
+    h = (math.sin((lat2 - lat1) / 2) ** 2
+         + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2)
+    return round(2 * 6371.0 * math.asin(math.sqrt(h)))
+
+
 def _records_by_key(df: pd.DataFrame, cols_llave):
     """Indexa un DataFrame como dict {llave: dict_de_campos} (sin la llave)."""
     out = {}
@@ -41,9 +64,13 @@ def _records_by_key(df: pd.DataFrame, cols_llave):
 class MasterData:
     def __init__(self):
         # --- Aeropuertos / zonas (mismo tratamiento que el script masivo) ---
+        # keep_default_na=False en country_code: el código de Namibia es "NA" y
+        # pandas lo convertiría en nulo (Not Available), dejando a Windhoek sin
+        # país. Se lee esa columna como texto tal cual.
         airports = pd.read_csv(
             DATA_DIR / "airports_flightable_categorized.csv",
             sep=";", encoding="utf-8-sig",
+            keep_default_na=False, na_values=[""],
         ).dropna(subset=["code"])
         airports["code"] = airports["code"].astype(str).str.upper().str.strip()
         self.airports_df = airports
@@ -61,6 +88,15 @@ class MasterData:
         ]
         # code -> nombre legible, para mostrar el aeropuerto enriquecido
         self.airport_names = {a["code"]: a["name"] for a in self.airports_list}
+
+        # code -> país (ISO-2) y coordenadas, para el filtro por país y para
+        # calcular la distancia origen->destino (Aviasales no la devuelve).
+        self.airport_country = {
+            r.code: _clean(r.country_code) for r in airports.itertuples(index=False)
+        }
+        self.airport_coords = {
+            r.code: _coords(r.coordinates) for r in airports.itertuples(index=False)
+        }
 
         # --- CSVs de enriquecimiento ---
         coste = pd.read_csv(DATA_DIR / "indice_coste_destinos.csv",

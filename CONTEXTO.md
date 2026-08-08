@@ -102,6 +102,31 @@ Umbrales: ≤1 día verde, 2–3 ámbar, ≥4 rojo. Medido sobre el CSV de ejemp
 Aviasales nunca devuelve caché de más de ~7 días, pero el 30% de los vuelos
 traía precios de 4 días o más.
 
+## Filtros (añadido tras la Fase 1)
+
+Panel plegable "Más filtros" con 11 rangos mín/máx (precio, duración, escalas,
+distancia, temperatura, horas de sol, días de lluvia, popularidad, índice
+turístico del mes, índice de coste, UNESCO), más selector de país, el filtro de
+antigüedad del precio y "Limpiar". Todo se filtra en el navegador: los vuelos ya
+están descargados, no se vuelve a llamar a la API.
+
+Criterio: un vuelo **sin dato** en el campo filtrado queda FUERA mientras ese
+filtro esté puesto (no se puede afirmar que lo cumpla).
+
+Dos datos que no existían y se crearon para esto:
+
+- **`distancia_km`**: Aviasales no devuelve distancia, solo duración. Se calcula
+  con el semiverseno entre las coordenadas de origen y destino, que están en
+  `airports_flightable_categorized.csv` (columna `coordinates`, texto con forma
+  de dict). Los 575 aeropuertos tienen coordenadas.
+- **`enrich_country`**: código ISO del país del destino. El nombre en español lo
+  resuelve el navegador con `Intl.DisplayNames`, sin lista que mantener.
+
+**Trampa de pandas encontrada aquí**: el código de país de Namibia es `NA` y
+pandas lo leía como nulo, dejando a Windhoek (WDH) sin país. Se lee el CSV de
+aeropuertos con `keep_default_na=False, na_values=[""]`. Si alguien quita eso,
+WDH vuelve a romperse.
+
 ## Pendientes
 
 1. **Rotar el token de Travelpayouts**. El token está hardcodeado en

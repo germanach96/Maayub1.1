@@ -16,6 +16,52 @@ const GAP_LABELS = {
 
 const PAGE_SIZE = 50;
 
+// Nombre del país en español a partir del código ISO ("ES" -> "España").
+// Lo resuelve el propio navegador; si no soporta la API, se enseña el código.
+const NOMBRES_PAIS = (() => {
+  try {
+    const dn = new Intl.DisplayNames(["es"], { type: "region" });
+    return (c) => (c ? dn.of(c) || c : "");
+  } catch {
+    return (c) => c || "";
+  }
+})();
+
+function num(v) {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  return isNaN(n) ? null : n;
+}
+
+// Filtros de rango: se declaran una vez y la interfaz se dibuja sola a partir
+// de aquí. `get` extrae el valor de un vuelo (null = ese vuelo no tiene dato).
+const RANGOS = [
+  { id: "precio", grupo: "Vuelo", label: "Precio", unidad: "€", paso: 10,
+    get: (f) => num(f.price) },
+  { id: "duracion", grupo: "Vuelo", label: "Duración", unidad: "h", paso: 1,
+    get: (f) => (num(f.duration) == null ? null : num(f.duration) / 60) },
+  { id: "escalas", grupo: "Vuelo", label: "Escalas", unidad: "", paso: 1,
+    get: (f) => num(f.transfers) },
+  { id: "distancia", grupo: "Vuelo", label: "Distancia", unidad: "km", paso: 500,
+    get: (f) => num(f.distancia_km) },
+  { id: "temp", grupo: "Clima del mes de salida", label: "Temperatura media", unidad: "°C", paso: 1,
+    get: (f) => num(f.enrichment?.clima?.temp_media) },
+  { id: "sol", grupo: "Clima del mes de salida", label: "Horas de sol al día", unidad: "h", paso: 1,
+    get: (f) => num(f.enrichment?.clima?.horas_sol_dia) },
+  { id: "lluvia", grupo: "Clima del mes de salida", label: "Días de lluvia al mes", unidad: "d", paso: 1,
+    get: (f) => num(f.enrichment?.clima?.dias_lluvia) },
+  { id: "popularidad", grupo: "Destino", label: "Popularidad", unidad: "/100", paso: 5,
+    get: (f) => num(f.enrichment?.turismo?.popularidad_0_100) },
+  { id: "estacional", grupo: "Destino", label: "Índice turístico del mes", unidad: "×", paso: 0.1,
+    get: (f) => num(f.enrichment?.turismo_mes?.turismo_idx) },
+  { id: "coste", grupo: "Destino", label: "Índice de coste", unidad: "", paso: 5,
+    get: (f) => num(f.enrichment?.coste?.indice_coste) },
+  { id: "unesco", grupo: "Destino", label: "Sitios UNESCO (100 km)", unidad: "", paso: 1,
+    get: (f) => num(f.enrichment?.unesco?.unesco_100km) },
+];
+
+const GRUPOS_RANGO = ["Vuelo", "Clima del mes de salida", "Destino"];
+
 function fmtFecha(iso) {
   if (!iso) return "—";
   const d = new Date(iso);
@@ -141,6 +187,9 @@ export default function App() {
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroDestino, setFiltroDestino] = useState("");
   const [maxCache, setMaxCache] = useState("");
+  const [pais, setPais] = useState("");
+  const [rangos, setRangos] = useState({});
+  const [panelAbierto, setPanelAbierto] = useState(false);
   const [orden, setOrden] = useState("price");
   const [page, setPage] = useState(0);
 
@@ -174,6 +223,8 @@ export default function App() {
     setFiltroTipo("");
     setFiltroDestino("");
     setMaxCache("");
+    setPais("");
+    setRangos({});
     try {
       const resp = await fetch("/api/search", {
         method: "POST",
@@ -194,10 +245,37 @@ export default function App() {
 
   const fechaConsulta = result?.meta?.fecha_consulta;
 
+  // Países presentes en los resultados, con su número de vuelos.
+  const paises = useMemo(() => {
+    if (!result) return [];
+    const cuenta = new Map();
+    for (const f of result.flights) {
+      if (f.enrich_country) cuenta.set(f.enrich_country, (cuenta.get(f.enrich_country) || 0) + 1);
+    }
+    return [...cuenta.entries()]
+      .map(([code, n]) => ({ code, nombre: NOMBRES_PAIS(code), n }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  }, [result]);
+
+  const setRango = (id, extremo, valor) => {
+    setRangos((r) => ({ ...r, [`${id}_${extremo}`]: valor }));
+    setPage(0);
+  };
+
+  const nFiltrosActivos =
+    (filtroTipo ? 1 : 0) + (filtroDestino.trim() ? 1 : 0) + (maxCache ? 1 : 0) +
+    (pais ? 1 : 0) + Object.values(rangos).filter((x) => x !== "" && x != null).length;
+
+  const limpiarFiltros = () => {
+    setFiltroTipo(""); setFiltroDestino(""); setMaxCache("");
+    setPais(""); setRangos({}); setPage(0);
+  };
+
   const vuelosFiltrados = useMemo(() => {
     if (!result) return [];
     let v = result.flights;
     if (filtroTipo) v = v.filter((f) => f.tipo_llamada === filtroTipo);
+    if (pais) v = v.filter((f) => f.enrich_country === pais);
     if (filtroDestino.trim()) {
       const q = filtroDestino.trim().toLowerCase();
       v = v.filter(
@@ -213,15 +291,31 @@ export default function App() {
         return d != null && d <= tope;
       });
     }
+    // Filtros de rango. Un vuelo sin dato en ese campo queda FUERA mientras el
+    // filtro esté puesto: no se puede afirmar que cumpla lo que se pide.
+    for (const r of RANGOS) {
+      const min = num(rangos[`${r.id}_min`]);
+      const max = num(rangos[`${r.id}_max`]);
+      if (min == null && max == null) continue;
+      v = v.filter((f) => {
+        const x = r.get(f);
+        if (x == null) return false;
+        if (min != null && x < min) return false;
+        if (max != null && x > max) return false;
+        return true;
+      });
+    }
+
     const key = {
       price: (f) => Number(f.price) || Infinity,
       duration: (f) => Number(f.duration) || Infinity,
+      distancia: (f) => f.distancia_km ?? Infinity,
       temp: (f) => -(f.enrichment?.clima?.temp_media ?? -Infinity),
       popularidad: (f) => -(f.enrichment?.turismo?.popularidad_0_100 ?? -Infinity),
       cache: (f) => diasCache(f, fechaConsulta) ?? Infinity,
     }[orden];
     return [...v].sort((a, b) => key(a) - key(b));
-  }, [result, filtroTipo, filtroDestino, maxCache, orden, fechaConsulta]);
+  }, [result, filtroTipo, filtroDestino, maxCache, pais, rangos, orden, fechaConsulta]);
 
   const totalPages = Math.max(1, Math.ceil(vuelosFiltrados.length / PAGE_SIZE));
   const pagina = vuelosFiltrados.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -305,6 +399,9 @@ export default function App() {
             <b>{result.meta.origin}</b> ({result.meta.group}) ·{" "}
             {result.meta.elapsed_seconds}s
             {fechaConsulta && <> · búsqueda del {fmtDia(fechaConsulta)}</>}
+            {nFiltrosActivos > 0 && (
+              <> · <b>{vuelosFiltrados.length.toLocaleString("es-ES")}</b> tras filtrar</>
+            )}
           </div>
 
           <div className="filtros">
@@ -332,9 +429,67 @@ export default function App() {
               <option value="temp">Más cálidos</option>
               <option value="popularidad">Más populares</option>
               <option value="cache">Precio más reciente</option>
+              <option value="distancia">Más cerca</option>
             </select>
+            <select value={pais} onChange={(e) => { setPais(e.target.value); setPage(0); }}>
+              <option value="">Todos los países ({paises.length})</option>
+              {paises.map((p) => (
+                <option key={p.code} value={p.code}>{p.nombre} ({p.n})</option>
+              ))}
+            </select>
+            <button type="button" className="btn-sec" onClick={() => setPanelAbierto(!panelAbierto)}>
+              {panelAbierto ? "▲" : "▼"} Más filtros
+              {nFiltrosActivos > 0 && <span className="badge-filtros">{nFiltrosActivos}</span>}
+            </button>
+            {nFiltrosActivos > 0 && (
+              <button type="button" className="btn-sec" onClick={limpiarFiltros}>
+                Limpiar
+              </button>
+            )}
           </div>
 
+          {panelAbierto && (
+            <div className="panel-filtros">
+              {GRUPOS_RANGO.map((g) => (
+                <div className="grupo-filtros" key={g}>
+                  <h3>{g}</h3>
+                  {RANGOS.filter((r) => r.grupo === g).map((r) => (
+                    <div className="rango" key={r.id}>
+                      <label>{r.label}{r.unidad && <span className="muted"> ({r.unidad})</span>}</label>
+                      <div className="rango-inputs">
+                        <input
+                          type="number" inputMode="decimal" step={r.paso} placeholder="mín"
+                          value={rangos[`${r.id}_min`] ?? ""}
+                          onChange={(e) => setRango(r.id, "min", e.target.value)}
+                        />
+                        <span className="muted">–</span>
+                        <input
+                          type="number" inputMode="decimal" step={r.paso} placeholder="máx"
+                          value={rangos[`${r.id}_max`] ?? ""}
+                          onChange={(e) => setRango(r.id, "max", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+              <p className="nota-filtros muted small">
+                Deja una casilla vacía para no poner tope por ese lado. Si un vuelo
+                no tiene el dato que estás filtrando (por ejemplo, un destino sin
+                clima), queda fuera mientras ese filtro esté puesto.
+              </p>
+            </div>
+          )}
+
+          {vuelosFiltrados.length === 0 && (
+            <div className="vacio">
+              <p><b>Ningún vuelo cumple los filtros.</b></p>
+              <p className="muted">Prueba a aflojar alguno o a limpiarlos todos.</p>
+              <button type="button" onClick={limpiarFiltros}>Limpiar filtros</button>
+            </div>
+          )}
+
+          {vuelosFiltrados.length > 0 && (<>
           {/* Desktop: tabla */}
           <div className="tabla-wrap">
             <table>
@@ -347,6 +502,7 @@ export default function App() {
                   <th>Escalas</th>
                   <th>Duración</th>
                   <th>Destino</th>
+                  <th>Distancia</th>
                   <th>Clima (mes)</th>
                   <th>Turismo</th>
                   <th>Coste</th>
@@ -372,7 +528,15 @@ export default function App() {
                       <td>{fmtDuracion(f.duration)}</td>
                       <td>
                         <b>{f.enrich_airport}</b>
+                        {f.enrich_country && (
+                          <span className="muted small"> · {NOMBRES_PAIS(f.enrich_country)}</span>
+                        )}
                         <div className="muted small">{f.enrich_airport_name || ""}</div>
+                      </td>
+                      <td className="nowrap">
+                        {f.distancia_km != null
+                          ? `${f.distancia_km.toLocaleString("es-ES")} km`
+                          : <span className="muted">—</span>}
                       </td>
                       <td><Clima c={e.clima} /></td>
                       <td>
@@ -442,12 +606,16 @@ export default function App() {
                   </div>
                   <div className="card-dest">
                     <b>{f.enrich_airport}</b> {f.enrich_airport_name || ""}
+                    {f.enrich_country && (
+                      <span className="muted"> · {NOMBRES_PAIS(f.enrich_country)}</span>
+                    )}
                   </div>
                   <div className="card-fechas muted">
                     {fmtFecha(f.departure_at)}
                     {f.tipo_llamada === "RD" && <> → {fmtFecha(f.return_at)}</>}
                     {" · "}{fmtDuracion(f.duration)}
                     {" · "}{f.transfers ?? "?"} escala(s)
+                    {f.distancia_km != null && <> · {f.distancia_km.toLocaleString("es-ES")} km</>}
                   </div>
                   <div className="card-chips">
                     <Frescura f={f} fechaConsulta={fechaConsulta} chip />
@@ -464,6 +632,7 @@ export default function App() {
               );
             })}
           </div>
+          </>)}
 
           {totalPages > 1 && (
             <div className="paginacion">
