@@ -1,0 +1,45 @@
+Nordique Pro Inline — el titular "Muuyal"
+=========================================
+
+Qué pasa
+--------
+Esta tipografía NO está en el repo, y no es un olvido: es comercial. La hizo
+Andrea Leksen (Leksen Design) y su licencia no permite repartirla. Meter el
+archivo aquí sería publicarla a todo el que entre en GitHub, que es justo lo
+que la licencia prohíbe. Las otras dos tipografías del proyecto (Bricolage
+Grotesque e Instrument Sans) sí están porque son libres (licencia SIL OFL).
+
+Ojo con las "demos" gratuitas que aparecen al buscarla: son solo para uso
+personal, y esta web está publicada, así que tampoco valen.
+
+Mientras tanto
+--------------
+El titular ya la pide como primera opción:
+
+    font-family: "Nordique Pro Inline", "Nordique Inline", "Bricolage
+                 Grotesque", system-ui, sans-serif;
+
+- Si la tienes instalada en tu ordenador, tú la verás.
+- Cualquier otra persona ve Bricolage Grotesque, como hasta ahora.
+
+Cómo activarla para todo el mundo
+---------------------------------
+1. Compra la licencia de **web** (webfont) en Fontspring, MyFonts o FontBundles.
+   Fíjate en que sea de web: la de escritorio no sirve para publicar una página.
+2. De lo que te descargues, coge el archivo .woff2 del estilo Inline y déjalo
+   aquí con este nombre exacto:
+
+       frontend/public/fonts/NordiquePro-Inline.woff2
+
+   Si solo te dan .otf o .ttf, se puede convertir a .woff2; dilo y se hace.
+3. En `frontend/src/fonts.css`, quita el `/*` y el `*/` que rodean el bloque
+   @font-face de Nordique.
+4. Reconstruye el frontend y súbelo (`npm run build` y committear
+   `frontend/dist`), como con cualquier cambio visual.
+
+Si prefieres no pagar
+---------------------
+Hay tipografías "inline" (con una línea fina por dentro del trazo) libres y
+gratuitas, por ejemplo Bungee Inline o Monoton, ambas en Google Fonts con la
+misma licencia que las que ya usa el proyecto. No son iguales que Nordique,
+pero comparten la idea. Dilo y se prueban.

@@ -690,16 +690,29 @@ export default function App() {
     setValoraciones(leerValoraciones());
   }, []);
 
+  // Sugerencias del buscador de origen, ordenadas por lo bien que encajan.
+  // Antes salían en el orden del CSV, así que al escribir "MAD" el primero era
+  // Doha: su nombre, "Hamad International", contiene esas tres letras.
   const sugerencias = useMemo(() => {
     const q = originQuery.trim().toLowerCase();
     if (q.length < 2) return [];
+    const puntua = (a) => {
+      const code = a.code.toLowerCase();
+      const nombre = (a.name || "").toLowerCase();
+      if (code === q) return 0;                      // el código exacto, primero
+      if (code.startsWith(q)) return 1;
+      if (nombre.startsWith(q)) return 2;            // "Barcelona-El Prat"
+      // una palabra del nombre que empiece igual ("Madrid" dentro de su nombre)
+      if (nombre.split(/[\s\-—/(),.]+/).some((p) => p.startsWith(q))) return 3;
+      if (nombre.includes(q)) return 4;              // "Ha-mad": lo último
+      return 9;
+    };
     return airports
-      .filter(
-        (a) =>
-          a.code.toLowerCase().startsWith(q) ||
-          (a.name || "").toLowerCase().includes(q)
-      )
-      .slice(0, 8);
+      .map((a) => ({ a, p: puntua(a) }))
+      .filter((x) => x.p < 9)
+      .sort((x, y) => x.p - y.p || x.a.code.localeCompare(y.a.code))
+      .slice(0, 8)
+      .map((x) => x.a);
   }, [originQuery, airports]);
 
   async function buscar(e) {

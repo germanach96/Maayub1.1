@@ -298,7 +298,6 @@ export function Globo({ destino, etiqueta, aeropuertos, onElegir }) {
             para que no se salga del disco. */}
         <clipPath id="globo-disco"><circle cx={R} cy={R} r={R} /></clipPath>
         <g clipPath="url(#globo-disco)">
-          {/* océano: sin línea de borde ni meridianos, solo el disco de color */}
           <circle cx={R} cy={R} r={R} className="globo-mar" />
           <path ref={tierraRef} className="globo-tierra" />
           <path ref={fronterasRef} className="globo-fronteras" />
@@ -306,6 +305,10 @@ export function Globo({ destino, etiqueta, aeropuertos, onElegir }) {
           <circle ref={anilloRef} r="7" className="globo-anillo" style={{ display: "none" }} />
           <circle ref={marcaRef} r="3.2" className="globo-marca" style={{ display: "none" }} />
         </g>
+        {/* borde del planeta, del mismo grosor que las fronteras. Va fuera del
+            recorte y con el radio medio trazo hacia dentro, para que no se
+            coma la mitad de la línea el propio recorte. */}
+        <circle cx={R} cy={R} r={R - 0.175} className="globo-borde" />
       </svg>
       <div className="globo-pie">
         {etiqueta && <div className="globo-etiqueta">{etiqueta}</div>}

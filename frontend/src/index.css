@@ -4,6 +4,11 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Tono de los trazos de los mapas: terracota oscuro. No es un color escrito a
+   mano, sale de mezclar dos colores de la paleta (terracota + oscuro), así que
+   si algún día cambia palette.css, este cambia con ella. */
+:root { --mu-trazo: color-mix(in srgb, var(--mu-terracotta) 80%, var(--mu-dark)); }
+
 body {
   font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   background: var(--mu-cream);
@@ -26,8 +31,12 @@ header {
   flex: none;
   color: var(--mu-terracotta);
 }
+/* El titular pide Nordique Pro Inline primero. Si no está (no se puede meter
+   en el repo, es de pago: ver fonts.css), cae en Bricolage Grotesque, que es
+   lo que se ha visto siempre. */
 h1 {
-  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-family: "Nordique Pro Inline", "Nordique Inline", "Bricolage Grotesque",
+    system-ui, sans-serif;
   font-weight: 700;
   font-size: 2rem;
   line-height: 1.1;
@@ -144,11 +153,13 @@ h1 {
 .globo-mar { fill: color-mix(in srgb, var(--mu-orange) 30%, var(--mu-cream)); }
 .globo-tierra {
   fill: var(--mu-sand);
-  stroke: var(--mu-clay);
-  stroke-width: 0.45;
+  stroke: var(--mu-trazo);
+  stroke-width: 0.35;
   stroke-linejoin: round;
 }
-.globo-fronteras { fill: none; stroke: var(--mu-clay); stroke-width: 0.35; opacity: 0.5; }
+.globo-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: 0.35; opacity: 0.5; }
+/* el borde del planeta, del mismo grosor que las fronteras */
+.globo-borde { fill: none; stroke: var(--mu-trazo); stroke-width: 0.35; }
 /* los 575 aeropuertos que se pueden consultar */
 .globo-puntos { fill: var(--mu-terracotta); opacity: 0.65; }
 .globo-marca { fill: var(--mu-orange); stroke: var(--mu-surface); stroke-width: 1.2; }
@@ -196,8 +207,9 @@ h1 {
   border-radius: 10px;
 }
 .mapa-mar { fill: color-mix(in srgb, var(--mu-orange) 22%, var(--mu-cream)); }
-.mapa-tierra { fill: var(--mu-sand); stroke: var(--mu-clay); stroke-width: 0.35; }
-.mapa-fronteras { fill: none; stroke: var(--mu-clay); stroke-width: 0.3; opacity: 0.45; }
+/* mismos tonos que el globo, para que los dos mapas casen */
+.mapa-tierra { fill: var(--mu-sand); stroke: var(--mu-trazo); stroke-width: 0.35; }
+.mapa-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: 0.3; opacity: 0.45; }
 .mapa-linea {
   fill: none;
   stroke: var(--mu-terracotta);
