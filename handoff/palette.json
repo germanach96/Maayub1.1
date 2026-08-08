@@ -1,0 +1,34 @@
+{
+  "brand": {
+    "orange":     { "hex": "#E8731A", "role": "Primario / CTA (atardecer)" },
+    "terracotta": { "hex": "#B8502D", "role": "Acento, logo, precios" },
+    "clay":       { "hex": "#8A3E20", "role": "Bordes/trazos oscuros" },
+    "earth":      { "hex": "#5C3520", "role": "Texto oscuro, profundidad" },
+    "gold":       { "hex": "#D9A441", "role": "Acento cálido" }
+  },
+  "neutral": {
+    "surface":  { "hex": "#FFF9F0" },
+    "cream":    { "hex": "#FAF3E7", "role": "Fondo de página" },
+    "sand":     { "hex": "#F2E4CE", "role": "Chips, zebra de tabla" },
+    "border":   { "hex": "#E5D3B8" },
+    "inkSoft":  { "hex": "#7A6350", "role": "Texto secundario" },
+    "ink":      { "hex": "#3A2418", "role": "Texto principal" },
+    "dark":     { "hex": "#2C1B10", "role": "Footer / fondo oscuro" }
+  },
+  "cost": [
+    { "level": "€",    "hex": "#D9A441", "text": "#3A2418" },
+    { "level": "€€",   "hex": "#E8731A", "text": "#3A2418" },
+    { "level": "€€€",  "hex": "#B8502D", "text": "#FFF9F0" },
+    { "level": "€€€€", "hex": "#6E3A21", "text": "#FFF9F0" }
+  ],
+  "weather": {
+    "cold": "#EFDDBE", "mild": "#E9B76B", "warm": "#DE8A34",
+    "hot": "#B8502D", "sun": "#D9A441", "rain": "#5C3520"
+  },
+  "state": {
+    "success":  { "hex": "#6B7F3A", "text": "#FFF9F0" },
+    "warning":  { "hex": "#D9A441", "text": "#3A2418" },
+    "error":    { "hex": "#B03A2E", "text": "#FFF9F0" },
+    "selected": { "hex": "#E8731A", "border": "#5C3520" }
+  }
+}

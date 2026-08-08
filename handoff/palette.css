@@ -1,0 +1,37 @@
+:root {
+  /* ---- Marca ---- */
+  --mu-orange:      #E8731A; /* naranja atardecer — primario, CTA */
+  --mu-terracotta:  #B8502D; /* terracota — acento, logo, precios */
+  --mu-clay:        #8A3E20; /* barro — bordes/trazos oscuros */
+  --mu-earth:       #5C3520; /* tierra — texto sobre claro, profundidad */
+  --mu-gold:        #D9A441; /* dorado — acento cálido */
+
+  /* ---- Neutros cálidos (nada de gris azulado) ---- */
+  --mu-surface:     #FFF9F0; /* superficie de tarjetas/filas */
+  --mu-cream:       #FAF3E7; /* fondo de página */
+  --mu-sand:        #F2E4CE; /* chips, zebra de tabla */
+  --mu-border:      #E5D3B8; /* bordes sutiles */
+  --mu-ink-soft:    #7A6350; /* texto secundario */
+  --mu-ink:         #3A2418; /* texto principal */
+  --mu-dark:        #2C1B10; /* fondo oscuro / footer */
+
+  /* ---- Coste €→€€€€ (luminosidad monotónica, apto daltonismo) ---- */
+  --mu-cost-1:      #D9A441; /* €    (texto: --mu-ink) */
+  --mu-cost-2:      #E8731A; /* €€   (texto: --mu-ink) */
+  --mu-cost-3:      #B8502D; /* €€€  (texto: --mu-surface) */
+  --mu-cost-4:      #6E3A21; /* €€€€ (texto: --mu-surface) */
+
+  /* ---- Clima ---- */
+  --mu-cold:        #EFDDBE;
+  --mu-mild:        #E9B76B;
+  --mu-warm:        #DE8A34;
+  --mu-hot:         #B8502D;
+  --mu-sun:         #D9A441;
+  --mu-rain:        #5C3520;
+
+  /* ---- Estados ---- */
+  --mu-success:     #6B7F3A; /* oliva cálido (texto: --mu-surface) */
+  --mu-warning:     #D9A441; /* (texto: --mu-ink) */
+  --mu-error:       #B03A2E; /* rojo arcilla (texto: --mu-surface) */
+  --mu-selected:    #E8731A; /* + borde --mu-earth */
+}
