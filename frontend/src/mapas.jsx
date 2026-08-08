@@ -14,7 +14,7 @@
  * menos animaciones.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { geoOrthographic, geoEquirectangular, geoPath, geoGraticule10, geoDistance } from "d3-geo";
 import { feature, mesh } from "topojson-client";
 
@@ -65,13 +65,23 @@ const suave = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
  * Globo giratorio. Si `destino` trae un aeropuerto ({code, lat, lon}), deja de
  * girar y viaja hasta dejarlo en el centro.
  */
-export function Globo({ destino, etiqueta }) {
+export function Globo({ destino, etiqueta, aeropuertos }) {
   const [mundo, setMundo] = useState(null);
   const tierraRef = useRef(null);
   const fronterasRef = useRef(null);
   const mallaRef = useRef(null);
+  const puntosRef = useRef(null);
   const marcaRef = useRef(null);
   const anilloRef = useRef(null);
+
+  // Los 575 aeropuertos, como un solo grupo de puntos. Dibujarlos así deja que
+  // d3 se encargue de esconder los que caen en la cara oculta del globo.
+  const puntos = useMemo(() => ({
+    type: "MultiPoint",
+    coordinates: (aeropuertos || [])
+      .filter((a) => a.lat != null && a.lon != null)
+      .map((a) => [a.lon, a.lat]),
+  }), [aeropuertos]);
   // [longitud, latitud] que mira la cámara. Arranca sobre el Atlántico, con
   // el norte ligeramente inclinado hacia el espectador.
   const rot = useRef([-20, -20]);
@@ -98,6 +108,7 @@ export function Globo({ destino, etiqueta }) {
     if (!mundo) return;
     const proyeccion = geoOrthographic().translate([R, R]).scale(R - 1).precision(1);
     const dibujo = geoPath(proyeccion);
+    const dibujoPuntos = geoPath(proyeccion).pointRadius(0.9);
     const malla = geoGraticule10();
     const quieto = menosAnimaciones();
 
@@ -133,6 +144,9 @@ export function Globo({ destino, etiqueta }) {
       tierraRef.current?.setAttribute("d", dibujo(mundo.tierra) || "");
       fronterasRef.current?.setAttribute("d", dibujo(mundo.fronteras) || "");
       mallaRef.current?.setAttribute("d", dibujo(malla) || "");
+      if (puntos.coordinates.length) {
+        puntosRef.current?.setAttribute("d", dibujoPuntos(puntos) || "");
+      }
 
       // El marcador solo se pinta si el aeropuerto cae en la cara visible.
       if (destino && destino.lat != null && marcaRef.current) {
@@ -160,7 +174,7 @@ export function Globo({ destino, etiqueta }) {
       cancelAnimationFrame(animacion);
       document.removeEventListener("visibilitychange", despertar);
     };
-  }, [mundo, destino]);
+  }, [mundo, destino, puntos]);
 
   return (
     <div className="globo">
@@ -171,6 +185,7 @@ export function Globo({ destino, etiqueta }) {
         <path ref={mallaRef} className="globo-malla" />
         <path ref={tierraRef} className="globo-tierra" />
         <path ref={fronterasRef} className="globo-fronteras" />
+        <path ref={puntosRef} className="globo-puntos" />
         <circle cx={R} cy={R} r={R - 1} className="globo-borde" />
         <circle ref={anilloRef} r="7" className="globo-anillo" style={{ display: "none" }} />
         <circle ref={marcaRef} r="3.2" className="globo-marca" style={{ display: "none" }} />

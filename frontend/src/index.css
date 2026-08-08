@@ -55,11 +55,58 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 2rem;
-  /* que el conjunto ocupe buena parte de la pantalla: si no, el buscador y el
-     globo se quedan pegados arriba con un vacío enorme debajo */
-  min-height: min(62vh, 520px);
 }
 .portada .search-form { flex: 1 1 380px; }
+
+/* En escritorio la portada es el globo a pantalla completa, con la marca y el
+   buscador centrados encima. En móvil (más abajo) sigue apilado: globo debajo
+   del buscador, que es como cabe bien en 390 px. */
+@media (min-width: 801px) {
+  /* la marca va POR ENCIMA del globo: al estar el globo en posición fija, se
+     pintaría delante de todo lo que no esté posicionado */
+  .en-portada header {
+    justify-content: center;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  .portada { display: block; }
+  .portada .search-form {
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .portada .globo {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: auto;
+    margin: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    /* el globo es decorado: no debe robarle los clics al buscador */
+    pointer-events: none;
+  }
+  /* Arranca justo debajo de la marca y se sale por abajo de la pantalla: así
+     llena la vista sin comerse la cabecera. El buscador sí queda encima. */
+  .portada .globo svg { width: min(118vh, 88vw); margin-top: 4.6rem; }
+  /* sobre el globo, el texto suelto no se lee: va en una pastilla */
+  .portada .globo-etiqueta {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 1.4rem;
+    margin: 0;
+    background: var(--mu-surface);
+    border: 1px solid var(--mu-border);
+    border-radius: 999px;
+    padding: 0.35rem 0.95rem;
+    color: var(--mu-ink);
+    box-shadow: 0 2px 8px rgba(92, 53, 32, 0.1);
+  }
+}
 
 .globo {
   flex: 0 0 auto;
@@ -68,10 +115,20 @@ h1 {
   width: min(360px, 72vw);
 }
 .globo svg { display: block; width: 100%; height: auto; overflow: visible; }
-.globo-mar { fill: var(--mu-earth); }
-.globo-malla { fill: none; stroke: var(--mu-clay); stroke-width: 0.4; opacity: 0.55; }
-.globo-tierra { fill: var(--mu-sand); }
-.globo-fronteras { fill: none; stroke: var(--mu-earth); stroke-width: 0.5; opacity: 0.65; }
+/* Mar: naranja de la paleta muy rebajado sobre crema. Tierra: arena. Como los
+   dos tonos son claros y parecidos, lo que separa los continentes del mar es
+   el contorno, no el relleno. */
+.globo-mar { fill: color-mix(in srgb, var(--mu-orange) 30%, var(--mu-cream)); }
+.globo-malla { fill: none; stroke: var(--mu-clay); stroke-width: 0.3; opacity: 0.2; }
+.globo-tierra {
+  fill: var(--mu-sand);
+  stroke: var(--mu-clay);
+  stroke-width: 0.45;
+  stroke-linejoin: round;
+}
+.globo-fronteras { fill: none; stroke: var(--mu-clay); stroke-width: 0.35; opacity: 0.5; }
+/* los 575 aeropuertos que se pueden consultar */
+.globo-puntos { fill: var(--mu-terracotta); opacity: 0.65; }
 .globo-borde { fill: none; stroke: var(--mu-clay); stroke-width: 1.2; }
 .globo-marca { fill: var(--mu-orange); stroke: var(--mu-surface); stroke-width: 1.2; }
 .globo-anillo { fill: none; stroke: var(--mu-orange); stroke-width: 1.5; opacity: 0.75; }
@@ -91,9 +148,9 @@ h1 {
   border: 1px solid var(--mu-border);
   border-radius: 10px;
 }
-.mapa-mar { fill: var(--mu-cream); }
-.mapa-tierra { fill: var(--mu-sand); }
-.mapa-fronteras { fill: none; stroke: var(--mu-border); stroke-width: 0.4; }
+.mapa-mar { fill: color-mix(in srgb, var(--mu-orange) 22%, var(--mu-cream)); }
+.mapa-tierra { fill: var(--mu-sand); stroke: var(--mu-clay); stroke-width: 0.35; }
+.mapa-fronteras { fill: none; stroke: var(--mu-clay); stroke-width: 0.3; opacity: 0.45; }
 .mapa-linea {
   fill: none;
   stroke: var(--mu-terracotta);

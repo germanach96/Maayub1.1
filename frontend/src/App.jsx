@@ -853,7 +853,7 @@ export default function App() {
   const pagina = vuelosFiltrados.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
-    <div className="app">
+    <div className={"app" + (result ? "" : " en-portada")}>
       <header>
         {/* La marca entera es el botón de volver a la portada. */}
         <a
@@ -863,10 +863,7 @@ export default function App() {
           onClick={(ev) => { ev.preventDefault(); volverAPortada(); }}
         >
           <Logo className="logo" />
-          <div>
-            <h1>Muuyal</h1>
-            <p className="subtitle">búsqueda de vuelos con datos de destino</p>
-          </div>
+          <h1>Muuyal</h1>
         </a>
       </header>
 
@@ -925,6 +922,7 @@ export default function App() {
       {!result && (
         <Globo
           destino={aeropuertoOrigen}
+          aeropuertos={airports}
           etiqueta={aeropuertoOrigen
             ? `${aeropuertoOrigen.code} — ${aeropuertoOrigen.name}`
             : "Elige tu aeropuerto de origen"}
