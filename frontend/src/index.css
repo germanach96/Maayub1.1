@@ -106,20 +106,18 @@ h1 {
   /* Arranca justo debajo de la marca y se sale por abajo de la pantalla: así
      llena la vista sin comerse la cabecera. El buscador sí queda encima. */
   .portada .globo svg { width: min(118vh, 88vw); margin-top: 4.6rem; }
-  /* sobre el globo, el texto suelto no se lee: va en una pastilla */
-  .portada .globo-etiqueta {
+  /* el nombre del aeropuerto y los botones de zoom, abajo del todo */
+  .portada .globo-pie {
     position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 1.4rem;
+    left: 0;
+    right: 0;
+    bottom: 1.2rem;
+    flex-direction: row;
+    justify-content: center;
     margin: 0;
-    background: var(--mu-surface);
-    border: 1px solid var(--mu-border);
-    border-radius: 999px;
-    padding: 0.35rem 0.95rem;
-    color: var(--mu-ink);
-    box-shadow: 0 2px 8px rgba(92, 53, 32, 0.1);
+    pointer-events: none;
   }
+  .portada .globo-controles { pointer-events: auto; }
 }
 
 .globo {
@@ -128,7 +126,18 @@ h1 {
   text-align: center;
   width: min(360px, 72vw);
 }
-.globo svg { display: block; width: 100%; height: auto; overflow: visible; }
+.globo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* el globo sí recibe clics y arrastres, aunque su contenedor no */
+  pointer-events: auto;
+  cursor: grab;
+  /* pan-y: arrastrar de lado gira el globo, pero el dedo sigue pudiendo
+     desplazar la página hacia abajo (en el móvil ocupa media pantalla) */
+  touch-action: pan-y;
+}
+.globo svg:active { cursor: grabbing; }
 /* Mar: naranja de la paleta muy rebajado sobre crema. Tierra: arena. Como los
    dos tonos son claros y parecidos, lo que separa los continentes del mar es
    el contorno, no el relleno. */
@@ -144,12 +153,38 @@ h1 {
 .globo-puntos { fill: var(--mu-terracotta); opacity: 0.65; }
 .globo-marca { fill: var(--mu-orange); stroke: var(--mu-surface); stroke-width: 1.2; }
 .globo-anillo { fill: none; stroke: var(--mu-orange); stroke-width: 1.5; opacity: 0.75; }
-.globo-etiqueta {
-  margin-top: 0.6rem;
-  font-weight: 600;
-  color: var(--mu-ink-soft);
-  font-size: 0.9rem;
+/* pie del globo: nombre del aeropuerto elegido y botones de acercar/alejar */
+.globo-pie {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
 }
+.globo-etiqueta {
+  font-weight: 600;
+  font-size: 0.9rem;
+  /* sobre el globo el texto suelto no se lee: va en una pastilla */
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-border);
+  border-radius: 999px;
+  padding: 0.35rem 0.95rem;
+  color: var(--mu-ink);
+  box-shadow: 0 2px 8px rgba(92, 53, 32, 0.1);
+}
+.globo-controles { display: flex; gap: 0.35rem; }
+.globo-controles button {
+  width: 2.3rem;
+  height: 2.3rem;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-border);
+  color: var(--mu-ink);
+  box-shadow: 0 2px 8px rgba(92, 53, 32, 0.1);
+}
+.globo-controles button:hover { background: var(--mu-sand); color: var(--mu-ink); }
 
 /* ---------- mapa de la ruta (ficha del vuelo) ---------- */
 .mapa-ruta { margin: 0.9rem 0 0; }

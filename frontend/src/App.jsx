@@ -998,9 +998,13 @@ export default function App() {
         <Globo
           destino={aeropuertoOrigen}
           aeropuertos={airports}
+          onElegir={(a) => {
+            setOrigin(a.code);
+            setOriginQuery(`${a.code} — ${a.name}`);
+          }}
           etiqueta={aeropuertoOrigen
             ? `${aeropuertoOrigen.code} — ${aeropuertoOrigen.name}`
-            : "Elige tu aeropuerto de origen"}
+            : "Gira el globo y pulsa un aeropuerto"}
         />
       )}
       </div>

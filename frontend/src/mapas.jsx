@@ -27,6 +27,7 @@ const LADO = R * 2;
 const GRADOS_POR_SEGUNDO = 6;
 const FPS = 24;
 const DURACION_VIAJE = 1300;   // ms que tarda en girar hasta el aeropuerto
+const ZOOM_MAX = 8;            // cuánto se puede acercar el globo
 
 let promesaMundo = null;
 
@@ -65,13 +66,21 @@ const suave = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
  * Globo giratorio. Si `destino` trae un aeropuerto ({code, lat, lon}), deja de
  * girar y viaja hasta dejarlo en el centro.
  */
-export function Globo({ destino, etiqueta, aeropuertos }) {
+export function Globo({ destino, etiqueta, aeropuertos, onElegir }) {
   const [mundo, setMundo] = useState(null);
+  const svgRef = useRef(null);
   const tierraRef = useRef(null);
   const fronterasRef = useRef(null);
   const puntosRef = useRef(null);
   const marcaRef = useRef(null);
   const anilloRef = useRef(null);
+  const proyeccionRef = useRef(null);
+  const zoom = useRef(1);
+  const arrastre = useRef(null);
+  // En cuanto tocas el globo deja de girar solo: si no, pelearía contigo
+  // mientras lo mueves. Vuelve a girar con el botón de recentrar.
+  const tocado = useRef(false);
+  const repintar = useRef(true);
 
   // Los 575 aeropuertos, como un solo grupo de puntos. Dibujarlos así deja que
   // d3 se encargue de esconder los que caen en la cara oculta del globo.
@@ -105,7 +114,8 @@ export function Globo({ destino, etiqueta, aeropuertos }) {
 
   useEffect(() => {
     if (!mundo) return;
-    const proyeccion = geoOrthographic().translate([R, R]).scale(R - 1).precision(1);
+    const proyeccion = geoOrthographic().translate([R, R]).precision(1);
+    proyeccionRef.current = proyeccion;
     const dibujo = geoPath(proyeccion);
     const dibujoPuntos = geoPath(proyeccion).pointRadius(0.9);
     const quieto = menosAnimaciones();
@@ -129,15 +139,17 @@ export function Globo({ destino, etiqueta, aeropuertos }) {
           v.desde[1] + (v.hasta[1] - v.desde[1]) * k,
         ];
         if (t >= 1) viaje.current = null;
-      } else if (!destino && !quieto && !document.hidden) {
+      } else if (!destino && !tocado.current && !quieto && !document.hidden) {
         rot.current = [rot.current[0] + GRADOS_POR_SEGUNDO * dt, rot.current[1]];
-      } else if (ultimo) {
+      } else if (!repintar.current && ultimo) {
         return;   // nada que mover: no se repinta
       }
 
       if (ahora - ultimo < 1000 / FPS) return;
       ultimo = ahora;
+      repintar.current = false;
 
+      proyeccion.scale((R - 0.5) * zoom.current);
       proyeccion.rotate(rot.current);
       tierraRef.current?.setAttribute("d", dibujo(mundo.tierra) || "");
       fronterasRef.current?.setAttribute("d", dibujo(mundo.fronteras) || "");
@@ -165,7 +177,7 @@ export function Globo({ destino, etiqueta, aeropuertos }) {
     };
 
     animacion = requestAnimationFrame(pintar);
-    const despertar = () => { ultimo = 0; anterior = performance.now(); };
+    const despertar = () => { ultimo = 0; anterior = performance.now(); repintar.current = true; };
     document.addEventListener("visibilitychange", despertar);
     return () => {
       cancelAnimationFrame(animacion);
@@ -173,19 +185,136 @@ export function Globo({ destino, etiqueta, aeropuertos }) {
     };
   }, [mundo, destino, puntos]);
 
+  // --- manejar el globo con el ratón o el dedo -------------------------
+
+  // Píxeles de pantalla -> unidades del dibujo (el viewBox mide 200x200).
+  const aUnidades = (ev) => {
+    const r = svgRef.current.getBoundingClientRect();
+    return [(ev.clientX - r.left) * (LADO / r.width),
+            (ev.clientY - r.top) * (LADO / r.height)];
+  };
+
+  const empezarArrastre = (ev) => {
+    svgRef.current.setPointerCapture(ev.pointerId);
+    arrastre.current = {
+      desde: aUnidades(ev),
+      cliente: [ev.clientX, ev.clientY],
+      rot: [...rot.current],
+      movidoPx: 0,
+    };
+    tocado.current = true;
+    viaje.current = null;
+  };
+
+  const moverArrastre = (ev) => {
+    const a = arrastre.current;
+    if (!a) return;
+    const [x, y] = aUnidades(ev);
+    const dx = x - a.desde[0];
+    const dy = y - a.desde[1];
+    // El movimiento para distinguir "clic" de "arrastre" se mide en píxeles de
+    // pantalla, no en unidades del dibujo: así se comporta igual en el móvil.
+    a.movidoPx = Math.max(a.movidoPx,
+      Math.hypot(ev.clientX - a.cliente[0], ev.clientY - a.cliente[1]));
+    // Cuántos grados gira cada unidad del dibujo. Cuanto más cerca (más zoom),
+    // menos gira: si no, con el globo ampliado se iría de las manos.
+    const grados = 57.3 / ((R - 0.5) * zoom.current);
+    rot.current = [
+      a.rot[0] + dx * grados,
+      Math.max(-90, Math.min(90, a.rot[1] - dy * grados)),
+    ];
+    repintar.current = true;
+  };
+
+  // Un clic (arrastre de casi nada) elige el aeropuerto más cercano al dedo.
+  const soltarArrastre = (ev) => {
+    const a = arrastre.current;
+    arrastre.current = null;
+    if (!a || a.movidoPx > 8 || !onElegir) return;
+    const proyeccion = proyeccionRef.current;
+    if (!proyeccion) return;
+    const [x, y] = aUnidades(ev);
+    const centro = [-rot.current[0], -rot.current[1]];
+    // Se acierta un aeropuerto si el dedo cae a menos de esta distancia EN
+    // PANTALLA, no en el mapa: así la zona de acierto es la misma se vea el
+    // globo grande o pequeño, y con el dedo es más ancha que con el ratón.
+    const px = ev.pointerType === "touch" ? 26 : 14;
+    const rect = svgRef.current.getBoundingClientRect();
+    let mejor = null;
+    let mejorDist = px * (LADO / rect.width);
+    for (const ap of aeropuertos || []) {
+      if (ap.lat == null || ap.lon == null) continue;
+      if (geoDistance([ap.lon, ap.lat], centro) >= Math.PI / 2) continue;  // cara oculta
+      const p = proyeccion([ap.lon, ap.lat]);
+      if (!p) continue;
+      const d = Math.hypot(p[0] - x, p[1] - y);
+      if (d < mejorDist) { mejorDist = d; mejor = ap; }
+    }
+    if (mejor) onElegir(mejor);
+  };
+
+  const acercar = (factor) => {
+    zoom.current = Math.max(1, Math.min(ZOOM_MAX, zoom.current * factor));
+    tocado.current = true;
+    repintar.current = true;
+  };
+
+  const recentrar = () => {
+    zoom.current = 1;
+    tocado.current = false;      // vuelve a girar solo
+    arrastre.current = null;
+    repintar.current = true;
+  };
+
+  // La rueda se engancha a mano y no con onWheel: React la escucha en modo
+  // "pasivo" y ahí no se puede evitar que la página se desplace a la vez.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rueda = (ev) => {
+      ev.preventDefault();
+      zoom.current = Math.max(1, Math.min(ZOOM_MAX,
+        zoom.current * Math.exp(-ev.deltaY * 0.0015)));
+      tocado.current = true;
+      repintar.current = true;
+    };
+    svg.addEventListener("wheel", rueda, { passive: false });
+    return () => svg.removeEventListener("wheel", rueda);
+  }, []);
+
   return (
     <div className="globo">
-      <svg viewBox={`0 0 ${LADO} ${LADO}`} role="img"
-           aria-label={destino ? `Globo terráqueo centrado en ${destino.code}` : "Globo terráqueo girando"}>
-        {/* océano: sin línea de borde ni meridianos, solo el disco de color */}
-        <circle cx={R} cy={R} r={R} className="globo-mar" />
-        <path ref={tierraRef} className="globo-tierra" />
-        <path ref={fronterasRef} className="globo-fronteras" />
-        <path ref={puntosRef} className="globo-puntos" />
-        <circle ref={anilloRef} r="7" className="globo-anillo" style={{ display: "none" }} />
-        <circle ref={marcaRef} r="3.2" className="globo-marca" style={{ display: "none" }} />
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${LADO} ${LADO}`}
+        role="img"
+        aria-label={destino ? `Globo terráqueo centrado en ${destino.code}` : "Globo terráqueo girando"}
+        onPointerDown={empezarArrastre}
+        onPointerMove={moverArrastre}
+        onPointerUp={soltarArrastre}
+        onPointerCancel={() => { arrastre.current = null; }}
+      >
+        {/* Al ampliar, el planeta crece pero la ventana redonda no: se recorta
+            para que no se salga del disco. */}
+        <clipPath id="globo-disco"><circle cx={R} cy={R} r={R} /></clipPath>
+        <g clipPath="url(#globo-disco)">
+          {/* océano: sin línea de borde ni meridianos, solo el disco de color */}
+          <circle cx={R} cy={R} r={R} className="globo-mar" />
+          <path ref={tierraRef} className="globo-tierra" />
+          <path ref={fronterasRef} className="globo-fronteras" />
+          <path ref={puntosRef} className="globo-puntos" />
+          <circle ref={anilloRef} r="7" className="globo-anillo" style={{ display: "none" }} />
+          <circle ref={marcaRef} r="3.2" className="globo-marca" style={{ display: "none" }} />
+        </g>
       </svg>
-      {etiqueta && <div className="globo-etiqueta">{etiqueta}</div>}
+      <div className="globo-pie">
+        {etiqueta && <div className="globo-etiqueta">{etiqueta}</div>}
+        <div className="globo-controles">
+          <button type="button" onClick={() => acercar(1 / 1.4)} aria-label="Alejar" title="Alejar">−</button>
+          <button type="button" onClick={recentrar} aria-label="Recentrar y volver a girar" title="Recentrar">⟲</button>
+          <button type="button" onClick={() => acercar(1.4)} aria-label="Acercar" title="Acercar">+</button>
+        </div>
+      </div>
     </div>
   );
 }
