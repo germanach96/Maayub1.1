@@ -3,6 +3,33 @@
    El subconjunto latin-ext solo lo descarga el navegador si algún texto lo
    necesita (nombres de aeropuerto tipo "Łódź"); con español basta latin. */
 
+/* ---------------------------------------------------------------------------
+   NORDIQUE PRO INLINE — el titular "Muuyal"
+   ---------------------------------------------------------------------------
+   No está en el repo A PROPÓSITO: es una tipografía comercial de Leksen Design
+   y no se puede redistribuir sin licencia (ver public/fonts/NORDIQUE.txt).
+
+   El titular ya la pide como primera opción, así que:
+     - si la tienes instalada en tu ordenador, la verás tú;
+     - el resto del mundo ve Bricolage Grotesque, como hasta ahora.
+
+   Para que la vea todo el mundo: compra la licencia de web, deja el archivo en
+   frontend/public/fonts/NordiquePro-Inline.woff2 y descomenta el bloque de
+   abajo (quitándole las dos barras del principio de cada línea).
+
+   @font-face {
+     font-family: 'Nordique Pro Inline';
+     font-style: normal;
+     font-weight: 700;
+     font-display: swap;
+     src: url('/fonts/NordiquePro-Inline.woff2') format('woff2');
+   }
+
+   Está escrito dentro de este comentario y no como bloque aparte a propósito:
+   si estuviera activo sin el archivo, el navegador lo pediría en cada visita y
+   se llevaría un 404.
+--------------------------------------------------------------------------- */
+
 @font-face {
   font-family: 'Bricolage Grotesque';
   font-style: normal;
