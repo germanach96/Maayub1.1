@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from .aviasales import buscar_grupo
 from .data import MasterData, ZONAS
 from .enrichment import enrich_all
+from .scoring import puntuar_vuelos, senales_activas
 
 app = FastAPI(title="muuyal", version="0.1.0")
 
@@ -59,17 +60,24 @@ def search(req: SearchRequest):
 
     destinos = data.destinos_de_grupo(req.group, origen)
     t0 = time.time()
+    # Día en que se lanza esta búsqueda. Sirve de referencia para la antigüedad
+    # de cada precio cacheado (dia_busqueda), en vez del reloj del navegador.
+    fecha_consulta = datetime.now(timezone.utc).date().isoformat()
     vuelos = buscar_grupo(origen, destinos)
     enriquecidos = enrich_all(vuelos, origen, data)
+    # La puntuación va DESPUÉS del enriquecimiento y sobre el lote entero: la
+    # señal del chollo compara cada precio con la mediana de su destino, y esa
+    # mediana solo se conoce con todos los vuelos delante.
+    enriquecidos = puntuar_vuelos(enriquecidos, fecha_consulta)
 
     return {
         "meta": {
             "origin": origen,
             "group": req.group,
-            # Día en que se lanza esta búsqueda. El frontend lo usa como
-            # referencia para calcular la antigüedad de cada precio cacheado
-            # (dia_busqueda), en vez de fiarse del reloj del navegador.
-            "fecha_consulta": datetime.now(timezone.utc).date().isoformat(),
+            "fecha_consulta": fecha_consulta,
+            # Leyenda del desglose de la nota: [[señal, peso], ...]. Viaja una
+            # sola vez aquí; cada vuelo solo lleva los valores, en este orden.
+            "score_senales": senales_activas(),
             "destinations_queried": len(destinos),
             "api_calls": len(destinos) * 3,
             "flights_found": len(enriquecidos),
