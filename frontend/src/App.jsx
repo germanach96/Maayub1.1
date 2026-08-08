@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Globo, MapaRuta } from "./mapas";
 
 // Colores de la paleta de marca. Cada par cumple el contraste AA indicado en
 // handoff/CONTEXT.md: texto oscuro sobre naranja, texto crema sobre
@@ -17,11 +18,19 @@ const GAP_LABELS = {
   unesco: "unesco",
 };
 
-// Avisos sobre la fiabilidad de la nota (los pone backend/scoring.py).
+// Avisos sobre la fiabilidad de la nota (los pone backend/scoring.py). En la
+// lista se enseña la versión corta, para no comerse el ancho de la tabla; la
+// explicación entera sale al pasar el ratón y en la ficha del vuelo.
 const FLAG_LABELS = {
-  chollo_pocos_datos: "pocos vuelos para saber si es chollo",
+  chollo_pocos_datos: "chollo: pocos datos",
+  temporada_no_fiable: "temporada dudosa",
+  datos_incompletos: "datos incompletos",
+};
+
+const FLAG_TITULOS = {
+  chollo_pocos_datos: "pocos vuelos a ese destino para saber si es chollo",
   temporada_no_fiable: "temporada poco fiable (ciudad grande)",
-  datos_incompletos: "puntuación con datos incompletos",
+  datos_incompletos: "puntuación calculada con datos incompletos",
 };
 
 // Nombre en castellano llano de cada señal de la puntuación. El backend manda
@@ -54,7 +63,10 @@ const PAGE_SIZE = 50;
 // Dónde guarda el navegador tus valoraciones. Quedan en este dispositivo:
 // no se pierden aunque el servidor se duerma, y salen del navegador solo
 // cuando pulsas "Descargar mis valoraciones".
-const LS_VALORACIONES = "muuyal_valoraciones_v1";
+// v2 = tu nota va de 0 a 100, igual que la de muuyal. En v1 iba de 0 a 10;
+// las que estuvieran guardadas así se convierten solas al abrir la página.
+const LS_VALORACIONES = "muuyal_valoraciones_v2";
+const LS_VALORACIONES_V1 = "muuyal_valoraciones_v1";
 
 // Nombre del país en español a partir del código ISO ("ES" -> "España").
 // Lo resuelve el propio navegador; si no soporta la API, se enseña el código.
@@ -293,12 +305,14 @@ function desgloseDe(f, senales) {
     .sort((a, b) => b.aporte - a.aporte);
 }
 
-function FlagsBadges({ flags }) {
+function FlagsBadges({ flags, largo = false }) {
   if (!flags || flags.length === 0) return null;
   return (
     <span className="gaps">
       {flags.map((g) => (
-        <span key={g} className="gap-badge flag-badge">{FLAG_LABELS[g] || g}</span>
+        <span key={g} className="gap-badge flag-badge" title={FLAG_TITULOS[g] || g}>
+          {(largo ? FLAG_TITULOS[g] : FLAG_LABELS[g]) || g}
+        </span>
       ))}
     </span>
   );
@@ -320,7 +334,19 @@ function idVuelo(f) {
 
 function leerValoraciones() {
   try {
-    return JSON.parse(localStorage.getItem(LS_VALORACIONES) || "{}");
+    const guardado = localStorage.getItem(LS_VALORACIONES);
+    if (guardado) return JSON.parse(guardado);
+    // Valoraciones de cuando la nota iba de 0 a 10: se pasan a 100 para que no
+    // se pierdan al cambiar la escala (un 7,5 de entonces es un 75 de ahora).
+    const viejas = JSON.parse(localStorage.getItem(LS_VALORACIONES_V1) || "{}");
+    const migradas = {};
+    for (const [id, r] of Object.entries(viejas)) {
+      migradas[id] = { ...r, nota_usuario: String(Math.round(Number(r.nota_usuario) * 10)) };
+    }
+    if (Object.keys(migradas).length) {
+      localStorage.setItem(LS_VALORACIONES, JSON.stringify(migradas));
+    }
+    return migradas;
   } catch {
     return {};
   }
@@ -339,7 +365,7 @@ function registroValoracion(f, nota, meta, senales) {
   const reg = {
     id_vuelo: idVuelo(f),
     fecha_valoracion: new Date().toISOString(),
-    nota_usuario: nota.toFixed(1),
+    nota_usuario: String(Math.round(nota)),   // 0–100, igual que score_muuyal
     score_muuyal: f.score ?? "",
     score_flags: (f.score_flags || []).join("|"),
     enrichment_gaps: (f.enrichment_gaps || []).join("|"),
@@ -415,11 +441,11 @@ function descargarTexto(nombre, texto) {
 
 // Subpantalla de un vuelo: todos sus datos, el desglose de la nota, el enlace
 // a Aviasales y el deslizador para ponerle tu nota del 0 al 10.
-function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, onGuardar, onBorrar, onCerrar }) {
+function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto, onGuardar, onBorrar, onCerrar }) {
   // El deslizador arranca en la nota que ya tuviera ese vuelo, o en 5 si aún
   // no lo has valorado. Al abrir otro vuelo, el padre remonta esta pantalla
   // (le pasa una `key` distinta), así que el estado se rehace solo.
-  const [nota, setNota] = useState(valoracion ? Number(valoracion.nota_usuario) : 5);
+  const [nota, setNota] = useState(valoracion ? Number(valoracion.nota_usuario) : 50);
   const [guardado, setGuardado] = useState(false);
 
   useEffect(() => {
@@ -434,6 +460,15 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, onGuardar, 
 
   const e = f.enrichment || {};
   const desglose = desgloseDe(f, senales);
+  // Extremos de la ruta. Se usan el origen de la búsqueda y el aeropuerto
+  // enriquecido (no `origin`/`destination` del vuelo, que a veces vienen como
+  // código de ciudad y no están en el maestro), girados según el sentido:
+  // en las vueltas el vuelo va del destino a casa.
+  const ida = f.tipo_llamada !== "OW_VUELTA";
+  const casa = aeropuerto?.(meta?.origin);
+  const lejos = aeropuerto?.(f.enrich_airport);
+  const rutaA = ida ? casa : lejos;
+  const rutaB = ida ? lejos : casa;
   const pesoPresente = desglose.reduce((s, d) => s + d.peso, 0);
   const dato = (label, valor) => (
     <div className="dato">
@@ -483,9 +518,11 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, onGuardar, 
             </a>
           </section>
 
+          <MapaRuta origen={rutaA} destino={rutaB} />
+
           {(f.score_flags?.length > 0 || f.enrichment_gaps?.length > 0) && (
             <div className="modal-avisos">
-              <FlagsBadges flags={f.score_flags} />
+              <FlagsBadges flags={f.score_flags} largo />
               <GapsBadges gaps={f.enrichment_gaps} />
             </div>
           )}
@@ -497,13 +534,15 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, onGuardar, 
               que la descargues.
             </p>
             <div className="valorar">
-              <span className="valorar-num">{nota.toFixed(1).replace(".", ",")}</span>
+              <span className="valorar-num">
+                {Math.round(nota)}<span className="nota-de">/100</span>
+              </span>
               <input
-                type="range" min="0" max="10" step="0.1" value={nota}
-                aria-label="Tu nota del 0 al 10"
+                type="range" min="0" max="100" step="1" value={nota}
+                aria-label="Tu nota del 0 al 100"
                 onChange={(ev) => { setNota(Number(ev.target.value)); setGuardado(false); }}
               />
-              <div className="valorar-escala muted small"><span>0</span><span>10</span></div>
+              <div className="valorar-escala muted small"><span>0</span><span>100</span></div>
             </div>
             <div className="valorar-acciones">
               <button type="button" onClick={() => { onGuardar(f, nota); setGuardado(true); }}>
@@ -517,7 +556,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, onGuardar, 
             </div>
             {valoracion && !guardado && (
               <p className="muted small">
-                Ya la valoraste con un {Number(valoracion.nota_usuario).toFixed(1).replace(".", ",")}
+                Ya la valoraste con un {Math.round(Number(valoracion.nota_usuario))}/100
                 {" "}el {fmtDia(valoracion.fecha_valoracion.slice(0, 10))}.
               </p>
             )}
@@ -634,7 +673,8 @@ export default function App() {
   const [pais, setPais] = useState("");
   const [rangos, setRangos] = useState({});
   const [panelAbierto, setPanelAbierto] = useState(false);
-  const [orden, setOrden] = useState("price");
+  // Por defecto se ordena por la puntuación de muuyal, de mayor a menor.
+  const [orden, setOrden] = useState("score");
   const [page, setPage] = useState(0);
 
   // vuelo abierto en la subpantalla y valoraciones guardadas en este navegador
@@ -642,6 +682,7 @@ export default function App() {
   const [valoraciones, setValoraciones] = useState({});
 
   const inputRef = useRef(null);
+  const peticionRef = useRef(null);
 
   useEffect(() => {
     fetch("/api/airports").then((r) => r.json()).then(setAirports).catch(() => {});
@@ -674,11 +715,14 @@ export default function App() {
     setMaxCache("");
     setPais("");
     setRangos({});
+    const control = new AbortController();
+    peticionRef.current = control;
     try {
       const resp = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ origin, group }),
+        signal: control.signal,
       });
       if (!resp.ok) {
         const body = await resp.json().catch(() => ({}));
@@ -686,14 +730,47 @@ export default function App() {
       }
       setResult(await resp.json());
     } catch (err) {
-      setError(err.message);
+      // Si la búsqueda se cortó al volver a la portada, no es un error que
+      // haya que enseñar: es lo que el usuario acaba de pedir.
+      if (err.name !== "AbortError") setError(err.message);
     } finally {
-      setLoading(false);
+      if (peticionRef.current === control) {
+        peticionRef.current = null;
+        setLoading(false);
+      }
     }
+  }
+
+  // El logo devuelve a la portada: se corta la búsqueda en curso si la hay y
+  // se deja todo como recién abierta la página (el globo vuelve a girar).
+  function volverAPortada() {
+    peticionRef.current?.abort();
+    peticionRef.current = null;
+    setLoading(false);
+    setResult(null);
+    setError(null);
+    setDetalle(null);
+    setOrigin("");
+    setOriginQuery("");
+    setGroup("");
+    setPanelAbierto(false);
+    setFiltroTipo(""); setFiltroDestino(""); setMaxCache("");
+    setPais(""); setRangos({}); setPage(0); setOrden("score");
+    window.scrollTo({ top: 0 });
   }
 
   const fechaConsulta = result?.meta?.fecha_consulta;
   const senales = result?.meta?.score_senales;
+
+  // Búsqueda rápida de aeropuerto por código: la usan el globo (para saber
+  // adónde girar) y el mapa de ruta de la ficha de cada vuelo.
+  const porCodigo = useMemo(() => {
+    const m = new Map();
+    for (const a of airports) m.set(a.code, a);
+    return m;
+  }, [airports]);
+  const aeropuerto = (code) => (code ? porCodigo.get(code) || null : null);
+  const aeropuertoOrigen = aeropuerto(origin);
 
   // --- valoraciones manuales ------------------------------------------
   const guardarValoracion = (f, nota) => {
@@ -804,15 +881,23 @@ export default function App() {
   const pagina = vuelosFiltrados.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
-    <div className="app">
+    <div className={"app" + (result ? "" : " en-portada")}>
       <header>
-        <Logo className="logo" />
-        <div>
+        {/* La marca entera es el botón de volver a la portada. */}
+        <a
+          href="/"
+          className="marca"
+          title="Volver a la portada"
+          onClick={(ev) => { ev.preventDefault(); volverAPortada(); }}
+        >
+          <Logo className="logo" />
           <h1>Muuyal</h1>
-          <p className="subtitle">búsqueda de vuelos con datos de destino</p>
-        </div>
+        </a>
       </header>
 
+      {/* Portada: el buscador y el globo, uno al lado del otro. En cuanto hay
+          resultados el globo desaparece y la lista se queda toda la anchura. */}
+      <div className={result ? "" : "portada"}>
       <form className="search-form" onSubmit={buscar}>
         <div className="field origen-field">
           <label>Aeropuerto de origen</label>
@@ -861,6 +946,28 @@ export default function App() {
           {loading ? "Buscando…" : "Buscar vuelos"}
         </button>
       </form>
+
+      {/* Descargar no debería obligar a repetir una búsqueda de varios
+          minutos: si hay valoraciones guardadas, el botón también está aquí. */}
+      {!result && nValoraciones > 0 && (
+        <div className="descarga-portada">
+          <button type="button" className="btn-sec" onClick={descargarValoraciones}>
+            ⭳ Descargar mis valoraciones
+            <span className="badge-filtros">{nValoraciones}</span>
+          </button>
+        </div>
+      )}
+
+      {!result && (
+        <Globo
+          destino={aeropuertoOrigen}
+          aeropuertos={airports}
+          etiqueta={aeropuertoOrigen
+            ? `${aeropuertoOrigen.code} — ${aeropuertoOrigen.name}`
+            : "Elige tu aeropuerto de origen"}
+        />
+      )}
+      </div>
 
       {loading && (
         <div className="loading">
@@ -1039,22 +1146,24 @@ export default function App() {
                         <Nota score={f.score} />
                         {mia && (
                           <div className="mi-nota" title="Tu valoración">
-                            ★ {Number(mia.nota_usuario).toFixed(1).replace(".", ",")}
+                            ★ {Math.round(Number(mia.nota_usuario))}
                           </div>
                         )}
-                        <FlagsBadges flags={f.score_flags} />
                       </td>
                       <td>
                         <TipoBadge tipo={f.tipo_llamada} />
                         <div className="ruta">{f.origin_airport || f.origin} → {f.destination_airport || f.destination}</div>
+                        {/* los avisos de la nota van con los de los datos que
+                            faltan: juntos ocupan menos que en su propia columna */}
                         <GapsBadges gaps={f.enrichment_gaps} />
+                        <FlagsBadges flags={f.score_flags} />
                       </td>
                       <td>{fmtFecha(f.departure_at)}</td>
                       <td>{f.tipo_llamada === "RD" ? fmtFecha(f.return_at) : "—"}</td>
                       <td>{f.airline || "—"} {f.flight_number || ""}</td>
                       <td>{f.transfers ?? "—"}{f.tipo_llamada === "RD" ? ` + ${f.return_transfers ?? "—"}` : ""}</td>
                       <td>{fmtDuracion(f.duration)}</td>
-                      <td>
+                      <td className="dest-cell">
                         <b>{f.enrich_airport}</b>
                         {f.enrich_country && (
                           <span className="muted small"> · {NOMBRES_PAIS(f.enrich_country)}</span>
@@ -1156,7 +1265,7 @@ export default function App() {
                     <Nota score={f.score} chip />
                     {mia && (
                       <span className="chip mi-nota-chip">
-                        ★ tu nota {Number(mia.nota_usuario).toFixed(1).replace(".", ",")}
+                        ★ tu nota {Math.round(Number(mia.nota_usuario))}
                       </span>
                     )}
                     <Frescura f={f} fechaConsulta={fechaConsulta} chip />
@@ -1200,6 +1309,7 @@ export default function App() {
           senales={senales}
           fechaConsulta={fechaConsulta}
           valoracion={valoraciones[idVuelo(detalle)]}
+          aeropuerto={aeropuerto}
           onGuardar={guardarValoracion}
           onBorrar={borrarValoracion}
           onCerrar={() => setDetalle(null)}

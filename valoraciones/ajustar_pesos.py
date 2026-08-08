@@ -79,10 +79,13 @@ def pesos_actuales(df, señales):
 
 
 def matriz(df, señales):
-    """X (valores normalizados, NaN = señal neutra) e y (nota 0–100)."""
+    """X (valores normalizados, NaN = señal neutra) e y (nota 0–100).
+
+    La nota del dueño ya viene de 0 a 100, la misma escala que la de muuyal:
+    se comparan directamente, sin convertir nada."""
     X = np.column_stack([pd.to_numeric(df[f"norm_{s}"], errors="coerce").to_numpy()
                          for s in señales])
-    y = pd.to_numeric(df["nota_usuario"], errors="coerce").to_numpy() * 10.0
+    y = pd.to_numeric(df["nota_usuario"], errors="coerce").to_numpy()
     ok = ~np.isnan(y)
     return X[ok], y[ok]
 
@@ -178,9 +181,9 @@ def main():
     actuales = pesos_actuales(todo, señales)
     w0 = np.array([actuales[s] for s in señales], dtype=float)
 
-    print("\nNotas del dueño: "
-          f"media={y.mean()/10:.1f}  min={y.min()/10:.1f}  max={y.max()/10:.1f}  "
-          f"desviación={y.std()/10:.2f}")
+    print("\nNotas del dueño (sobre 100): "
+          f"media={y.mean():.0f}  min={y.min():.0f}  max={y.max():.0f}  "
+          f"desviación={y.std():.1f}")
     if y.std() < 5:
         print("  ⚠ Las notas casi no varían: con todo puntuado parecido no hay "
               "de dónde sacar los pesos. Hacen falta valoraciones repartidas.")
