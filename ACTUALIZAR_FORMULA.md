@@ -20,8 +20,9 @@
 
 ## 1. De dónde sale el archivo que te mandan
 
-En la web, al pulsar un vuelo se abre su ficha, y ahí hay una barra de 0 a 10
-para puntuarlo. Esas notas se guardan **en su navegador** (no en el servidor:
+En la web, al pulsar un vuelo se abre su ficha, y ahí hay una barra de 0 a 100
+para puntuarlo (la misma escala que la nota de muuyal, para poder compararlas
+de un vistazo). Esas notas se guardan **en su navegador** (no en el servidor:
 el disco de Render se borra al dormirse). Cuando pulsa **"Descargar mis
 valoraciones"** se baja un CSV con una fila por vuelo valorado, y ese es el
 archivo que te manda.
@@ -35,7 +36,7 @@ Columnas que importan:
 
 | Columna | Qué es |
 |---|---|
-| `nota_usuario` | **Su nota, de 0 a 10 con un decimal. Es lo que hay que aprender a predecir.** |
+| `nota_usuario` | **Su nota, de 0 a 100. Es lo que hay que aprender a predecir.** |
 | `score_muuyal` | La nota 0–100 que le puso la fórmula en ese momento |
 | `norm_<señal>` | Valor normalizado (0–1) de cada señal en ese vuelo. Vacío = señal neutra ahí |
 | `peso_<señal>` | El peso que tenía esa señal cuando valoró |
@@ -67,7 +68,7 @@ El script:
   o que el ajuste querría apagar del todo).
 
 **Cómo funciona el ajuste, por si tienes que defenderlo:** busca los pesos
-`w ≥ 0` que minimizan la diferencia entre `nota_usuario × 10` y la fórmula real
+`w ≥ 0` que minimizan la diferencia entre `nota_usuario` y la fórmula real
 `100 × Σ w·valor ÷ Σ w_con_dato`. Como es un cociente (las señales sin dato
 reparten su peso), no se resuelve de un tirón: se repite un ajuste lineal
 fijando el denominador con los pesos de la vuelta anterior hasta que deja de
@@ -80,7 +81,7 @@ Dilo claramente en vez de tocar los pesos igualmente:
 
 - **Menos de 40 valoraciones.** Hay 12 pesos que estimar; con menos datos que
   eso, el ajuste es ruido. El script se planta solo.
-- **Sus notas casi no varían** (todo 7 y 8). Si no distingue, no hay nada que
+- **Sus notas casi no varían** (todo 70 y 80). Si no distingue, no hay nada que
   aprender: pídele que valore también vuelos que le parezcan malos.
 - **La predicción no mejora** sobre las valoraciones reservadas. Mejor quedarse
   como está.

@@ -18,11 +18,19 @@ const GAP_LABELS = {
   unesco: "unesco",
 };
 
-// Avisos sobre la fiabilidad de la nota (los pone backend/scoring.py).
+// Avisos sobre la fiabilidad de la nota (los pone backend/scoring.py). En la
+// lista se enseña la versión corta, para no comerse el ancho de la tabla; la
+// explicación entera sale al pasar el ratón y en la ficha del vuelo.
 const FLAG_LABELS = {
-  chollo_pocos_datos: "pocos vuelos para saber si es chollo",
+  chollo_pocos_datos: "chollo: pocos datos",
+  temporada_no_fiable: "temporada dudosa",
+  datos_incompletos: "datos incompletos",
+};
+
+const FLAG_TITULOS = {
+  chollo_pocos_datos: "pocos vuelos a ese destino para saber si es chollo",
   temporada_no_fiable: "temporada poco fiable (ciudad grande)",
-  datos_incompletos: "puntuación con datos incompletos",
+  datos_incompletos: "puntuación calculada con datos incompletos",
 };
 
 // Nombre en castellano llano de cada señal de la puntuación. El backend manda
@@ -55,7 +63,10 @@ const PAGE_SIZE = 50;
 // Dónde guarda el navegador tus valoraciones. Quedan en este dispositivo:
 // no se pierden aunque el servidor se duerma, y salen del navegador solo
 // cuando pulsas "Descargar mis valoraciones".
-const LS_VALORACIONES = "muuyal_valoraciones_v1";
+// v2 = tu nota va de 0 a 100, igual que la de muuyal. En v1 iba de 0 a 10;
+// las que estuvieran guardadas así se convierten solas al abrir la página.
+const LS_VALORACIONES = "muuyal_valoraciones_v2";
+const LS_VALORACIONES_V1 = "muuyal_valoraciones_v1";
 
 // Nombre del país en español a partir del código ISO ("ES" -> "España").
 // Lo resuelve el propio navegador; si no soporta la API, se enseña el código.
@@ -294,12 +305,14 @@ function desgloseDe(f, senales) {
     .sort((a, b) => b.aporte - a.aporte);
 }
 
-function FlagsBadges({ flags }) {
+function FlagsBadges({ flags, largo = false }) {
   if (!flags || flags.length === 0) return null;
   return (
     <span className="gaps">
       {flags.map((g) => (
-        <span key={g} className="gap-badge flag-badge">{FLAG_LABELS[g] || g}</span>
+        <span key={g} className="gap-badge flag-badge" title={FLAG_TITULOS[g] || g}>
+          {(largo ? FLAG_TITULOS[g] : FLAG_LABELS[g]) || g}
+        </span>
       ))}
     </span>
   );
@@ -321,7 +334,19 @@ function idVuelo(f) {
 
 function leerValoraciones() {
   try {
-    return JSON.parse(localStorage.getItem(LS_VALORACIONES) || "{}");
+    const guardado = localStorage.getItem(LS_VALORACIONES);
+    if (guardado) return JSON.parse(guardado);
+    // Valoraciones de cuando la nota iba de 0 a 10: se pasan a 100 para que no
+    // se pierdan al cambiar la escala (un 7,5 de entonces es un 75 de ahora).
+    const viejas = JSON.parse(localStorage.getItem(LS_VALORACIONES_V1) || "{}");
+    const migradas = {};
+    for (const [id, r] of Object.entries(viejas)) {
+      migradas[id] = { ...r, nota_usuario: String(Math.round(Number(r.nota_usuario) * 10)) };
+    }
+    if (Object.keys(migradas).length) {
+      localStorage.setItem(LS_VALORACIONES, JSON.stringify(migradas));
+    }
+    return migradas;
   } catch {
     return {};
   }
@@ -340,7 +365,7 @@ function registroValoracion(f, nota, meta, senales) {
   const reg = {
     id_vuelo: idVuelo(f),
     fecha_valoracion: new Date().toISOString(),
-    nota_usuario: nota.toFixed(1),
+    nota_usuario: String(Math.round(nota)),   // 0–100, igual que score_muuyal
     score_muuyal: f.score ?? "",
     score_flags: (f.score_flags || []).join("|"),
     enrichment_gaps: (f.enrichment_gaps || []).join("|"),
@@ -420,7 +445,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
   // El deslizador arranca en la nota que ya tuviera ese vuelo, o en 5 si aún
   // no lo has valorado. Al abrir otro vuelo, el padre remonta esta pantalla
   // (le pasa una `key` distinta), así que el estado se rehace solo.
-  const [nota, setNota] = useState(valoracion ? Number(valoracion.nota_usuario) : 5);
+  const [nota, setNota] = useState(valoracion ? Number(valoracion.nota_usuario) : 50);
   const [guardado, setGuardado] = useState(false);
 
   useEffect(() => {
@@ -497,7 +522,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
 
           {(f.score_flags?.length > 0 || f.enrichment_gaps?.length > 0) && (
             <div className="modal-avisos">
-              <FlagsBadges flags={f.score_flags} />
+              <FlagsBadges flags={f.score_flags} largo />
               <GapsBadges gaps={f.enrichment_gaps} />
             </div>
           )}
@@ -509,13 +534,15 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
               que la descargues.
             </p>
             <div className="valorar">
-              <span className="valorar-num">{nota.toFixed(1).replace(".", ",")}</span>
+              <span className="valorar-num">
+                {Math.round(nota)}<span className="nota-de">/100</span>
+              </span>
               <input
-                type="range" min="0" max="10" step="0.1" value={nota}
-                aria-label="Tu nota del 0 al 10"
+                type="range" min="0" max="100" step="1" value={nota}
+                aria-label="Tu nota del 0 al 100"
                 onChange={(ev) => { setNota(Number(ev.target.value)); setGuardado(false); }}
               />
-              <div className="valorar-escala muted small"><span>0</span><span>10</span></div>
+              <div className="valorar-escala muted small"><span>0</span><span>100</span></div>
             </div>
             <div className="valorar-acciones">
               <button type="button" onClick={() => { onGuardar(f, nota); setGuardado(true); }}>
@@ -529,7 +556,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
             </div>
             {valoracion && !guardado && (
               <p className="muted small">
-                Ya la valoraste con un {Number(valoracion.nota_usuario).toFixed(1).replace(".", ",")}
+                Ya la valoraste con un {Math.round(Number(valoracion.nota_usuario))}/100
                 {" "}el {fmtDia(valoracion.fecha_valoracion.slice(0, 10))}.
               </p>
             )}
@@ -646,7 +673,8 @@ export default function App() {
   const [pais, setPais] = useState("");
   const [rangos, setRangos] = useState({});
   const [panelAbierto, setPanelAbierto] = useState(false);
-  const [orden, setOrden] = useState("price");
+  // Por defecto se ordena por la puntuación de muuyal, de mayor a menor.
+  const [orden, setOrden] = useState("score");
   const [page, setPage] = useState(0);
 
   // vuelo abierto en la subpantalla y valoraciones guardadas en este navegador
@@ -727,7 +755,7 @@ export default function App() {
     setGroup("");
     setPanelAbierto(false);
     setFiltroTipo(""); setFiltroDestino(""); setMaxCache("");
-    setPais(""); setRangos({}); setPage(0); setOrden("price");
+    setPais(""); setRangos({}); setPage(0); setOrden("score");
     window.scrollTo({ top: 0 });
   }
 
@@ -919,6 +947,17 @@ export default function App() {
         </button>
       </form>
 
+      {/* Descargar no debería obligar a repetir una búsqueda de varios
+          minutos: si hay valoraciones guardadas, el botón también está aquí. */}
+      {!result && nValoraciones > 0 && (
+        <div className="descarga-portada">
+          <button type="button" className="btn-sec" onClick={descargarValoraciones}>
+            ⭳ Descargar mis valoraciones
+            <span className="badge-filtros">{nValoraciones}</span>
+          </button>
+        </div>
+      )}
+
       {!result && (
         <Globo
           destino={aeropuertoOrigen}
@@ -1107,22 +1146,24 @@ export default function App() {
                         <Nota score={f.score} />
                         {mia && (
                           <div className="mi-nota" title="Tu valoración">
-                            ★ {Number(mia.nota_usuario).toFixed(1).replace(".", ",")}
+                            ★ {Math.round(Number(mia.nota_usuario))}
                           </div>
                         )}
-                        <FlagsBadges flags={f.score_flags} />
                       </td>
                       <td>
                         <TipoBadge tipo={f.tipo_llamada} />
                         <div className="ruta">{f.origin_airport || f.origin} → {f.destination_airport || f.destination}</div>
+                        {/* los avisos de la nota van con los de los datos que
+                            faltan: juntos ocupan menos que en su propia columna */}
                         <GapsBadges gaps={f.enrichment_gaps} />
+                        <FlagsBadges flags={f.score_flags} />
                       </td>
                       <td>{fmtFecha(f.departure_at)}</td>
                       <td>{f.tipo_llamada === "RD" ? fmtFecha(f.return_at) : "—"}</td>
                       <td>{f.airline || "—"} {f.flight_number || ""}</td>
                       <td>{f.transfers ?? "—"}{f.tipo_llamada === "RD" ? ` + ${f.return_transfers ?? "—"}` : ""}</td>
                       <td>{fmtDuracion(f.duration)}</td>
-                      <td>
+                      <td className="dest-cell">
                         <b>{f.enrich_airport}</b>
                         {f.enrich_country && (
                           <span className="muted small"> · {NOMBRES_PAIS(f.enrich_country)}</span>
@@ -1224,7 +1265,7 @@ export default function App() {
                     <Nota score={f.score} chip />
                     {mia && (
                       <span className="chip mi-nota-chip">
-                        ★ tu nota {Number(mia.nota_usuario).toFixed(1).replace(".", ",")}
+                        ★ tu nota {Math.round(Number(mia.nota_usuario))}
                       </span>
                     )}
                     <Frescura f={f} fechaConsulta={fechaConsulta} chip />

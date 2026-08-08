@@ -57,6 +57,10 @@ h1 {
   gap: 2rem;
 }
 .portada .search-form { flex: 1 1 380px; }
+.descarga-portada { text-align: center; position: relative; z-index: 1; }
+@media (min-width: 801px) {
+  .descarga-portada { margin-top: 0.75rem; }
+}
 
 /* En escritorio la portada es el globo a pantalla completa, con la marca y el
    buscador centrados encima. En móvil (más abajo) sigue apilado: globo debajo
@@ -447,10 +451,10 @@ tbody tr:hover {
 .nota.n3 { color: var(--mu-orange); }
 .nota.n4 { color: var(--mu-success); }
 .nota-de { font-weight: 400; font-size: 0.75em; color: var(--mu-ink-soft); }
+/* corta a propósito: es un apoyo visual al número, no una gráfica */
 .nota-barra {
   display: block;
-  width: 100%;
-  min-width: 46px;
+  width: 44px;
   height: 4px;
   margin-top: 0.2rem;
   background: var(--mu-sand);
@@ -460,7 +464,12 @@ tbody tr:hover {
 .nota-barra > span { display: block; height: 100%; background: currentColor; }
 .nota.grande { font-size: 2.4rem; line-height: 1; }
 
-.nota-cell { min-width: 92px; }
+/* la columna se queda del ancho del contenido: los avisos se fueron a la
+   columna del vuelo, con las etiquetas de datos que faltan */
+.nota-cell { width: 1%; white-space: nowrap; }
+/* suelo para el destino: si no, al estrechar la tabla parte el nombre del
+   aeropuerto en una palabra por línea y las filas se hacen larguísimas */
+.dest-cell { min-width: 160px; }
 .mi-nota {
   margin-top: 0.25rem;
   font-size: 0.75rem;
