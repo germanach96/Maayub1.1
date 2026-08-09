@@ -57,7 +57,7 @@ h1 {
 .marca:hover .logo { color: var(--mu-orange); }
 .marca:focus-visible { outline: 2px solid var(--mu-orange); outline-offset: 4px; }
 
-/* ---------- portada: buscador y globo ---------- */
+/* ---------- portada: buscador y mapa del mundo ---------- */
 .portada {
   display: flex;
   flex-wrap: wrap;
@@ -66,6 +66,15 @@ h1 {
   gap: 2rem;
 }
 .portada .search-form { flex: 1 1 380px; }
+/* En la portada el logo va dentro de un recuadro: encima del mapa, un logo
+   suelto se perdía sobre los continentes. */
+.en-portada .marca {
+  background: var(--mu-surface);
+  border: 1px solid var(--mu-border);
+  border-radius: 14px;
+  padding: 0.5rem 1.1rem 0.5rem 0.85rem;
+  box-shadow: 0 2px 10px rgba(92, 53, 32, 0.14);
+}
 .descarga-portada {
   display: flex;
   justify-content: center;
@@ -81,11 +90,11 @@ h1 {
   .descarga-portada { margin-top: 0.75rem; }
 }
 
-/* En escritorio la portada es el globo a pantalla completa, con la marca y el
-   buscador centrados encima. En móvil (más abajo) sigue apilado: globo debajo
-   del buscador, que es como cabe bien en 390 px. */
+/* En escritorio el mapa ocupa la pantalla entera y la marca y el buscador van
+   encima. En móvil (más abajo) el mapa empieza donde acaban las opciones y
+   llega hasta el borde de abajo. */
 @media (min-width: 801px) {
-  /* la marca va POR ENCIMA del globo: al estar el globo en posición fija, se
+  /* la marca va POR ENCIMA del mapa: al estar el mapa en posición fija, se
      pintaría delante de todo lo que no esté posicionado */
   .en-portada header {
     justify-content: center;
@@ -100,91 +109,84 @@ h1 {
     position: relative;
     z-index: 1;
   }
-  .portada .globo {
+  .portada .mapa-mundo {
     position: fixed;
     inset: 0;
     z-index: 0;
-    width: auto;
     margin: 0;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    /* el globo es decorado: no debe robarle los clics al buscador */
-    pointer-events: none;
+    border: none;
+    border-radius: 0;
   }
-  /* Arranca justo debajo de la marca y se sale por abajo de la pantalla: así
-     llena la vista sin comerse la cabecera. El buscador sí queda encima. */
-  .portada .globo svg { width: min(118vh, 88vw); margin-top: 4.6rem; }
-  /* el nombre del aeropuerto y los botones de zoom, abajo del todo */
-  .portada .globo-pie {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 1.2rem;
-    flex-direction: row;
-    justify-content: center;
-    margin: 0;
-    pointer-events: none;
-  }
-  .portada .globo-controles { pointer-events: auto; }
 }
 
-.globo {
-  flex: 0 0 auto;
-  margin: 0 auto;
-  text-align: center;
-  width: min(360px, 72vw);
+/* ---------- mapa del mundo de la portada ---------- */
+.mapa-mundo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
-.globo svg {
+/* Colocado en absoluto a propósito: un SVG con `height: 100%` dentro de una
+   caja flexible no sabe contra qué medir el porcentaje y se queda en los
+   150 px que trae de fábrica. Con `inset: 0` llena siempre su hueco. */
+.mapa-mundo svg {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  height: auto;
-  /* el globo sí recibe clics y arrastres, aunque su contenedor no */
-  pointer-events: auto;
+  height: 100%;
   cursor: grab;
-  /* pan-y: arrastrar de lado gira el globo, pero el dedo sigue pudiendo
-     desplazar la página hacia abajo (en el móvil ocupa media pantalla) */
-  touch-action: pan-y;
+  /* el dedo mueve el mapa en las dos direcciones: la página no se desplaza
+     mientras se arrastra encima de él */
+  touch-action: none;
 }
-.globo svg:active { cursor: grabbing; }
+.mapa-mundo svg:active { cursor: grabbing; }
 /* Mar: naranja de la paleta muy rebajado sobre crema. Tierra: arena. Como los
    dos tonos son claros y parecidos, lo que separa los continentes del mar es
    el contorno, no el relleno. */
-.globo-mar { fill: color-mix(in srgb, var(--mu-orange) 30%, var(--mu-cream)); }
-.globo-tierra {
-  fill: var(--mu-sand);
+.mundo-mar { fill: color-mix(in srgb, var(--mu-orange) 30%, var(--mu-cream)); }
+.mundo-tierra { fill: var(--mu-sand); }
+.mundo-costa {
+  fill: none;
   stroke: var(--mu-trazo);
-  stroke-width: 0.35;
+  stroke-width: 0.9;
   stroke-linejoin: round;
 }
-.globo-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: 0.35; opacity: 0.5; }
-/* el borde del planeta, del mismo grosor que las fronteras */
-.globo-borde { fill: none; stroke: var(--mu-trazo); stroke-width: 0.35; }
+.mundo-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: 0.7; opacity: 0.5; }
 /* los 575 aeropuertos que se pueden consultar */
-.globo-puntos { fill: var(--mu-terracotta); opacity: 0.65; }
-.globo-marca { fill: var(--mu-orange); stroke: var(--mu-surface); stroke-width: 1.2; }
-.globo-anillo { fill: none; stroke: var(--mu-orange); stroke-width: 1.5; opacity: 0.75; }
-/* pie del globo: nombre del aeropuerto elegido y botones de acercar/alejar */
-.globo-pie {
+.mundo-puntos { fill: var(--mu-terracotta); opacity: 0.7; }
+.mundo-marca { fill: var(--mu-orange); stroke: var(--mu-surface); stroke-width: 2; }
+.mundo-anillo { fill: none; stroke: var(--mu-orange); stroke-width: 2.2; opacity: 0.75; }
+/* pie del mapa: nombre del aeropuerto elegido y botones de acercar/alejar */
+.mapa-mundo-pie {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.9rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 0.7rem;
+  /* el pie es decorado: solo los botones reciben clics */
+  pointer-events: none;
 }
-.globo-etiqueta {
+.mapa-mundo-etiqueta {
   font-weight: 600;
   font-size: 0.9rem;
-  /* sobre el globo el texto suelto no se lee: va en una pastilla */
+  /* sobre el mapa el texto suelto no se lee: va en una pastilla */
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
   border-radius: 999px;
   padding: 0.35rem 0.95rem;
   color: var(--mu-ink);
   box-shadow: 0 2px 8px rgba(92, 53, 32, 0.1);
+  max-width: calc(100% - 2rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.globo-controles { display: flex; gap: 0.35rem; }
-.globo-controles button {
+.mapa-mundo-controles { display: flex; gap: 0.35rem; pointer-events: auto; }
+.mapa-mundo-controles button {
   width: 2.3rem;
   height: 2.3rem;
   padding: 0;
@@ -195,7 +197,7 @@ h1 {
   color: var(--mu-ink);
   box-shadow: 0 2px 8px rgba(92, 53, 32, 0.1);
 }
-.globo-controles button:hover { background: var(--mu-sand); color: var(--mu-ink); }
+.mapa-mundo-controles button:hover { background: var(--mu-sand); color: var(--mu-ink); }
 
 /* ---------- mapa de la ruta (ficha del vuelo) ---------- */
 .mapa-ruta { margin: 0.9rem 0 0; }
@@ -207,7 +209,7 @@ h1 {
   border-radius: 10px;
 }
 .mapa-mar { fill: color-mix(in srgb, var(--mu-orange) 22%, var(--mu-cream)); }
-/* mismos tonos que el globo, para que los dos mapas casen */
+/* mismos tonos que el mapa de la portada, para que los dos casen */
 .mapa-tierra { fill: var(--mu-sand); stroke: var(--mu-trazo); stroke-width: 0.35; }
 .mapa-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: 0.3; opacity: 0.45; }
 .mapa-linea {
@@ -303,7 +305,7 @@ button:hover { background: var(--mu-terracotta); color: var(--mu-surface); }
 button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor: not-allowed; }
 
 /* ---------- loading ---------- */
-/* z-index para quedar por encima del globo de la portada, que es fijo */
+/* z-index para quedar por encima del mapa de la portada, que es fijo */
 .loading { text-align: center; padding: 1.5rem 1rem; position: relative; z-index: 1; }
 .loading-pastilla {
   display: inline-flex;
@@ -750,8 +752,35 @@ table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
   .search-form .field { flex: none; }
   .logo { width: 54px; height: 38px; }
   h1 { font-size: 1.7rem; }
-  /* en el móvil el globo va debajo del buscador y algo más pequeño, para que
-     el botón de buscar siga cayendo dentro de la primera pantalla */
-  .portada { gap: 1rem; min-height: 0; }
-  .globo { width: min(300px, 78vw); margin-top: 0.25rem; }
+  /* En el móvil el mapa empieza donde acaban las opciones y llena todo lo que
+     queda hasta el borde de abajo de la pantalla. La portada entera es una
+     columna: cabecera, buscador y, ocupando el resto, el mapa. */
+  .app.en-portada {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: 0;
+  }
+  .en-portada header { margin: 0.5rem 0 1rem; }
+  .en-portada .portada {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.9rem;
+    min-height: 0;
+  }
+  /* apilado en columna, el `flex: 1 1 380px` del buscador lo estiraba a lo
+     alto y dejaba un hueco enorme entre los campos y el mapa */
+  .en-portada .portada .search-form { flex: 0 0 auto; }
+  .portada .mapa-mundo {
+    flex: 1 1 auto;
+    /* a sangre: llega a los bordes laterales y hasta abajo del todo. El ancho
+       lo pone el estirado de la columna, no el 100% de la caja de dentro. */
+    width: auto;
+    margin: 0 -1rem;
+    min-height: 240px;
+    border-top: 1px solid var(--mu-border);
+  }
 }

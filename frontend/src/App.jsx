@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { Globo, MapaRuta } from "./mapas";
+import { MapaMundo, MapaRuta } from "./mapas";
 
 // Colores de la paleta de marca. Cada par cumple el contraste AA indicado en
 // handoff/CONTEXT.md: texto oscuro sobre naranja, texto crema sobre
@@ -855,7 +855,7 @@ export default function App() {
   }
 
   // El logo devuelve a la portada: se corta la búsqueda en curso si la hay y
-  // se deja todo como recién abierta la página (el globo vuelve a girar).
+  // se deja todo como recién abierta la página (el mapa vuelve a moverse).
   function volverAPortada() {
     peticionRef.current?.abort();
     peticionRef.current = null;
@@ -875,8 +875,8 @@ export default function App() {
   const fechaConsulta = result?.meta?.fecha_consulta;
   const senales = result?.meta?.score_senales;
 
-  // Búsqueda rápida de aeropuerto por código: la usan el globo (para saber
-  // adónde girar) y el mapa de ruta de la ficha de cada vuelo.
+  // Búsqueda rápida de aeropuerto por código: lo usan el mapa de la portada
+  // (para saber adónde viajar) y el mapa de ruta de la ficha de cada vuelo.
   const porCodigo = useMemo(() => {
     const m = new Map();
     for (const a of airports) m.set(a.code, a);
@@ -1047,8 +1047,8 @@ export default function App() {
         </a>
       </header>
 
-      {/* Portada: el buscador y el globo, uno al lado del otro. En cuanto hay
-          resultados el globo desaparece y la lista se queda toda la anchura. */}
+      {/* Portada: el buscador encima y el mapa del mundo detrás. En cuanto hay
+          resultados el mapa desaparece y la lista se queda toda la anchura. */}
       <div className={result ? "" : "portada"}>
       <form className="search-form" onSubmit={buscar}>
         <div className="field origen-field">
@@ -1108,7 +1108,7 @@ export default function App() {
       )}
 
       {!result && (
-        <Globo
+        <MapaMundo
           destino={aeropuertoOrigen}
           aeropuertos={airports}
           onElegir={(a) => {
@@ -1117,13 +1117,13 @@ export default function App() {
           }}
           etiqueta={aeropuertoOrigen
             ? `${aeropuertoOrigen.code} — ${aeropuertoOrigen.name}`
-            : "Gira el globo y pulsa un aeropuerto"}
+            : "Arrastra el mapa y pulsa un aeropuerto"}
         />
       )}
       </div>
 
       {/* Mientras busca, solo el cronómetro, en una pastilla legible por encima
-          del globo: el texto suelto quedaba detrás del planeta y no se leía. */}
+          del mapa: el texto suelto quedaba detrás y no se leía. */}
       {loading && (
         <div className="loading">
           <div className="loading-pastilla">
