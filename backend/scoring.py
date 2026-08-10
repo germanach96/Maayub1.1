@@ -211,7 +211,42 @@ def _medianas_por_destino(vuelos):
     }
 
 
-def _senales(vuelo, medianas, rango_precio, rango_duracion):
+def _base_de_precio(vuelo, origen, maestro, medianas):
+    """Contra qué precio se mide el chollo de este vuelo. Devuelve (base, de
+    dónde sale); lo segundo viaja al navegador y se enseña en la ficha, porque
+    no es lo mismo un precio normal de verdad que un apaño de una búsqueda.
+
+    Se prueban dos referencias, por este orden:
+
+    1. **El maestro de precios** (precios/precios_<ORIGEN>.csv), si tiene esa
+       casilla: mismo origen, mismo destino, mismo sentido Y MISMO MES. Es la
+       buena, porque separa la oportunidad de la temporada.
+    2. **La mediana del lote**, como se ha hecho siempre: los vuelos a ese
+       destino que han venido en esta misma búsqueda, con los meses mezclados.
+       Peor referencia, pero está disponible desde el primer día.
+
+    Si no hay ninguna, la señal se apaga y se avisa. Los redondos siempre caen
+    en la 2: el maestro no los cubre (mes de ida y de vuelta pueden diferir).
+    Mientras el maestro se llena, la web puntúa exactamente igual que antes.
+    """
+    destino = vuelo.get("enrich_airport")
+    tipo = vuelo.get("tipo_llamada")
+
+    if origen and maestro:
+        # enrich_month ya viene como entero 1-12 (o None) del enriquecimiento,
+        # y es el mes de la IDA, que es el que corresponde (§8.4 del CONTEXTO).
+        casilla = maestro.get((origen, destino, tipo, vuelo.get("enrich_month")))
+        if casilla and casilla.get("n_vuelos", 0) >= CHOLLO_MIN_VUELOS:
+            return casilla["precio_base"], "maestro"
+
+    base = medianas.get((destino, tipo))
+    if base:
+        return base, "lote"
+    return None, None
+
+
+def _senales(vuelo, medianas, rango_precio, rango_duracion,
+             origen=None, maestro=None):
     """Valor normalizado (0–1, 1 = mejor) de cada señal para UN vuelo.
 
     Devuelve (valores, flags). Una señal ausente del diccionario es NEUTRA:
@@ -229,8 +264,9 @@ def _senales(vuelo, medianas, rango_precio, rango_duracion):
 
     # --- oportunidad: ¿está más barato de lo normal para SU destino? ---
     precio = _num(vuelo.get("price"))
-    base = medianas.get((vuelo.get("enrich_airport"), vuelo.get("tipo_llamada")))
+    base, procedencia = _base_de_precio(vuelo, origen, maestro, medianas)
     vuelo["oportunidad_base"] = round(base, 2) if base else None
+    vuelo["oportunidad_base_origen"] = procedencia
     if precio is not None and base:
         descuento = _clamp((base - precio) / base, 0, CHOLLO_TOPE)
         val["oportunidad"] = descuento / CHOLLO_TOPE
@@ -311,8 +347,12 @@ def senales_activas():
     return [[s, p] for s, p in PESOS.items() if p > 0]
 
 
-def puntuar_vuelos(vuelos, fecha_consulta=None):
+def puntuar_vuelos(vuelos, fecha_consulta=None, origen=None, maestro=None):
     """Pone `score`, `score_desglose` y `score_flags` a cada vuelo del lote.
+
+    `maestro` es el precio normal por ruta y mes acumulado de búsquedas
+    anteriores ({(origen, destino, tipo, mes): {...}}, ver precios.py). Es
+    opcional: sin él, el chollo se mide como siempre, con la mediana del lote.
 
     Modifica los vuelos en el sitio y devuelve la misma lista.
     """
@@ -330,7 +370,8 @@ def puntuar_vuelos(vuelos, fecha_consulta=None):
     peso_total = sum(p for _, p in activas)
 
     for v in vuelos:
-        val, flags = _senales(v, medianas, rango_precio, rango_duracion)
+        val, flags = _senales(v, medianas, rango_precio, rango_duracion,
+                              origen, maestro)
 
         desglose = []
         raw = 0.0

@@ -20,12 +20,19 @@ from pydantic import BaseModel
 from .aviasales import buscar_grupo
 from .data import MasterData, ZONAS
 from .enrichment import descartar_no_mapeados, enrich_all
+from .precios import cargar as cargar_precios
 from .scoring import puntuar_vuelos, senales_activas
 
 app = FastAPI(title="muuyal", version="0.1.0")
 
 # Los CSVs se cargan una vez al arrancar y se mantienen en memoria.
 data = MasterData()
+
+# Precio normal por ruta y mes (precios/precios_<ORIGEN>.csv). Lo fabrica el
+# dueño del repo exportando búsquedas; ver ACTUALIZAR_PRECIOS.md. Si todavía no
+# hay archivos queda vacío y el chollo se mide con la mediana del lote, igual
+# que antes. La web NUNCA escribe aquí: solo lee, y solo al arrancar.
+maestro_precios = cargar_precios()
 
 GRUPOS = ZONAS + ["Top151"]
 
@@ -73,7 +80,7 @@ def search(req: SearchRequest):
     # La puntuación va DESPUÉS del enriquecimiento y sobre el lote entero: la
     # señal del chollo compara cada precio con la mediana de su destino, y esa
     # mediana solo se conoce con todos los vuelos delante.
-    enriquecidos = puntuar_vuelos(con_datos, fecha_consulta)
+    enriquecidos = puntuar_vuelos(con_datos, fecha_consulta, origen, maestro_precios)
 
     return {
         "meta": {
@@ -88,6 +95,12 @@ def search(req: SearchRequest):
             "flights_found": len(enriquecidos),
             # Vuelos a aeropuertos fuera del maestro, que no se devuelven.
             "descartados_sin_datos": descartados,
+            # Cuántos vuelos han medido su chollo contra el maestro de precios
+            # (destino + mes) en vez de contra la mediana de esta búsqueda.
+            "con_precio_maestro": sum(
+                1 for v in enriquecidos
+                if v.get("oportunidad_base_origen") == "maestro"
+            ),
             "elapsed_seconds": round(time.time() - t0, 1),
         },
         "flights": enriquecidos,
