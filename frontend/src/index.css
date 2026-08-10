@@ -17,6 +17,11 @@ body {
 }
 
 .app { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+/* Con resultados en pantalla mandan las 15 columnas de la tabla, no el ancho
+   de lectura: con el tope de 1400px, en un monitor de 1920 sobraban 500px sin
+   usar y la tabla seguía pidiendo scroll horizontal por ancha que fuera la
+   pantalla. En la portada el tope se mantiene: ahí sí es texto. */
+.app:not(.en-portada) { max-width: 1800px; }
 
 /* ---------- cabecera con logo ---------- */
 header {
@@ -483,7 +488,14 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
   box-shadow: 0 1px 2px rgba(92, 53, 32, 0.06);
 }
 table { border-collapse: collapse; width: 100%; font-size: 0.87rem; }
-th, td { padding: 0.55rem 0.7rem; text-align: left; vertical-align: top; }
+/* El relleno lateral es ajustado a propósito: son 15 columnas, y cada décima
+   de rem cuesta 30px de ancho total (15 columnas × 2 lados). Con 0.7rem la
+   tabla pedía 1422px y no cabía ni en un portátil de 1440. */
+th, td { padding: 0.55rem 0.4rem; text-align: left; vertical-align: top; }
+/* Las dos primeras y la última respiran un poco más: son los bordes de la
+   tabla y el sitio donde primero se nota que va apretada. */
+th:first-child, td:first-child { padding-left: 0.7rem; }
+th:last-child, td:last-child { padding-right: 0.7rem; }
 thead th {
   position: sticky; top: 0;
   background: var(--mu-surface);
@@ -503,6 +515,16 @@ tbody tr:hover {
   box-shadow: inset 3px 0 0 var(--mu-earth);
 }
 .precio-cell { text-align: right; }
+
+/* En portátiles (1280–1400px) las 15 columnas siguen sin caber con el relleno
+   normal, así que ahí se aprieta un poco más. No se toca el ancho mínimo del
+   destino: por debajo de ~160px el nombre del aeropuerto se parte en una
+   palabra por línea y las filas se hacen larguísimas. */
+@media (min-width: 801px) and (max-width: 1400px) {
+  th, td { padding: 0.5rem 0.28rem; }
+  th:first-child, td:first-child { padding-left: 0.55rem; }
+  th:last-child, td:last-child { padding-right: 0.55rem; }
+}
 
 /* toda la fila abre la subpantalla del vuelo */
 .fila-vuelo { cursor: pointer; }
