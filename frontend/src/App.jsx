@@ -473,7 +473,9 @@ function registroValoracion(f, nota, motivo, meta, senales) {
 
 // CSV con ";" (como los CSVs maestros del repo) y BOM, para que Excel lo abra
 // bien en español sin tener que importar nada a mano.
-function csvDeValoraciones(registros) {
+// Construye un CSV a partir de una lista de objetos: las columnas salen de
+// las claves. Lo usan la descarga de valoraciones y la de resultados.
+function csvDeFilas(registros) {
   const cols = [];
   for (const r of registros) {
     for (const k of Object.keys(r)) if (!cols.includes(k)) cols.push(k);
@@ -707,9 +709,16 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
               {dato("Distancia", f.distancia_km != null ? `${f.distancia_km.toLocaleString("es-ES")} km` : "—")}
               {dato("Precio", `${fmtNum(f.price, 0)} €`)}
               {dato("Precio guardado", <Frescura f={f} fechaConsulta={fechaConsulta} />)}
+              {/* De dónde sale este número importa: no es lo mismo el precio
+                  normal del destino EN SU MES (maestro de precios) que la
+                  mediana de esta búsqueda, que mezcla todos los meses y por
+                  temporada puede quedarse corta o larga. */}
               {dato("Normal a ese destino",
                 f.oportunidad_base != null
-                  ? `${fmtNum(f.oportunidad_base, 0)} € (mediana)`
+                  ? `${fmtNum(f.oportunidad_base, 0)} € ${
+                      f.oportunidad_base_origen === "maestro"
+                        ? "(su mes, histórico)"
+                        : "(mediana de esta búsqueda)"}`
                   : <span className="muted">pocos vuelos para saberlo</span>)}
               {dato("Vendido por", f.gate || "—")}
             </div>
@@ -909,7 +918,7 @@ export default function App() {
       .sort((a, b) => a.fecha_valoracion.localeCompare(b.fecha_valoracion));
     if (regs.length === 0) return;
     const hoy = new Date().toISOString().slice(0, 10);
-    descargarTexto(`valoraciones_muuyal_${hoy}.csv`, csvDeValoraciones(regs));
+    descargarTexto(`valoraciones_muuyal_${hoy}.csv`, csvDeFilas(regs));
   };
 
   // Borrar es irreversible y las valoraciones cuestan tiempo: se pregunta
@@ -929,6 +938,43 @@ export default function App() {
   };
 
   const nValoraciones = Object.keys(valoraciones).length;
+
+  // Descarga TODOS los vuelos de esta búsqueda con sus precios. Ese archivo es
+  // el que alimenta el maestro de precios por ruta y mes (ACTUALIZAR_PRECIOS.md):
+  // buscas, descargas, mandas el archivo, y el precio normal de cada destino
+  // mejora. Se exportan también los redondos aunque el maestro no los use, para
+  // no tirar datos que quizá sirvan más adelante.
+  const descargarResultados = () => {
+    if (!result || !result.flights.length) return;
+    const m = result.meta;
+    // Identifica la búsqueda entera. Si vuelves a mandar el mismo archivo, el
+    // script lo reconoce por aquí y no lo cuenta dos veces.
+    const busquedaId = `${m.origin}|${m.group}|${m.fecha_consulta}`;
+    const filas = result.flights.map((f) => ({
+      busqueda_id: busquedaId,
+      busqueda_origen: m.origin,
+      busqueda_grupo: m.group,
+      busqueda_fecha: m.fecha_consulta,
+      // La misma identidad que usan las valoraciones: es de contenido, así que
+      // el mismo vuelo se reconoce entre búsquedas distintas. El enlace de
+      // Aviasales NO sirve: lleva dentro la fecha de búsqueda y un
+      // identificador de un solo uso, y cambia cada vez.
+      id_vuelo: idVuelo(f),
+      tipo_llamada: f.tipo_llamada ?? "",
+      destino: f.enrich_airport ?? "",
+      mes: f.enrich_month ?? "",
+      departure_at: f.departure_at ?? "",
+      return_at: f.return_at ?? "",
+      airline: f.airline ?? "",
+      flight_number: f.flight_number ?? "",
+      price: f.price ?? "",
+      dia_busqueda: f.dia_busqueda ?? "",
+      gate: f.gate ?? "",
+    }));
+    const nombre = `muuyal_resultados_${m.origin}_`
+      + `${m.group.replace(/[^A-Za-z0-9]+/g, "-")}_${m.fecha_consulta}.csv`;
+    descargarTexto(nombre, csvDeFilas(filas));
+  };
 
   // Los mismos dos botones valen en la portada y en la barra de filtros.
   const BotonesValoraciones = () => (
@@ -1197,6 +1243,15 @@ export default function App() {
                 Limpiar
               </button>
             )}
+            <button
+              type="button"
+              className="btn-sec"
+              onClick={descargarResultados}
+              title="Descarga un CSV con los precios de esta búsqueda, para mejorar el precio normal de cada destino"
+            >
+              ⭳ Descargar resultados
+              <span className="badge-filtros">{result.flights.length}</span>
+            </button>
             {nValoraciones > 0 && <BotonesValoraciones />}
           </div>
 

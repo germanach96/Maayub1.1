@@ -18,3 +18,8 @@ Tres reglas que valen siempre:
 **Si te manda un archivo `valoraciones_muuyal_*.csv`** (sus notas a los vuelos,
 descargadas de la web), lee `ACTUALIZAR_FORMULA.md`: ahí está paso a paso qué
 hacer con él para reajustar los pesos de la puntuación.
+
+**Si te manda un archivo `muuyal_resultados_*.csv`** (los precios de una
+búsqueda, descargados de la web), lee `ACTUALIZAR_PRECIOS.md`: ahí está qué
+hacer con él para actualizar el precio normal de cada ruta y mes. Son dos
+tareas distintas y no se mezclan.
