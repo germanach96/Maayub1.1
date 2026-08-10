@@ -127,13 +127,22 @@ backend/
   aviasales.py    cliente de la API de Travelpayouts
   data.py         carga los 6 CSVs maestros en memoria al arrancar
   enrichment.py   cruce vuelo → datos del destino (lo más delicado del repo)
+  scoring.py      puntuación 0–100 de cada vuelo (§7.5). Toda la configuración
+                  (pesos y umbrales) está en un bloque al principio del archivo
 frontend/
-  src/App.jsx     toda la interfaz (un solo componente grande)
+  src/App.jsx     casi toda la interfaz (un solo componente grande)
+  src/mapas.jsx   el mapa de la portada y el de la ruta de la ficha (§9.4)
   src/index.css   estilos; todos los colores salen de palette.css
   src/palette.css copia de handoff/palette.css
   src/fonts.css   @font-face de las tipografías locales
   public/         favicon, apple-touch-icon, logo, fonts/
+  public/mapa/    contorno de países del mundo (TopoJSON), guardado en el repo
+                  por lo mismo que las tipografías: no depender de nadie
   dist/           BUILD COMMITTEADO A PROPÓSITO
+valoraciones/
+  valoraciones_maestro.csv  todas las notas manuales del dueño, acumuladas
+  ajustar_pesos.py          junta un CSV nuevo con el maestro y propone pesos
+ACTUALIZAR_FORMULA.md       QUÉ HACER cuando el dueño manda un CSV de notas
 handoff/          paquete de marca: logo SVG, palette.css, palette.json y su
                   propio CONTEXT.md (alcance: solo logo y paleta)
 render.yaml       despliegue de un solo servicio
@@ -155,13 +164,18 @@ app y no se ejecutan. Sirven para saber de dónde salió cada CSV.
 | Método | Ruta | Devuelve |
 |---|---|---|
 | `GET` | `/api/health` | `{"status":"ok"}` |
-| `GET` | `/api/airports` | Los 575 aeropuertos: `code`, `name`, `country_code`, `zone`, `top151` |
+| `GET` | `/api/airports` | Los 575 aeropuertos: `code`, `name`, `country_code`, `zone`, `top151`, `lat`, `lon` |
 | `GET` | `/api/zones` | `["Europe","Asia","America","Africa / Oceania","Top151"]` |
 | `POST` | `/api/search` | `{origin, group}` → `{meta, flights}` |
 | `GET` | `/*` | El build de React (catch-all SPA) |
 
+`lat` / `lon` van redondeadas a 3 decimales (~100 m) y salen del maestro de
+aeropuertos. Las usa el mapa de la portada (§9.4) para saber dónde cae cada
+aeropuerto y hacia dónde viajar al elegirlo.
+
 `meta` contiene: `origin`, `group`, `fecha_consulta` (fecha UTC del servidor),
-`destinations_queried`, `api_calls`, `flights_found`, `elapsed_seconds`.
+`destinations_queried`, `api_calls`, `flights_found`, `elapsed_seconds`,
+`descartados_sin_datos` (§8.2) y `score_senales` (§7.5).
 
 ## 4.2 Parámetros de la llamada a Aviasales
 
@@ -200,8 +214,12 @@ memoria una sola vez al arrancar.
 
 Todos con `encoding="utf-8-sig"`. **El de clima es el único con coma.**
 
-**Vuelo sin match en algún CSV: no se descarta.** Sus campos van a `null` y el
-hueco se lista en `enrichment_gaps`, que la interfaz muestra como etiqueta.
+**Vuelo al que le falta ALGÚN dato: no se descarta.** Sus campos van a `null` y
+el hueco se lista en `enrichment_gaps`, que la interfaz muestra como etiqueta.
+Ejemplo: un aeropuerto que está en el maestro pero no tiene fila de coste.
+
+**Vuelo a un aeropuerto que NO está en el maestro: sí se descarta**, y no se
+devuelve. Es un cambio de criterio de la fase 2, explicado en §8.2.
 
 ## 5.1 `airports_flightable_categorized.csv` — maestro de aeropuertos
 
@@ -460,6 +478,147 @@ redondeados.
 - `indice_coste` y `categoria` → §5.2
 - Conteo UNESCO → §5.5
 
+## 7.5 La puntuación de un vuelo (0–100)
+
+**Dónde vive:** `backend/scoring.py`. Se llama desde `/api/search` **después**
+del enriquecimiento y **después** de descartar los no mapeados (§8.2), sobre el
+lote entero. No puede ir en `enrichment.py` porque la señal más importante
+compara cada precio con la mediana de su destino, y esa mediana solo se conoce
+con todos los vuelos delante.
+
+**Toda la configuración está en un bloque al principio del archivo**, bien
+señalado. Para cambiar los pesos no hace falta leer el resto.
+
+### La idea, y por qué el precio cuenta dos veces
+
+La nota **no** es "el más barato". Un Barcelona–Mallorca barato no es un chollo,
+porque todo lo de Mallorca es barato. Lo que interesa es que un vuelo esté **más
+barato de lo normal para su destino**. Por eso el precio se parte en dos:
+
+- **`oportunidad`** (peso 29): descuento respecto a la **mediana de precio de su
+  mismo destino y su mismo tipo de vuelo**. Es la señal estrella.
+- **`price_abs`** (peso 10): barato a secas, con poco peso, para que un destino
+  barato de por sí sume algo sin arrasar.
+
+### Pesos actuales
+
+| Señal | Peso | Dirección |
+|---|---|---|
+| `oportunidad` | 29 | más descuento = mejor |
+| `temp_media` | 15 | cercanía a `TEMP_IDEAL` |
+| `price_abs` | 10 | más barato = mejor |
+| `indice_coste` | 10 | más barato = mejor |
+| `turismo_idx` | 8 | premia el **mes fuerte** (`DIR_TEMPORADA="alta"`) |
+| `horas_sol_dia` | 8 | más = mejor |
+| `dias_lluvia` | 4 | menos = mejor |
+| `unesco_100km` | 4 | más = mejor |
+| `popularidad_0_100` | 4 | premia lo **famoso** (`DIR_POPULARIDAD="mas"`) |
+| `duration` | 3 | menos = mejor |
+| `transfers` | 3 | menos = mejor |
+| `antiguedad_en_dias` | 2 | precio más reciente = mejor |
+
+Preparadas con peso 0: `distancia_km`, `temp_max_media`, `unesco_cercano_km`,
+`precip_mm`, `duration_to`, `duration_back`, `return_transfers`.
+
+Las dos **direcciones** las eligió el dueño: son gusto, no técnica. No las
+cambies por tu cuenta.
+
+### Parámetros
+
+```
+TEMP_IDEAL = 22 · TEMP_TOL = 8        clima: nota 1 a 22 °C, nota 0 a ±8
+SOL_FULL = 12 · LLUVIA_MAX = 20       h/día de sol que valen 1 · días de lluvia que valen 0
+COSTE_MIN, COSTE_MAX = 15, 120        rango real del CSV de coste
+UNESCO_CAP = 8 · TRANSFERS_MAX = 3 · ANTIG_MAX = 7
+CHOLLO_MIN_VUELOS = 10                mínimo de vuelos para fiarse de una mediana
+CHOLLO_TOPE = 0.60                    descuento máximo premiado (60%)
+FRENO_POP = 75                        por encima, turismo_idx se apaga (§5.4)
+RENORMALIZAR = True                   ver más abajo
+MIN_PESO_PRESENTE = 0.60              por debajo, avisa de "datos incompletos"
+```
+
+### Cómo se suma
+
+1. Cada señal se lleva a **0–1, donde 1 = mejor**.
+2. Una señal queda **NEUTRA** si su dato es `null` o si una regla la apaga. Una
+   señal neutra **no penaliza**: se excluye de la suma y su peso se reparte
+   entre las demás (eso es `RENORMALIZAR`).
+3. `score = round(100 × Σ(peso × valor) ÷ Σ(pesos con dato))`.
+4. Si los pesos con dato no llegan al 60% del total, se añade el aviso
+   `datos_incompletos`.
+
+Un vuelo del que no sabemos si es chollo compite por sus otros méritos en vez
+de quedar penalizado por nuestra falta de datos. **Es una decisión de diseño**:
+poniendo `RENORMALIZAR = False`, las señales sin dato cuentan como 0 y solo los
+vuelos con todos los datos pueden llegar arriba del todo.
+
+### Normalización de cada señal
+
+- **`oportunidad`**: agrupa por (`enrich_airport`, `tipo_llamada`). Si el grupo
+  tiene ≥ `CHOLLO_MIN_VUELOS`, `base = mediana(price)`;
+  `descuento = clamp((base − price) / base, 0, CHOLLO_TOPE)`;
+  `norm = descuento / CHOLLO_TOPE`. Solo se premia estar por debajo.
+- **`price_abs`** y **`duration`**: percentiles 5 y 95 **de su mismo
+  `tipo_llamada`** en el lote; `norm = (hi − x) / (hi − lo)`. Percentiles y no
+  mínimo/máximo, para que un precio disparatado no aplaste la escala.
+- **`temp_media`**: `max(0, 1 − |temp − 22| / 8)`.
+- **`indice_coste`**: `clamp((120 − coste) / 105, 0, 1)`.
+- **`horas_sol_dia`**: `clamp(sol / 12, 0, 1)` · **`dias_lluvia`**: `1 − clamp(d / 20, 0, 1)`.
+- **`unesco_100km`**: `clamp(n / 8, 0, 1)` · **`transfers`**: `1 − clamp(n / 3, 0, 1)`.
+- **`popularidad_0_100`**: `pop / 100` (con `DIR_POPULARIDAD="mas"`).
+- **`turismo_idx`**: `v = clamp(idx, 0.7, 1.3)`; `(v − 0.7) / 0.6` con `"alta"`.
+- **`antiguedad_en_dias`**: `1 − clamp(días / 7, 0, 1)`. Ese dato lo calcula
+  ahora **el servidor** (antes solo lo hacía el navegador para el semáforo).
+
+### Las dos reglas especiales
+
+1. **Chollo con pocos datos.** Con menos de 10 vuelos a ese destino no hay
+   "precio normal" fiable: `oportunidad` queda neutra y se marca
+   `chollo_pocos_datos`. **No nos lo inventamos.** Medido en el CSV de ejemplo:
+   117 de 234 grupos llegan a 10 vuelos, y solo 391 vuelos de 9.318 (4%) se
+   quedan sin la señal.
+2. **Freno de temporada en metrópolis.** Si `popularidad_0_100 >= 75`,
+   `turismo_idx` queda neutra y se marca `temporada_no_fiable`, por lo del §5.4.
+   `popularidad_0_100` **no** se frena: esa sí es fiable en todas.
+
+### Ida, vuelta y redondo: cada uno compite con los suyos
+
+**No hay ningún promedio ni ninguna división entre dos.** Tanto el chollo como
+el precio bajo y la duración se calculan **dentro de cada `tipo_llamada`**. Un
+redondo se mide contra otros redondos; un billete suelto, contra otros sueltos.
+Rangos reales del CSV de ejemplo:
+
+| Tipo | p5 | mediana | p95 |
+|---|---|---|---|
+| `OW_IDA` | 80 € | 257 € | 522 € |
+| `OW_VUELTA` | 89 € | 228 € | 431 € |
+| `RD` | 231 € | 607 € | 1.103 € |
+
+Consecuencia: un redondo de 182 € y una ida de 67 €, ambos a Antalya, sacan
+**la misma nota de precio (1,00)**, porque cada uno es de lo más barato de su
+clase. Luego esas notas ya sí compiten juntas en la lista, y el reparto no se
+descompensa (los redondos son el 41% de los vuelos y el 46% del top 100).
+
+> ⚠️ **Límite conocido: una ida no sabe que hay que volver.** Puntúa "qué buena
+> oferta es este billete dentro de lo que es", no "cuánto me cuesta el viaje
+> entero". Quien quiera comparar viajes completos tiene el filtro de tipo.
+
+### Campos que añade a cada vuelo
+
+| Campo | Qué es |
+|---|---|
+| `score` | 0–100 entero. `null` si no hay ninguna señal con dato |
+| `score_desglose` | Lista de valores 0–1, **en el orden de `meta.score_senales`**; `null` = señal neutra |
+| `score_flags` | `chollo_pocos_datos`, `temporada_no_fiable`, `datos_incompletos` |
+| `antiguedad_en_dias` | Días desde que Aviasales cacheó ese precio |
+| `oportunidad_base` | Mediana de precio de su (destino, tipo). `null` si no había suficientes |
+
+El desglose viaja como **lista de números**, y la leyenda (`[[señal, peso], …]`)
+una sola vez en `meta.score_senales`. Repetir los nombres en cada vuelo
+engordaba la respuesta 3,6 MB con 9.000 vuelos; así son 75 bytes por vuelo en
+vez de 398. **Si añades o quitas señales, el orden de las dos listas tiene que
+seguir cuadrando.**
+
 ---
 
 # 8. Supuestos y reglas de decisión
@@ -493,10 +652,27 @@ no sea el origen del usuario.
 **Si tocas `enrichment.py`, revalida contra el CSV de ejemplo.** Resultado
 esperado, comprobado: **9.317 de 9.318 al 100%**.
 
-## 8.2 El único hueco conocido
+## 8.2 Los vuelos a aeropuertos que no están en el maestro
 
-**TFU** (Chengdú Tianfu) no está en los CSVs maestros. Sale sin datos, sin
-país y sin distancia. **Es correcto, no lo persigas.**
+Aviasales devuelve a veces vuelos a aeropuertos que no están entre los 575 del
+maestro: **TFU** (Chengdú Tianfu), **NLU** (el aeropuerto nuevo de Ciudad de
+México), códigos de ciudad sin resolver… De esos no se sabe **nada** del
+destino: ni clima, ni coste, ni turismo, ni patrimonio.
+
+**Desde la fase 2 se descartan**: `descartar_no_mapeados()` en `enrichment.py`
+los quita de la respuesta, y `meta.descartados_sin_datos` dice cuántos eran.
+La interfaz lo enseña en la línea de resumen de la búsqueda.
+
+> ⚠️ **Esto cambia el criterio de la fase 1**, donde estos vuelos salían con
+> los campos vacíos y su etiqueta. El motivo del cambio: con la puntuación por
+> medio, la nota se calculaba solo con lo poco que quedaba (precio, duración,
+> escalas) y a los baratos y cortos les salía altísima. Un PVR→NLU llegó a
+> sacar **94/100 con siete etiquetas de "sin datos"**: los vuelos de los que
+> menos sabemos encabezaban la lista. Se quitan **antes de puntuar**, para que
+> además sus precios no ensucien las medianas por destino del chollo (§7.5).
+
+Medido sobre `ejemplo resultado_BCN_Asia.csv`: se descarta **1 de 9.318** (el
+TFU de siempre). En una búsqueda a América salen bastantes más.
 
 ## 8.3 Trampa 3 — Namibia y pandas
 
@@ -529,13 +705,23 @@ script original de Colab.
 
 # 9. La interfaz
 
+La web tiene **dos pantallas**: la **portada** (el mapa y el buscador, §9.4) y
+los **resultados**. Se pasa de una a otra buscando, y se vuelve pulsando la
+marca, que lo limpia todo y corta la búsqueda si estaba en marcha.
+
 ## 9.1 Columnas de la tabla (escritorio)
 
-`Vuelo` (tipo + ruta + huecos) · `Salida` · `Vuelta` · `Aerolínea` · `Escalas` ·
-`Duración` · `Destino` (IATA + país + nombre) · `Distancia` · `Clima (mes)` ·
-`Turismo` · `Coste` · `UNESCO` · `Precio de` · `Precio`
+`Puntuación` (nota + barra + tu nota si la has puesto) · `Vuelo` (tipo + ruta +
+huecos + avisos) · `Salida` · `Vuelta` · `Aerolínea` · `Escalas` · `Duración` ·
+`Destino` (IATA + país + nombre) · `Distancia` · `Clima (mes)` · `Turismo` ·
+`Coste` · `UNESCO` · `Precio de` · `Precio`
 
 En móvil la tabla se sustituye por tarjetas con la misma información en chips.
+
+**Al pulsar un vuelo (fila o tarjeta) se abre su ficha**: la nota grande, el
+mapa de la ruta (§9.4), los avisos, tu valoración (§14), el desglose de la nota
+señal a señal, y todos los datos del vuelo y del destino. El enlace a Aviasales
+no abre la ficha: es el único clic que se escapa.
 
 ## 9.2 Filtros
 
@@ -546,16 +732,25 @@ Panel plegable con **11 rangos mín/máx**:
 
 | Grupo | Filtros |
 |---|---|
-| Vuelo | Precio (€), Duración (h), Escalas, Distancia (km) |
+| Vuelo | Precio (€), Duración (h), Escalas, Distancia (km), **Fecha de salida** |
 | Clima del mes de salida | Temperatura media (°C), Horas de sol al día, Días de lluvia al mes |
 | Destino | Popularidad (/100), Índice turístico del mes (×), Índice de coste, Sitios UNESCO (100 km) |
 
 **Los rangos se declaran en la constante `RANGOS` de `App.jsx`. Añadir un
 filtro nuevo es añadir una fila ahí**: la interfaz se dibuja sola a partir de
-esa lista.
+esa lista. La fecha de salida es el único de tipo `fecha`: se dibuja con dos
+calendarios y se compara como texto `AAAA-MM-DD`, que ordena igual que la fecha
+real y no depende de la zona horaria del navegador.
 
-Órdenes disponibles: más baratos, más cortos, más cálidos, más populares,
-precio más reciente, más cerca.
+Órdenes disponibles: **mejor puntuación (el que viene puesto)**, más baratos,
+más cortos, más cálidos, más populares, precio más reciente, más cerca. Los
+vuelos sin nota van al final.
+
+El **buscador de aeropuerto de origen** ordena sus sugerencias por lo bien que
+encajan: código exacto, códigos que empiezan igual, nombres que empiezan igual,
+palabras del nombre, y por último coincidencias sueltas dentro del nombre. Sin
+ese orden, al escribir `MAD` el primero era Doha, porque "Ha**mad**
+International" contiene esas letras.
 
 ## 9.3 Marca
 
@@ -580,6 +775,71 @@ neutros con base ámbar, **nunca gris azulado**.
   no dependa de Google en cada visita.
 - **El color nunca es la única señal**: siempre lo acompaña un icono o el
   número de símbolos (requisito de daltonismo del `CONTEXT.md` de marca).
+- El titular pide **"Nordique Pro Inline"** como primera opción y cae en
+  Bricolage Grotesque. Esa tipografía **no está en el repo y no puede estarlo**:
+  es comercial (Leksen Design) y su licencia no permite repartirla. Ver
+  `frontend/public/fonts/NORDIQUE.txt`.
+- Los trazos de los mapas usan `--mu-trazo`, un terracota oscuro que **no está
+  escrito a mano**: sale de mezclar dos colores de la paleta con `color-mix`.
+  Si cambia `palette.css`, cambia con ella.
+
+## 9.4 La portada: el mapa del mundo
+
+Vive en `frontend/src/mapas.jsx` (componente `MapaMundo`) y es **SVG de verdad**
+(formas con contorno), así que todos los colores salen de las variables `--mu-*`
+y se ve nítido en cualquier pantalla.
+
+> **Antes fue un globo terráqueo.** Se sustituyó por un mapa plano apaisado
+> porque el globo se acercaba mal: al ampliarlo, la esfera deformaba los bordes
+> y costaba apuntar a un aeropuerto. Si alguien vuelve a proponer el globo, que
+> sepa que ya se probó y por qué se cambió.
+
+- Al entrar **se desplaza solo de este a oeste**, muy despacio (2,2° de longitud
+  por segundo), como si el planeta pasara por delante. En escritorio ocupa toda
+  la pantalla; en el móvil, todo lo que queda por debajo del buscador.
+- **Nunca se ve la Tierra entera a la vez.** El mapa se dibuja un 30% más grande
+  que su hueco (`HOLGURA = 1.3`), así que no aparecen zonas repetidas y el corte
+  del mapa (el antimeridiano) queda siempre fuera de la pantalla.
+- Los **575 aeropuertos** salen marcados con un circulito, como un único
+  `MultiPoint`: un solo trazo para los 575.
+- **Se maneja con la mano**: arrastrar lo mueve, la rueda, el **pellizco** y los
+  botones `+ − ⟲` acercan hasta 8 aumentos, y **pulsar un aeropuerto lo elige
+  como origen**. Se acierta el más cercano dentro de un radio medido **en
+  píxeles de pantalla**, no en kilómetros: así la zona de acierto se siente
+  igual con el mapa alejado y con el mapa cerca.
+- Al elegir aeropuerto (pulsándolo o escribiéndolo) **deja de moverse y viaja**
+  hasta centrarlo, acercándose hasta `ZOOM_ELEGIDO = 2.2` para enseñar su
+  región. Al tocarlo también deja de moverse, para no pelear con el usuario; el
+  botón `⟲` recentra y lo devuelve a su sitio.
+- El centro no puede subir ni bajar más allá de donde asomaría un hueco blanco
+  por arriba o por abajo (`topeLat`).
+- **Desaparece en cuanto hay resultados.**
+- El logo va **dentro de un recuadro**, para que no se pierda sobre el mapa.
+
+**Rendimiento, que es lo que condiciona el diseño.** El mapa **no se repinta con
+React**, y además **no recalcula las formas al moverse**: un mapa plano que gira
+de lado es exactamente el mismo dibujo desplazado en horizontal, así que **se
+dibuja el mundo dos veces, una al lado de la otra**, y el bucle solo escribe un
+`transform`. Las formas únicamente se rehacen al cambiar el zoom o el tamaño de
+la ventana. Va a **24 imágenes por segundo**, no a 60, y se para solo cuando la
+pestaña no se ve o cuando el sistema pide menos animaciones.
+
+**Un detalle que parece un capricho y no lo es:** las costas se dibujan como
+líneas sueltas (`mesh` con `a === b`), no como borde del relleno. Al cortar el
+mapa por el Pacífico, el relleno se cierra por ahí, y ese cierre se pintaría
+como una raya recta cruzando la Antártida.
+
+**El mapa del mundo** (`public/mapa/countries-110m.json`, 108 KB) es Natural
+Earth vía el paquete `world-atlas`, dominio público. Está guardado en el repo
+por lo mismo que las tipografías. En TopoJSON pesa la mitad que en GeoJSON, y
+el servidor de Render no comprime lo que envía.
+
+**El mapa de la ruta** de la ficha del vuelo usa el mismo archivo y los mismos
+tonos: una línea punteada del origen al destino, con el arco real sobre la
+esfera. Se acerca a la ruta con un tope, para que un vuelo corto no se quede sin
+contexto. Sus dos extremos salen del **origen de la búsqueda** y del
+**`enrich_airport`**, nunca de `origin`/`destination` del vuelo, que a veces son
+códigos de ciudad que no existen en el maestro (trampa 1 del §8.1).
 
 ---
 
@@ -642,13 +902,26 @@ uvicorn backend.main:app --port 8000
 
 - Los 6 CSVs cargan y cruzan (575 aeropuertos, 168 países, coordenadas al 100%).
 - Enriquecimiento revalidado sobre los **9.318 vuelos** del CSV de ejemplo:
-  **9.317 al 100%**, único hueco TFU.
+  **9.317 al 100%**, único hueco TFU (que ahora se descarta, §8.2).
 - Llamada real a la API (BCN↔LIS): 304 vuelos, sin huecos.
 - App abierta en **navegador real**, escritorio y móvil: filtros, marca,
   fuentes, iconos y colores comprobados. Sin errores de JavaScript.
 - **Desplegada en Render y en uso desde el móvil.**
+- **Puntuación (§7.5)** comprobada sobre los 9.318 vuelos calculando cada número
+  esperado por separado con pandas: medianas por destino al céntimo, los dos
+  avisos con el recuento exacto, 0 discrepancias en la suma, y la "prueba de
+  Mallorca" (un destino barato pero uniforme no copa la parte alta; un vuelo a
+  mitad de la mediana de su destino sí sube). De los 50 mejores por nota, solo 7
+  están entre los 50 más baratos: **no es el ranking de precio disfrazado**.
+- **Mapa de portada y ficha del vuelo** comprobados en navegador real
+  calculando por separado dónde debe caer cada aeropuerto en pantalla.
+- **Reajuste de pesos** comprobado al revés: con 200 valoraciones inventadas a
+  partir de unos pesos conocidos, los recupera con ~1 punto de error de media.
 - **No verificado:** que una zona grande (`Europe`, `Asia`) aguante el plan
   gratuito sin morir por tiempo o memoria.
+- **No verificado:** cómo se comporta la puntuación con pocos vuelos (una zona
+  pequeña o un origen con poca oferta): con menos de 10 vuelos por destino,
+  casi todo saldrá con `chollo_pocos_datos`.
 
 ---
 
@@ -659,6 +932,10 @@ uvicorn backend.main:app --port 8000
    GitHub**. Hay que regenerarlo y usar el nuevo solo como `TP_TOKEN` en el
    panel de Render. *Lleva pendiente desde el principio.*
 2. **Comprobar que una zona grande no muere** en el plan gratuito de Render.
+3. **Afinar los pesos con valoraciones de verdad.** Los de §7.5 son un punto de
+   partida; el dueño tiene que valorar unos 40 vuelos y mandar el CSV (§14).
+4. **La tipografía del titular** espera a que el dueño compre la licencia de web
+   de Nordique Pro Inline (`frontend/public/fonts/NORDIQUE.txt`).
 
 # 12. Decisiones abiertas (el usuario aún no las ha resuelto)
 
@@ -667,14 +944,88 @@ uvicorn backend.main:app --port 8000
   aparte?
 - ¿Limitar a los N vuelos más baratos por ruta para aligerar la respuesta?
 - ¿Los vuelos sin dato deberían colarse al filtrar, en vez de quedar fuera?
+  (Ojo: distinto de §8.2, que es sobre descartarlos de la respuesta entera.)
+- ¿Comparar los billetes sueltos con los redondos en precio de **viaje
+  completo**, en vez de cada uno con los suyos? Ver el límite conocido del §7.5.
+- ¿Debería el tipo de vuelo (ida / vuelta / redondo) ser una señal más de la
+  fórmula, con su peso?
 
-# 13. Fase 2 (siguiente, aún sin especificar)
+# 13. Fase 2: hecha
 
-**Scoring**: puntuar los vuelos combinando precio + clima + turismo + coste +
-UNESCO. **El usuario tendrá que definir los pesos.**
+**Scoring**: cada vuelo lleva una nota de 0 a 100 que combina precio, clima,
+turismo, coste y UNESCO. La fórmula entera está en **§7.5**; cómo se ve, en
+**§9.1** y **§9.4**.
 
-> ⚠️ Aviso para cuando llegue: **la estacionalidad turística debe pesar poco en
-> ciudades grandes**, por lo explicado en §5.4 — en metrópolis la curva está
-> contaminada por tráfico no turístico. Una alternativa apuntada por el autor
-> de `generar_turismo.py` es cruzarla con la curva de precios de vuelo, que es
-> otro indicador de demanda y no está contaminado.
+El aviso que dejó la fase 1 —que la estacionalidad turística miente en las
+metrópolis (§5.4)— **está resuelto**: `turismo_idx` se apaga sola por encima de
+`FRENO_POP = 75` y el vuelo se marca con `temporada_no_fiable`. La alternativa
+que apuntaba el autor de `generar_turismo.py` (cruzarla con la curva de precios
+de vuelo) sigue sin explorar.
+
+**Los pesos actuales son un punto de partida, no una verdad.** Se afinan con
+las valoraciones del dueño: §14.
+
+---
+
+# 14. Valoraciones manuales y reajuste de la fórmula
+
+El dueño puntúa vuelos a mano y con esas notas se recalculan los pesos, en vez
+de adivinarlos.
+
+## 14.1 Cómo valora
+
+En la ficha de cada vuelo hay una barra **de 0 a 100** —la misma escala que la
+nota de muuyal, para poder compararlas— que **arranca en la nota de muuyal**:
+valorar es corregirle.
+
+Si su nota se separa **10 puntos o más**, la web **le obliga a decir por qué**,
+eligiendo de una lista (una para subir, otra para bajar). Sin motivo no deja
+guardar. Ese motivo es lo más valioso del archivo, por lo del §14.3.
+
+> ⚠️ **Coste conocido de que la barra arranque en la nota de muuyal:** ancla.
+> Al partir de su nota se tiende a quedarse cerca, y el ajuste aprende menos.
+> Se eligió así a petición del dueño. Si se ve que casi nunca aparece el
+> desplegable del motivo, hay que planteárselo otra vez.
+
+## 14.2 Dónde se guardan
+
+**En el navegador**, no en el servidor: el disco de Render se borra al dormirse
+(§3.1), así que ahí se perderían. Clave de `localStorage`:
+`muuyal_valoraciones_v2` (la `v1` iba de 0 a 10 y se convierte sola al abrir).
+
+Dos botones, presentes tanto en la portada como en la lista: **descargar** un
+CSV con todas, y **borrar** las de ese dispositivo (pregunta antes). El flujo es:
+valorar → descargar → mandarle el archivo a Claude → nuevos pesos en un PR.
+
+Cada fila guarda **los números del vuelo tal y como estaban al valorarlo**
+(incluido el `norm_` de cada señal y el peso que tenía). Sin eso no se podrían
+recalcular los pesos: el chollo depende de la búsqueda concreta en la que salió
+ese vuelo y no se puede reconstruir después.
+
+`valoraciones/valoraciones_maestro.csv` acumula todas, sin duplicados: si el
+mismo vuelo se valoró dos veces, gana la más reciente.
+
+## 14.3 Qué se hace con todo eso
+
+`valoraciones/ajustar_pesos.py` junta el CSV nuevo con el maestro y propone
+pesos. Busca los `w ≥ 0` que minimizan la diferencia entre `nota_usuario` y la
+fórmula real; como la nota es un cociente (§7.5), se resuelve repitiendo un
+ajuste lineal hasta que deja de moverse.
+
+Tres cosas que hace y conviene no romper:
+
+1. **Aparta del cálculo** las correcciones cuyo motivo no apunta a ninguna
+   señal ("ese destino me llama", "las fechas no me vienen bien", "ya he
+   estado", "otro"). La fórmula no puede aprenderlas con los datos que tiene.
+   No se borran del maestro, solo se apartan.
+2. **Mide si predice mejor de verdad**, sobre un 25% de valoraciones que no ha
+   usado para ajustar. Si no mejora ahí, no vale.
+3. **Comprueba que el ajuste le da la razón a los motivos**: si corrigió al
+   alza 15 veces diciendo "el clima", el peso del clima debería subir. Si baja,
+   sale un `⚠ no encaja` y hay que contárselo en vez de aplicar los pesos.
+
+Hacen falta **al menos 40 valoraciones** (hay 12 pesos que estimar) y que sus
+notas varíen: si todo lo puntúa 70-80, no hay nada que aprender.
+
+> **`ACTUALIZAR_FORMULA.md` es el manual de esta tarea.** Si te llega un archivo
+> `valoraciones_muuyal_*.csv`, léelo entero antes de tocar nada.
