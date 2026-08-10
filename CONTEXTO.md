@@ -829,6 +829,13 @@ líneas sueltas (`mesh` con `a === b`), no como borde del relleno. Al cortar el
 mapa por el Pacífico, el relleno se cierra por ahí, y ese cierre se pintaría
 como una raya recta cruzando la Antártida.
 
+**Y otro:** el SVG va colocado **en absoluto** (`position: absolute; inset: 0`)
+dentro de su caja, y el mapa se dibuja en píxeles de verdad —midiendo la caja
+con un `ResizeObserver`—, sin `viewBox`. Con `height: 100%` a secas, dentro de
+una caja flexible, el navegador no sabe contra qué medir el porcentaje y deja
+el SVG en los **150 px** que trae de fábrica: en el móvil el mapa salía cortado
+a un tercio de su hueco.
+
 **El mapa del mundo** (`public/mapa/countries-110m.json`, 108 KB) es Natural
 Earth vía el paquete `world-atlas`, dominio público. Está guardado en el repo
 por lo mismo que las tipografías. En TopoJSON pesa la mitad que en GeoJSON, y
