@@ -251,11 +251,10 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
     // formas una sola vez: el movimiento es luego un simple desplazamiento.
     const plana = geoEquirectangular().translate([0, 0]).rotate([0, 0]).precision(0.7);
     const dibujo = geoPath(plana);
-    const dibujoPuntos = geoPath(plana).pointRadius(1.7);
     const quieto = menosAnimaciones();
 
     let kDibujada = 0;
-    let puntosEscalados = false;
+    let escalaPuesta = 1;
     let animacion = 0;
     let ultimo = 0;
     let anterior = performance.now();
@@ -290,6 +289,7 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
 
       const k = configurar(w, h);
       const anchoMundo = 2 * Math.PI * k;
+      let redibujado = false;
       // "En marcha": un viaje o un pellizco cambian el zoom en cada fotograma.
       // Recalcular la forma de todos los países 60 veces por segundo es lo que
       // dejaba el viaje a tirones en el móvil, así que mientras tanto se
@@ -300,12 +300,18 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
       if (k !== kDibujada && (!enMarcha || !kDibujada)) {
         kDibujada = k;
         plana.scale(k);
-        dibujoPuntos.pointRadius(1.7);
+        redibujado = true;
         const formas = {
           ".mundo-tierra": dibujo(mundo.tierra) || "",
           ".mundo-costa": dibujo(mundo.costa) || "",
           ".mundo-fronteras": dibujo(mundo.fronteras) || "",
-          ".mundo-puntos": puntos.coordinates.length ? (dibujoPuntos(puntos) || "") : "",
+          // cada aeropuerto es un trazo de longitud casi cero con la punta
+          // redonda: se ve como un punto y su tamaño lo pone el CSS, así que
+          // no hay que rehacerlo mientras el mapa se amplía
+          ".mundo-puntos": puntos.coordinates.map((c) => {
+            const p = plana(c);
+            return p ? `M${p[0].toFixed(1)},${p[1].toFixed(1)}h.001` : "";
+          }).join(""),
         };
         copiasRef.current.forEach((g, i) => {
           if (!g) return;
@@ -326,16 +332,11 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
         `translate(${w / 2 + dx},${h / 2 + k * latCentro.current * RAD})` +
           (escala !== 1 ? ` scale(${escala})` : ""),
       );
-      // los puntos de los aeropuertos, en cambio, se rehacen con el radio
-      // corregido: si se ampliaran con el resto, crecerían durante el viaje
-      if (escala !== 1 && puntos.coordinates.length) {
-        const d = dibujoPuntos.pointRadius(1.7 / escala)(puntos) || "";
-        copiasRef.current.forEach((g) => g?.querySelector(".mundo-puntos")?.setAttribute("d", d));
-        puntosEscalados = true;
-      } else if (puntosEscalados) {
-        puntosEscalados = false;
-        const d = dibujoPuntos.pointRadius(1.7)(puntos) || "";
-        copiasRef.current.forEach((g) => g?.querySelector(".mundo-puntos")?.setAttribute("d", d));
+      // los contornos y los puntos dividen su grosor por la ampliación (ver
+      // `--escala` en el CSS): así no engordan durante el viaje
+      if (escala !== escalaPuesta) {
+        escalaPuesta = escala;
+        stripRef.current?.style.setProperty("--escala", String(escala));
       }
 
       // Rutas de la búsqueda en curso: el arco real sobre la esfera, del origen
@@ -346,8 +347,11 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
       // disparadas cuando la cámara se ha parado (y así no hay que rehacer
       // 185 arcos en cada fotograma del viaje).
       const grupoRutas = rutasRef.current;
-      if (grupoRutas && destino && destino.lat != null && rutas.length &&
-          (!viaje.current || grupoRutas.dataset.listas === "true")) {
+      // El fotograma en que el mapa se rehace nítido ya va cargado: las rutas
+      // esperan al siguiente para no juntar todo el trabajo en uno.
+      const rutasEsperan = grupoRutas?.dataset.listas !== "true" && (!!viaje.current || redibujado);
+      if (rutasEsperan && !viaje.current) repintar.current = true;
+      if (grupoRutas && destino && destino.lat != null && rutas.length && !rutasEsperan) {
         grupoRutas.dataset.listas = "true";
         const camino = geoPath(proyeccionRef.current);
         const lineas = rutasRef.current.querySelectorAll("[data-ruta]");
@@ -670,7 +674,7 @@ export function MapaRuta({ origen, destino }) {
   const [despierto, setDespierto] = useState(quieto);
   useEffect(() => {
     if (despierto) return undefined;
-    const t = setTimeout(() => setDespierto(true), 380);
+    const t = setTimeout(() => setDespierto(true), 480);
     return () => clearTimeout(t);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -701,6 +705,9 @@ export function MapaRuta({ origen, destino }) {
         ty + (alto - (y1 - y0)) / 2 - y0,
       ]);
     }
+    // lo que cae fuera del marco no se dibuja: la tierra queda en un camino
+    // mucho más corto, más rápido de calcular y de pintar
+    proyeccion.clipExtent([[-4, -4], [ancho + 4, alto + 4]]);
     const dibujo = geoPath(proyeccion);
     const dRuta = dibujo(ruta) || "";
     return {

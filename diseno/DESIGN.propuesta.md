@@ -284,7 +284,7 @@ desenfoque: se adivina lo que pasa por debajo sin perder la lectura. Tokens en
 
 **La Regla del Texto Oscuro.** Sobre naranja y dorado, texto `--mu-ink`; sobre terracota, tierra y coste 4, texto `--mu-surface`.
 
-**La Regla del Material Flotante.** La translucidez solo se usa en el cromo que flota sobre contenido en movimiento: pastillas y botones del mapa, pastilla de carga, lista de sugerencias y barra de búsqueda pegada del móvil. El velo de la ficha lleva solo un desenfoque leve de 3px. Tarjetas, tabla y ficha son siempre opacas. Con `prefers-reduced-transparency: reduce` los tres colores de material vuelven a `--mu-surface` y `--mu-border` y se quita todo desenfoque, también el del velo.
+**La Regla del Material Flotante.** La translucidez solo se usa en el cromo que flota sobre contenido en movimiento: la etiqueta del mapa, la pastilla de carga y la barra de búsqueda pegada del móvil llevan `--material` con desenfoque; los botones del mapa usan `--material-denso` sin desenfoque propio (tres capas filtrando el mapa en cada fotograma costaban demasiado). La lista de sugerencias es opaca: flota sobre un formulario quieto. El velo de la ficha lleva solo un desenfoque leve de 3px. Tarjetas, tabla y ficha son siempre opacas. Con `prefers-reduced-transparency: reduce` los colores de material vuelven a `--mu-surface` y `--mu-border` y se quita todo desenfoque, también el del velo (Safari en iPhone aún no entiende esta preferencia, así que allí no hace efecto).
 
 ## Typography
 

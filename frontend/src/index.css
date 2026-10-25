@@ -272,19 +272,26 @@ h1 {
    el contorno, no el relleno. */
 .mundo-mar { fill: color-mix(in srgb, var(--mu-orange) 30%, var(--mu-cream)); }
 .mundo-tierra { fill: var(--mu-sand); }
+/* Mientras el mapa viaja se amplía el dibujo entero (ver mapas.jsx) y la app
+   pone esa ampliación en `--escala`: los grosores se dividen por ella para
+   que contornos y puntos no engorden con el zoom. */
 .mundo-costa {
   fill: none;
   stroke: var(--mu-trazo);
-  stroke-width: 0.9;
+  stroke-width: calc(0.9px / var(--escala, 1));
   stroke-linejoin: round;
 }
-.mundo-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: 0.7; opacity: 0.5; }
-/* mientras el mapa viaja se amplía el dibujo entero (ver mapas.jsx): así los
-   contornos conservan su grosor en vez de engordar con el zoom */
-.mundo-costa, .mundo-fronteras { vector-effect: non-scaling-stroke; }
+.mundo-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: calc(0.7px / var(--escala, 1)); opacity: 0.5; }
 /* los 575 aeropuertos que se pueden consultar; al buscar se apagan un poco
    para que destaquen los del grupo que se está consultando */
-.mundo-puntos { fill: var(--mu-terracotta); opacity: 0.7; transition: opacity 600ms ease; }
+.mundo-puntos {
+  fill: none;
+  stroke: var(--mu-terracotta);
+  stroke-linecap: round;
+  stroke-width: calc(3.4px / var(--escala, 1));
+  opacity: 0.7;
+  transition: opacity 600ms ease;
+}
 .mapa-mundo > svg.buscando .mundo-puntos { opacity: 0.25; }
 .mundo-marca { fill: var(--mu-orange); stroke: var(--mu-surface); stroke-width: 2; }
 .mundo-anillo { fill: none; stroke: var(--mu-orange); stroke-width: 2.2; opacity: 0.75; }
@@ -365,10 +372,10 @@ h1 {
   place-items: center;
   font-size: 1.15rem;
   line-height: 1;
-  background: var(--material);
+  /* el mismo crema translúcido, pero sin desenfoque propio: tres capas más
+     filtrando el mapa en cada fotograma de la deriva costaban demasiado */
+  background: var(--material-denso);
   border: 1px solid var(--material-borde);
-  -webkit-backdrop-filter: var(--material-filtro); /* taste-skill-ignore: botones que flotan sobre el mapa, mismo material */
-  backdrop-filter: var(--material-filtro); /* taste-skill-ignore: lo mismo */
   color: var(--mu-ink);
 }
 @media (hover: hover) and (pointer: fine) {
@@ -471,9 +478,7 @@ h1 {
   left: 0;
   right: 0;
   z-index: 10;
-  background: var(--material-denso);
-  -webkit-backdrop-filter: var(--material-filtro); /* taste-skill-ignore: menú flotante, mismo material (más denso: es una lista para leer) */
-  backdrop-filter: var(--material-filtro); /* taste-skill-ignore: lo mismo */
+  background: var(--mu-surface);
   border: 1px solid var(--mu-border);
   border-radius: var(--radio-pequeno);
   margin-top: 2px;
@@ -1163,7 +1168,6 @@ table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
     padding: 0.7rem 0.9rem;
     font-weight: 500;
     text-align: left;
-    isolation: isolate;
   }
   /* Borde de desplazamiento: por encima de la barra pegada, lo que sube se
      desvanece en el fondo de la página en vez de verse cortado en seco. */
@@ -1173,9 +1177,9 @@ table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
     z-index: -1;
     left: -1rem;
     right: -1rem;
-    bottom: 50%;
-    height: calc(100% + 0.5rem + env(safe-area-inset-top, 0px));
-    background: linear-gradient(var(--mu-cream) 55%, transparent); /* taste-skill-ignore: fundido del borde de desplazamiento, no decoración */
+    bottom: 100%;
+    height: calc(0.75rem + env(safe-area-inset-top, 0px));
+    background: linear-gradient(var(--mu-cream) 40%, transparent); /* taste-skill-ignore: fundido del borde de desplazamiento, no decoración */
     pointer-events: none;
   }
   .resumen-accion { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--mu-clay); font-weight: 600; }
@@ -1453,8 +1457,7 @@ table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
 /* Si el sistema pide menos transparencia, el material vuelve a ser opaco. */
 @media (prefers-reduced-transparency: reduce) {
   :root { --material: var(--mu-surface); --material-denso: var(--mu-surface); --material-borde: var(--mu-border); }
-  .resumen-busqueda, .mapa-mundo-etiqueta, .mapa-mundo-controles button,
-  .sugerencias, .loading-pastilla, .modal-velo {
+  .resumen-busqueda, .mapa-mundo-etiqueta, .loading-pastilla, .modal-velo {
     -webkit-backdrop-filter: none; /* taste-skill-ignore: es quitar el desenfoque, no ponerlo */
     backdrop-filter: none; /* taste-skill-ignore: lo mismo */
   }

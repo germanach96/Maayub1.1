@@ -650,7 +650,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
 
   const cerrar = () => {
     if (saliendo) return;
-    if (menosMovimiento()) { fin(); return; }
+    // también con "menos movimiento": ahí la salida es un fundido corto
     setSaliendo(true);
     // por si el navegador no avisa del final de la animación (pestaña oculta)
     setTimeout(fin, 420);
@@ -745,9 +745,12 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
       // La hoja sigue bajando a la velocidad del dedo, sin frenazo al
       // soltarla: el tiempo que tarda sale de lo que le falta y de lo rápido
       // que iba (un tirón fuerte se va antes que un arrastre lento).
-      const falta = Math.max(a.alto - Math.max(a.dy, 0), 0);
+      const falta = Math.max(a.alto - Math.max(a.dy, 0), 1);
       const ms = Math.round(Math.min(320, Math.max(160, falta / Math.max(velocidad, 0.9))));
-      m.style.transition = `transform ${ms}ms cubic-bezier(0.23, 1, 0.32, 1)`;
+      // La curva arranca justo a la velocidad del dedo: su pendiente inicial
+      // (y1/x1) es la velocidad del dedo en "recorrido por duración".
+      const pendiente = Math.min(3, Math.max(0.5, (Math.max(velocidad, 0) * ms) / falta));
+      m.style.transition = `transform ${ms}ms cubic-bezier(0.2, ${(0.2 * pendiente).toFixed(3)}, 0.4, 1)`;
       m.style.transform = "translateY(100%)";
       fondoRef.current.style.transition = `opacity ${ms}ms ease`;
       fondoRef.current.style.opacity = "0";
