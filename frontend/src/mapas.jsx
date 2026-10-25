@@ -25,7 +25,12 @@ const RAD = Math.PI / 180;
 
 // Grados de longitud que se desplaza el mapa por segundo: lento a propósito.
 const GRADOS_POR_SEGUNDO = 2.2;
-const FPS = 24;
+// Cuando el mapa solo deriva, se repinta a 30 fotogramas: es un movimiento de
+// menos de medio píxel por fotograma y así gasta la mitad de batería. 30 cabe
+// justo dos veces en los 60 Hz de la pantalla, así que el paso es regular (a
+// 24, unos fotogramas duraban el doble que otros y se notaba a tirones). Lo
+// que mueve el usuario o un viaje va siempre a la velocidad de la pantalla.
+const FPS_DERIVA = 30;
 const DURACION_VIAJE = 1300;   // ms que tarda en viajar hasta el aeropuerto
 const ZOOM_MAX = 8;            // cuánto se puede acercar
 // Al elegir un aeropuerto el mapa se acerca hasta aquí: enseña su región y,
@@ -42,6 +47,7 @@ const LON_INICIAL = -20;       // ...y sobre el Atlántico
 // Las 186 de Europa a la vez serían demasiadas para un móvil: con las más
 // cercanas basta para que se vea que la búsqueda está viva.
 const MAX_COMETAS = 40;
+const MAX_COMETAS_MOVIL = 16;
 // Radio (en píxeles de pantalla) en el que el ratón "encuentra" un aeropuerto
 // al pasar por encima. Es el mismo que el de acierto al pulsar.
 const RADIO_RATON = 14;
@@ -249,6 +255,7 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
     const quieto = menosAnimaciones();
 
     let kDibujada = 0;
+    let puntosEscalados = false;
     let animacion = 0;
     let ultimo = 0;
     let anterior = performance.now();
@@ -259,6 +266,7 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
       anterior = ahora;
 
       const v = viaje.current;
+      let soloDeriva = false;
       if (v) {
         if (v.t0 == null) v.t0 = ahora;
         const t = Math.min(1, (ahora - v.t0) / DURACION_VIAJE);
@@ -269,23 +277,30 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
         // último tramo no parece que frene de golpe
         zoom.current = v.desde[2] * Math.pow(v.hasta[2] / v.desde[2], k);
         if (t >= 1) viaje.current = null;
-      } else if (!destino && !tocado.current && !quieto && !document.hidden) {
+      } else if (!destino && !tocado.current && !quieto && !document.hidden && !fuera) {
         lonCentro.current += GRADOS_POR_SEGUNDO * dt;
+        soloDeriva = !repintar.current;
       } else if (!repintar.current && ultimo) {
         return;   // nada que mover: no se repinta
       }
 
-      if (ahora - ultimo < 1000 / FPS) return;
+      if (soloDeriva && ahora - ultimo < 1000 / FPS_DERIVA - 2) return;
       ultimo = ahora;
       repintar.current = false;
 
       const k = configurar(w, h);
       const anchoMundo = 2 * Math.PI * k;
+      // "En marcha": un viaje o un pellizco cambian el zoom en cada fotograma.
+      // Recalcular la forma de todos los países 60 veces por segundo es lo que
+      // dejaba el viaje a tirones en el móvil, así que mientras tanto se
+      // amplía el dibujo que ya hay (los bordes no engordan: ver
+      // `vector-effect` en el CSS) y se rehace nítido al pararse.
+      const enMarcha = !!viaje.current || gesto.current?.tipo === "pinza";
 
-      // Las formas solo se recalculan si ha cambiado el zoom (o el tamaño).
-      if (k !== kDibujada) {
+      if (k !== kDibujada && (!enMarcha || !kDibujada)) {
         kDibujada = k;
         plana.scale(k);
+        dibujoPuntos.pointRadius(1.7);
         const formas = {
           ".mundo-tierra": dibujo(mundo.tierra) || "",
           ".mundo-costa": dibujo(mundo.costa) || "",
@@ -305,16 +320,35 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
       // dos copias, la pantalla queda cubierta sea cual sea el giro.
       let dx = (-lonCentro.current * RAD * k) % anchoMundo;
       if (dx > 0) dx -= anchoMundo;
+      const escala = k / kDibujada;
       stripRef.current?.setAttribute(
         "transform",
-        `translate(${w / 2 + dx},${h / 2 + k * latCentro.current * RAD})`,
+        `translate(${w / 2 + dx},${h / 2 + k * latCentro.current * RAD})` +
+          (escala !== 1 ? ` scale(${escala})` : ""),
       );
+      // los puntos de los aeropuertos, en cambio, se rehacen con el radio
+      // corregido: si se ampliaran con el resto, crecerían durante el viaje
+      if (escala !== 1 && puntos.coordinates.length) {
+        const d = dibujoPuntos.pointRadius(1.7 / escala)(puntos) || "";
+        copiasRef.current.forEach((g) => g?.querySelector(".mundo-puntos")?.setAttribute("d", d));
+        puntosEscalados = true;
+      } else if (puntosEscalados) {
+        puntosEscalados = false;
+        const d = dibujoPuntos.pointRadius(1.7)(puntos) || "";
+        copiasRef.current.forEach((g) => g?.querySelector(".mundo-puntos")?.setAttribute("d", d));
+      }
 
       // Rutas de la búsqueda en curso: el arco real sobre la esfera, del origen
       // a cada destino. Se recalculan con la cámara (al viajar, arrastrar o
       // acercar); quietas, no se tocan. `pathLength=1` en el JSX hace que la
       // animación de dibujado mida lo mismo aunque cambie la forma.
-      if (rutasRef.current && destino && destino.lat != null && rutas.length) {
+      // Mientras el mapa viaja para encuadrarlas no se dibujan: salen todas
+      // disparadas cuando la cámara se ha parado (y así no hay que rehacer
+      // 185 arcos en cada fotograma del viaje).
+      const grupoRutas = rutasRef.current;
+      if (grupoRutas && destino && destino.lat != null && rutas.length &&
+          (!viaje.current || grupoRutas.dataset.listas === "true")) {
+        grupoRutas.dataset.listas = "true";
         const camino = geoPath(proyeccionRef.current);
         const lineas = rutasRef.current.querySelectorAll("[data-ruta]");
         lineas.forEach((el) => {
@@ -348,11 +382,21 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
       }
     };
 
+    // Si el mapa queda fuera de la pantalla (en el móvil, al bajar), deja de
+    // derivar: nadie lo ve y le quitaría fotogramas al desplazamiento.
+    let fuera = false;
+    const vigia = new IntersectionObserver(([e]) => {
+      fuera = !e.isIntersecting;
+      if (!fuera) { anterior = performance.now(); repintar.current = true; }
+    });
+    if (cajaRef.current) vigia.observe(cajaRef.current);
+
     animacion = requestAnimationFrame(pintar);
     const despertar = () => { ultimo = 0; anterior = performance.now(); repintar.current = true; };
     document.addEventListener("visibilitychange", despertar);
     return () => {
       cancelAnimationFrame(animacion);
+      vigia.disconnect();
       document.removeEventListener("visibilitychange", despertar);
     };
   }, [mundo, tam, destino, puntos, rutas]);
@@ -465,6 +509,7 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
     const g = gesto.current;
     punteros.current.delete(ev.pointerId);
     if (punteros.current.size === 0) gesto.current = null;
+    repintar.current = true;   // al soltar un pellizco, se rehace nítido
     if (!g || g.tipo !== "arrastre" || g.movidoPx > 8 || !onElegir) return;
     const [x, y] = enPantalla(ev);
     // Se acierta un aeropuerto si el dedo cae a menos de esta distancia en
@@ -476,6 +521,7 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
   const cancelarGesto = (ev) => {
     punteros.current.delete(ev.pointerId);
     if (punteros.current.size === 0) gesto.current = null;
+    repintar.current = true;
   };
 
   // Acerca o aleja dejando quieto el punto del mapa que hay bajo el cursor.
@@ -526,6 +572,10 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
   }, []);
 
   const buscando = rutas.length > 0 && destino != null;
+  // En una pantalla pequeña con 16 cometas ya se ve la búsqueda viva, y cada
+  // uno obliga a repintar el mapa en cada fotograma.
+  const maxCometas = typeof window.matchMedia === "function" &&
+    window.matchMedia("(max-width: 800px)").matches ? MAX_COMETAS_MOVIL : MAX_COMETAS;
 
   return (
     <div className="mapa-mundo" ref={cajaRef}>
@@ -558,16 +608,16 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SI
           ))}
         </g>
         {buscando && (
-          <g ref={rutasRef} className="mundo-rutas" aria-hidden="true">
+          <g ref={rutasRef} className="mundo-rutas" data-listas="false" aria-hidden="true">
             {/* `--i` va en cada línea (no en el grupo): así el retraso de su
                 dibujado no obliga a recalcular el estilo de todas las demás */}
             {rutas.map((r, i) => (
               <path key={r.code} data-ruta={i} className="mundo-ruta" pathLength="1"
                     style={{ "--i": i / rutas.length }} />
             ))}
-            {rutas.slice(0, MAX_COMETAS).map((r, i) => (
+            {rutas.slice(0, maxCometas).map((r, i) => (
               <path key={"c" + r.code} data-ruta={i} className="mundo-cometa" pathLength="1"
-                    style={{ "--i": i / Math.min(rutas.length, MAX_COMETAS) }} />
+                    style={{ "--i": i / Math.min(rutas.length, maxCometas) }} />
             ))}
             <path ref={destinosRef} className="mundo-destinos" />
           </g>
@@ -611,41 +661,76 @@ export function MapaRuta({ origen, destino }) {
   const uid = useId().replace(/:/g, "");
   const quieto = menosAnimaciones();
 
-  if (!mundo || !origen || !destino ||
-      origen.lat == null || destino.lat == null) return null;
-
+  const hayRuta = !!(mundo && origen && destino && origen.lat != null && destino.lat != null);
   const ancho = 360, alto = 160, margen = 26;
 
-  // Dos puntos y d3 dibuja el arco real entre ellos (la ruta más corta sobre
-  // la esfera), cortándolo bien si cruza el borde del mapa.
-  const ruta = {
-    type: "LineString",
-    coordinates: [[origen.lon, origen.lat], [destino.lon, destino.lat]],
-  };
+  // El mapa se monta cuando la ficha ya ha subido: dibujarlo justo al abrir
+  // retrasaba el primer fotograma de la hoja y la subida empezaba a saltos.
+  // Hasta entonces ocupa su sitio un hueco del mismo tamaño y color.
+  const [despierto, setDespierto] = useState(quieto);
+  useEffect(() => {
+    if (despierto) return undefined;
+    const t = setTimeout(() => setDespierto(true), 380);
+    return () => clearTimeout(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // El mapa se acerca a la ruta para que se vea, pero con un tope: en un vuelo
-  // corto no queremos quedarnos sin contexto alrededor. Un vuelo largo acaba
-  // enseñando medio mundo, que es justo lo que se quiere ver.
-  const proyeccion = geoEquirectangular();
-  proyeccion.fitExtent([[margen, margen], [ancho - margen, alto - margen]], ruta);
-  const tope = 3 * (alto / Math.PI);
-  if (proyeccion.scale() > tope) {
-    proyeccion.scale(tope);
-    const [[x0, y0], [x1, y1]] = geoPath(proyeccion).bounds(ruta);
-    const [tx, ty] = proyeccion.translate();
-    proyeccion.translate([
-      tx + (ancho - (x1 - x0)) / 2 - x0,
-      ty + (alto - (y1 - y0)) / 2 - y0,
-    ]);
+  // Dibujar el mundo entero cuesta: se hace una vez por ruta y no en cada
+  // repintado de la ficha (mover el deslizador de la nota la repinta entera,
+  // y antes eso rehacía el mapa en cada paso del dedo).
+  const g = useMemo(() => {
+    if (!hayRuta || !despierto) return null;
+    // Dos puntos y d3 dibuja el arco real entre ellos (la ruta más corta sobre
+    // la esfera), cortándolo bien si cruza el borde del mapa.
+    const ruta = {
+      type: "LineString",
+      coordinates: [[origen.lon, origen.lat], [destino.lon, destino.lat]],
+    };
+
+    // El mapa se acerca a la ruta para que se vea, pero con un tope: en un vuelo
+    // corto no queremos quedarnos sin contexto alrededor. Un vuelo largo acaba
+    // enseñando medio mundo, que es justo lo que se quiere ver.
+    const proyeccion = geoEquirectangular();
+    proyeccion.fitExtent([[margen, margen], [ancho - margen, alto - margen]], ruta);
+    const tope = 3 * (alto / Math.PI);
+    if (proyeccion.scale() > tope) {
+      proyeccion.scale(tope);
+      const [[x0, y0], [x1, y1]] = geoPath(proyeccion).bounds(ruta);
+      const [tx, ty] = proyeccion.translate();
+      proyeccion.translate([
+        tx + (ancho - (x1 - x0)) / 2 - x0,
+        ty + (alto - (y1 - y0)) / 2 - y0,
+      ]);
+    }
+    const dibujo = geoPath(proyeccion);
+    const dRuta = dibujo(ruta) || "";
+    return {
+      a: proyeccion([origen.lon, origen.lat]),
+      b: proyeccion([destino.lon, destino.lat]),
+      dRuta,
+      tierra: dibujo(mundo.tierra) || "",
+      fronteras: dibujo(mundo.fronteras) || "",
+      // Si la ruta cruza el borde del mapa, d3 la parte en dos trozos ("M…M…")
+      // y un punto que la recorriera saltaría de un lado al otro: solo se
+      // anima cuando es un único trazo.
+      deUnTrazo: dRuta.lastIndexOf("M") === 0,
+    };
+  }, [hayRuta, despierto, mundo, origen?.lon, origen?.lat, destino?.lon, destino?.lat]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!hayRuta) return null;
+  const pie = (
+    <p className="muted small">
+      Línea directa entre los dos aeropuertos. Las escalas no se dibujan.
+    </p>
+  );
+  if (!g) {
+    return (
+      <div className="mapa-ruta">
+        <div className="mapa-ruta-hueco" aria-hidden="true" />
+        {pie}
+      </div>
+    );
   }
-  const dibujo = geoPath(proyeccion);
-  const a = proyeccion([origen.lon, origen.lat]);
-  const b = proyeccion([destino.lon, destino.lat]);
-  const dRuta = dibujo(ruta) || "";
-  // Si la ruta cruza el borde del mapa, d3 la parte en dos trozos ("M…M…") y
-  // un punto que la recorriera saltaría de un lado al otro: solo se anima
-  // cuando es un único trazo.
-  const deUnTrazo = dRuta.lastIndexOf("M") === 0;
+  const { a, b, dRuta, deUnTrazo } = g;
 
   return (
     <div className="mapa-ruta">
@@ -665,8 +750,8 @@ export function MapaRuta({ origen, destino }) {
         </defs>
         <g clipPath={`url(#marco-${uid})`}>
         <rect width={ancho} height={alto} className="mapa-mar" />
-        <path d={dibujo(mundo.tierra)} className="mapa-tierra" />
-        <path d={dibujo(mundo.fronteras)} className="mapa-fronteras" />
+        <path d={g.tierra} className="mapa-tierra" />
+        <path d={g.fronteras} className="mapa-fronteras" />
         <path id={`ruta-${uid}`} d={dRuta} className="mapa-linea" mask={`url(#trazo-${uid})`} />
         {/* un avión-punto que recorre la ruta en el sentido del vuelo: dice
             sin palabras si es la ida o la vuelta */}
@@ -688,9 +773,7 @@ export function MapaRuta({ origen, destino }) {
         <text x={b[0]} y={b[1] - 9} className="mapa-texto destino">{destino.code}</text>
         </g>
       </svg>
-      <p className="muted small">
-        Línea directa entre los dos aeropuertos. Las escalas no se dibujan.
-      </p>
+      {pie}
     </div>
   );
 }

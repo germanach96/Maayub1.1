@@ -196,7 +196,9 @@ function useRevelar(contenedorRef, deps) {
     if (!raiz) return;
     const nuevos = [...raiz.querySelectorAll("[data-revelar]:not([data-visto])")];
     if (!nuevos.length) return;
-    if (menosMovimiento() || !("IntersectionObserver" in window)) {
+    // Con "menos movimiento" también se usa: ahí las filas no suben, pero
+    // siguen apareciendo con un fundido según llegan a la pantalla.
+    if (!("IntersectionObserver" in window)) {
       nuevos.forEach((el) => { el.dataset.visto = "1"; });
       return;
     }
@@ -205,7 +207,7 @@ function useRevelar(contenedorRef, deps) {
       for (const e of entradas) {
         if (!e.isIntersecting) continue;
         // escalonado corto y con tope: la décima fila ya no espera más
-        e.target.style.setProperty("--retraso", `${Math.min(k++, 10) * 32}ms`);
+        e.target.style.setProperty("--retraso", `${Math.min(k++, 10) * 40}ms`);
         e.target.dataset.visto = "1";
         io.unobserve(e.target);
       }
@@ -698,7 +700,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
     if (!window.matchMedia("(max-width: 800px)").matches) return;
     if (ev.target.closest("button, a, input, select")) return;
     arrastre.current = {
-      id: ev.pointerId, y0: ev.clientY, dy: 0, capturado: false,
+      id: ev.pointerId, y0: ev.clientY, dy: 0, capturado: false, alto: 1,
       // últimas posiciones del dedo: la velocidad que cuenta es la del final
       // del gesto, no la media desde que empezó
       muestras: [{ y: ev.clientY, t: performance.now() }],
@@ -712,6 +714,9 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
       if (Math.abs(dy) < 6) return;                      // aún puede ser un toque
       ev.currentTarget.setPointerCapture(ev.pointerId);
       a.capturado = true;
+      // se mide una vez al cogerla: medir en cada movimiento obligaba al
+      // navegador a recalcular la página a mitad de cada fotograma
+      a.alto = modalRef.current.getBoundingClientRect().height || 1;
     }
     // hacia arriba, cuanto más se tira menos se mueve
     const y = dy >= 0 ? dy : -(Math.abs(dy) * 40) / (40 + Math.abs(dy));
@@ -722,8 +727,8 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
     const m = modalRef.current;
     m.style.transition = "none";
     m.style.transform = `translateY(${y}px)`;
-    const alto = m.getBoundingClientRect().height || 1;
-    fondoRef.current.style.opacity = String(1 - Math.min(Math.max(dy, 0) / alto, 1) * 0.85);
+    fondoRef.current.style.transition = "none";
+    fondoRef.current.style.opacity = String(1 - Math.min(Math.max(dy, 0) / a.alto, 1) * 0.85);
   };
   const soltarArrastre = (ev) => {
     const a = arrastre.current;
@@ -737,11 +742,16 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
     const ref = a.muestras.find((m) => ahora - m.t <= 100) || a.muestras[a.muestras.length - 1];
     const velocidad = (ev.clientY - ref.y) / Math.max(16, ahora - ref.t);
     if (a.dy > 120 || velocidad > 0.11) {
-      m.style.transition = "transform 260ms cubic-bezier(0.23, 1, 0.32, 1)";
+      // La hoja sigue bajando a la velocidad del dedo, sin frenazo al
+      // soltarla: el tiempo que tarda sale de lo que le falta y de lo rápido
+      // que iba (un tirón fuerte se va antes que un arrastre lento).
+      const falta = Math.max(a.alto - Math.max(a.dy, 0), 0);
+      const ms = Math.round(Math.min(320, Math.max(160, falta / Math.max(velocidad, 0.9))));
+      m.style.transition = `transform ${ms}ms cubic-bezier(0.23, 1, 0.32, 1)`;
       m.style.transform = "translateY(100%)";
-      fondoRef.current.style.transition = "opacity 260ms ease";
+      fondoRef.current.style.transition = `opacity ${ms}ms ease`;
       fondoRef.current.style.opacity = "0";
-      setTimeout(fin, 260);
+      setTimeout(fin, ms);
     } else {
       m.style.transition = "transform 420ms cubic-bezier(0.32, 0.72, 0, 1)";
       m.style.transform = "";
@@ -1458,7 +1468,7 @@ export default function App() {
 
       {/* Portada: el buscador encima y el mapa del mundo detrás. En cuanto hay
           resultados el mapa desaparece y la lista se queda toda la anchura. */}
-      <div className={result ? "" : "portada"}>
+      <div className={result ? "cabeza-resultados" : "portada"}>
       {/* En el móvil, con resultados, el buscador se queda en una línea que
           se despliega al tocarla: los vuelos empiezan mucho más arriba. */}
       {result && (
@@ -1467,7 +1477,14 @@ export default function App() {
           className="resumen-busqueda"
           aria-expanded={formAbierto}
           aria-controls="buscador"
-          onClick={() => setFormAbierto(!formAbierto)}
+          onClick={() => {
+            // la barra va pegada arriba: si se abre con la lista ya bajada, se
+            // sube hasta el buscador, que está al principio de la página
+            if (!formAbierto && window.scrollY > 40) {
+              window.scrollTo({ top: 0, behavior: menosMovimiento() ? "auto" : "smooth" });
+            }
+            setFormAbierto(!formAbierto);
+          }}
         >
           <span>
             <b>{result.meta.origin}</b> · {nombreGrupo(result.meta.group)}
