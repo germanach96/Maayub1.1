@@ -14,3 +14,6 @@ frontend/node_modules/
 
 # Entorno
 .env
+
+# Copia duplicada que deja el instalador de skills (las buenas están en .claude/skills/)
+.agents/
