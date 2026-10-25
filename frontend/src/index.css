@@ -49,6 +49,17 @@
      etiquetas 6. */
   --radio-tarjeta: 16px;
   --radio-pequeno: 6px;
+
+  /* ---- Material ----
+     Lo que flota encima de otra cosa (las pastillas y botones sobre el mapa,
+     la barra de búsqueda pegada arriba en el móvil, la lista de sugerencias)
+     es el crema de la paleta un poco translúcido, con desenfoque: se adivina
+     lo que pasa por debajo sin perder la lectura. Solo ahí; las tarjetas, la
+     tabla y la ficha siguen opacas. */
+  --material: color-mix(in srgb, var(--mu-surface) 74%, transparent);
+  --material-denso: color-mix(in srgb, var(--mu-surface) 88%, transparent);
+  --material-borde: color-mix(in srgb, var(--mu-border) 75%, transparent);
+  --material-filtro: blur(18px) saturate(1.5);
 }
 
 html {
@@ -261,16 +272,26 @@ h1 {
    el contorno, no el relleno. */
 .mundo-mar { fill: color-mix(in srgb, var(--mu-orange) 30%, var(--mu-cream)); }
 .mundo-tierra { fill: var(--mu-sand); }
+/* Mientras el mapa viaja se amplía el dibujo entero (ver mapas.jsx) y la app
+   pone esa ampliación en `--escala`: los grosores se dividen por ella para
+   que contornos y puntos no engorden con el zoom. */
 .mundo-costa {
   fill: none;
   stroke: var(--mu-trazo);
-  stroke-width: 0.9;
+  stroke-width: calc(0.9px / var(--escala, 1));
   stroke-linejoin: round;
 }
-.mundo-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: 0.7; opacity: 0.5; }
+.mundo-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: calc(0.7px / var(--escala, 1)); opacity: 0.5; }
 /* los 575 aeropuertos que se pueden consultar; al buscar se apagan un poco
    para que destaquen los del grupo que se está consultando */
-.mundo-puntos { fill: var(--mu-terracotta); opacity: 0.7; transition: opacity 600ms ease; }
+.mundo-puntos {
+  fill: none;
+  stroke: var(--mu-terracotta);
+  stroke-linecap: round;
+  stroke-width: calc(3.4px / var(--escala, 1));
+  opacity: 0.7;
+  transition: opacity 600ms ease;
+}
 .mapa-mundo > svg.buscando .mundo-puntos { opacity: 0.25; }
 .mundo-marca { fill: var(--mu-orange); stroke: var(--mu-surface); stroke-width: 2; }
 .mundo-anillo { fill: none; stroke: var(--mu-orange); stroke-width: 2.2; opacity: 0.75; }
@@ -287,8 +308,10 @@ h1 {
   stroke: var(--mu-surface);
   stroke-width: 3;
 }
-/* rutas de la búsqueda en curso */
+/* rutas de la búsqueda en curso: esperan escondidas a que el mapa termine
+   de encuadrarlas y entonces salen todas */
 .mundo-rutas { pointer-events: none; }
+.mundo-rutas[data-listas="false"] { visibility: hidden; }
 .mundo-ruta {
   fill: none;
   stroke: var(--mu-trazo);
@@ -326,12 +349,14 @@ h1 {
   font-weight: 600;
   font-size: 0.9rem;
   /* sobre el mapa el texto suelto no se lee: va en una pastilla */
-  background: var(--mu-surface);
-  border: 1px solid var(--mu-border);
+  border: 1px solid var(--material-borde);
   border-radius: var(--radio-tarjeta);
   padding: 0.35rem 0.95rem;
   color: var(--mu-ink);
   box-shadow: var(--sombra-flota);
+  background: var(--material);
+  -webkit-backdrop-filter: var(--material-filtro); /* taste-skill-ignore: material translúcido pedido por el dueño para lo que flota sobre el mapa */
+  backdrop-filter: var(--material-filtro); /* taste-skill-ignore: lo mismo */
   max-width: calc(100% - 2rem);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -347,8 +372,10 @@ h1 {
   place-items: center;
   font-size: 1.15rem;
   line-height: 1;
-  background: var(--mu-surface);
-  border: 1px solid var(--mu-border);
+  /* el mismo crema translúcido, pero sin desenfoque propio: tres capas más
+     filtrando el mapa en cada fotograma de la deriva costaban demasiado */
+  background: var(--material-denso);
+  border: 1px solid var(--material-borde);
   color: var(--mu-ink);
 }
 @media (hover: hover) and (pointer: fine) {
@@ -357,6 +384,13 @@ h1 {
 
 /* ---------- mapa de la ruta (ficha del vuelo) ---------- */
 .mapa-ruta { margin: 0.9rem 0 0; }
+/* lo que ocupa el mapa de la ruta mientras la ficha termina de subir */
+.mapa-ruta-hueco {
+  aspect-ratio: 360 / 160;
+  border: 1px solid var(--mu-border);
+  border-radius: var(--radio-tarjeta);
+  background: color-mix(in srgb, var(--mu-orange) 22%, var(--mu-cream));
+}
 .mapa-ruta svg {
   display: block;
   width: 100%;
@@ -509,8 +543,10 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  background: var(--mu-surface);
-  border: 1px solid var(--mu-border);
+  background: var(--material);
+  -webkit-backdrop-filter: var(--material-filtro); /* taste-skill-ignore: pastilla que flota sobre el mapa mientras busca */
+  backdrop-filter: var(--material-filtro); /* taste-skill-ignore: lo mismo */
+  border: 1px solid var(--material-borde);
   border-radius: var(--radio-tarjeta);
   padding: 0.45rem 1.1rem 0.45rem 0.6rem;
   font-weight: 600;
@@ -811,8 +847,14 @@ tbody tr:nth-child(even) { background: var(--fila-alterna); }
 .modal-velo {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--mu-dark) 55%, transparent);
+  background: color-mix(in srgb, var(--mu-dark) 50%, transparent);
+  /* la lista de detrás se aparta un poco de foco, sin desaparecer */
+  -webkit-backdrop-filter: blur(3px); /* taste-skill-ignore: velo de la ficha, desenfoque leve para separar planos */
+  backdrop-filter: blur(3px); /* taste-skill-ignore: lo mismo */
 }
+/* en los resultados el envoltorio de la cabecera no cuenta como caja: así la
+   barra de búsqueda del móvil puede quedarse pegada arriba en toda la lista */
+.cabeza-resultados { display: contents; }
 .modal {
   position: relative;
   background: var(--mu-surface);
@@ -1105,19 +1147,40 @@ table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
 
   /* Con resultados, el buscador se pliega en una línea ("BCN · Zona: Europe
      · Cambiar") que se despliega al tocarla. */
+  /* Se queda pegada arriba al bajar por la lista, translúcida: los vuelos
+     pasan por debajo y siempre está a mano cambiar la búsqueda. */
   .resumen-busqueda {
     display: flex;
     width: 100%;
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    background: var(--mu-surface);
+    position: sticky;
+    top: calc(0.5rem + env(safe-area-inset-top, 0px));
+    z-index: 5;
+    background: var(--material);
+    -webkit-backdrop-filter: var(--material-filtro); /* taste-skill-ignore: barra pegada que deja pasar la lista por debajo */
+    backdrop-filter: var(--material-filtro); /* taste-skill-ignore: lo mismo */
     color: var(--mu-ink);
-    border: 1px solid var(--mu-border);
+    border: 1px solid var(--material-borde);
     border-radius: var(--radio-tarjeta);
+    box-shadow: var(--sombra-flota); /* taste-skill-ignore: barra pegada que flota sobre la lista */
     padding: 0.7rem 0.9rem;
     font-weight: 500;
     text-align: left;
+  }
+  /* Borde de desplazamiento: por encima de la barra pegada, lo que sube se
+     desvanece en el fondo de la página en vez de verse cortado en seco. */
+  .resumen-busqueda::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: -1rem;
+    right: -1rem;
+    bottom: 100%;
+    height: calc(0.75rem + env(safe-area-inset-top, 0px));
+    background: linear-gradient(var(--mu-cream) 40%, transparent); /* taste-skill-ignore: fundido del borde de desplazamiento, no decoración */
+    pointer-events: none;
   }
   .resumen-accion { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--mu-clay); font-weight: 600; }
   .buscador-plegable .search-form { margin-top: 0.5rem; }
@@ -1260,12 +1323,12 @@ table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
   /* Las rutas de la búsqueda se dibujan de la más cercana a la más lejana,
      en poco más de un segundo y medio en total. Después, un "cometa" sale
      del origen y recorre algunas, en bucle, mientras dura la búsqueda. */
-  .mundo-ruta {
-    stroke-dasharray: 1;
+  .mundo-ruta { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .mundo-rutas[data-listas="true"] .mundo-ruta {
     animation: dibujar-trazo 900ms var(--ease-out) calc(var(--i) * 900ms) both;
   }
-  .mundo-cometa {
-    stroke-dasharray: 0.07 1;
+  .mundo-cometa { stroke-dasharray: 0.07 1; }
+  .mundo-rutas[data-listas="true"] .mundo-cometa {
     animation: cometa 2600ms var(--ease-in-out) calc(1600ms + var(--i) * 2600ms) infinite;
   }
   @keyframes cometa {
@@ -1274,7 +1337,7 @@ table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
     85% { opacity: 1; }
     100% { stroke-dashoffset: -1; opacity: 0; }
   }
-  .mundo-destinos { animation: aparecer 700ms var(--ease-out) 500ms both; }
+  .mundo-rutas[data-listas="true"] .mundo-destinos { animation: aparecer 700ms var(--ease-out) 500ms both; }
   @keyframes aparecer { from { opacity: 0; } }
 
   .mapa-mundo-etiqueta { animation: subir-poco 260ms var(--ease-out) both; }
@@ -1336,8 +1399,10 @@ table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
   .modal-cuerpo > :nth-child(n+5) { animation-delay: 280ms; }
   .modal .nota.grande .nota-barra > span { animation: llenar 900ms var(--ease-expo) 220ms both; }
 
-  /* la línea de la ruta se dibuja, y al llegar al destino el punto aparece
+  /* el mapa de la ruta entra con un fundido sobre su hueco, ya con la hoja
+     arriba; la línea se dibuja, y al llegar al destino el punto aparece
      con una onda */
+  .mapa-ruta svg { animation: aparecer 320ms var(--ease-out) both; }
   .mapa-linea-mascara {
     stroke-dasharray: 1;
     animation: dibujar-trazo 1000ms var(--ease-in-out) 260ms both;
@@ -1375,6 +1440,26 @@ table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
     @keyframes subir-hoja { from { transform: translateY(100%); } }
     @keyframes bajar-hoja { to { transform: translateY(100%); } }
     .modal-cuerpo > * { animation-duration: 360ms; }
+
+    /* Las tarjetas suben un poco más que las filas de la tabla y se asientan
+       con una escala mínima: en una columna estrecha, 10 px apenas se veían. */
+    .cards [data-revelar]:not([data-visto]) { transform: translateY(18px) scale(0.98); }
+    .cards [data-revelar][data-visto] {
+      animation: entrar-tarjeta 600ms var(--ease-expo) var(--retraso, 0ms) backwards;
+    }
+    @keyframes entrar-tarjeta { from { opacity: 0; transform: translateY(18px) scale(0.98); } }
+
+    /* la barra de búsqueda baja a su sitio al llegar los resultados */
+    .resumen-busqueda { animation: bajar 520ms var(--ease-expo) 40ms backwards; }
+  }
+}
+
+/* Si el sistema pide menos transparencia, el material vuelve a ser opaco. */
+@media (prefers-reduced-transparency: reduce) {
+  :root { --material: var(--mu-surface); --material-denso: var(--mu-surface); --material-borde: var(--mu-border); }
+  .resumen-busqueda, .mapa-mundo-etiqueta, .loading-pastilla, .modal-velo {
+    -webkit-backdrop-filter: none; /* taste-skill-ignore: es quitar el desenfoque, no ponerlo */
+    backdrop-filter: none; /* taste-skill-ignore: lo mismo */
   }
 }
 
@@ -1382,10 +1467,21 @@ table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
    estado se siguen viendo, como fundidos cortos. */
 @media (prefers-reduced-motion: reduce) {
   .modal-velo, .modal, .sugerencias, .loading-pastilla, .vacio, .error {
-    animation: aparecer 160ms ease backwards;
+    animation: aparecer 220ms ease backwards;
   }
-  .modal.saliendo { animation: none; }
+  .modal.saliendo { animation: desaparecer 160ms ease both; }
+  .saliendo .modal-velo { animation: desaparecer 160ms ease both; }
+  @keyframes desaparecer { to { opacity: 0; } }
+  /* Sin desplazarse, pero sin quedarse quieta: lo que llega aparece con un
+     fundido, y la búsqueda sigue dando señales de vida con fundidos lentos. */
+  .meta, .filtros, .resumen-busqueda, .mapa-mundo-etiqueta { animation: aparecer 300ms ease backwards; }
+  [data-revelar]:not([data-visto]) { opacity: 0; }
+  [data-revelar][data-visto] { animation: aparecer 360ms ease var(--retraso, 0ms) backwards; }
   .mundo-ruta { opacity: 0.35; }
+  .mundo-rutas[data-listas="true"] { animation: aparecer 700ms ease both; }
+  .mundo-anillo { animation: latir-suave 2400ms ease-in-out infinite; }
+  @keyframes latir-suave { 50% { opacity: 0.25; } }
+  .mapa-ruta svg { animation: aparecer 300ms ease both; }
   .plegable, .nota-barra > span, .giro { transition-duration: 1ms; }
 }
 @keyframes aparecer { from { opacity: 0; } }
