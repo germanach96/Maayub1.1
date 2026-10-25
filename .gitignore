@@ -17,3 +17,6 @@ frontend/node_modules/
 
 # Copia duplicada que deja el instalador de skills (las buenas están en .claude/skills/)
 .agents/
+
+# Capturas y registros que deja el servidor MCP de Playwright
+.playwright-mcp/

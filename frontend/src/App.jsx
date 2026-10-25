@@ -1,4 +1,9 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import {
+  ArrowLeft, ArrowRight, Bank, CaretDown, Check, CloudRain, DownloadSimple,
+  Star, Sun, Thermometer, UsersThree, Warning, X,
+} from "./iconos";
 import { MapaMundo, MapaRuta } from "./mapas";
 
 // Colores de la paleta de marca. Cada par cumple el contraste AA indicado en
@@ -123,6 +128,111 @@ function num(v) {
   if (v == null || v === "") return null;
   const n = Number(v);
   return isNaN(n) ? null : n;
+}
+
+// ---------------------------------------------------------------------------
+// Movimiento. Todo lo que se mueve pregunta antes si el sistema pide menos
+// animaciones; si lo pide, el cambio ocurre igual pero sin desplazamientos.
+// ---------------------------------------------------------------------------
+
+function menosMovimiento() {
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+}
+
+// Cambia de pantalla (portada ⇄ resultados) con un fundido del propio
+// navegador entre lo que había y lo nuevo, donde exista; si no, cambia sin más.
+// `flushSync` hace que React pinte el cambio dentro de la transición y no
+// después, que es cuando el navegador hace la "foto" del estado nuevo.
+function conTransicion(cambio) {
+  if (typeof document === "undefined" || !document.startViewTransition || menosMovimiento()) {
+    cambio();
+    return;
+  }
+  document.startViewTransition(() => flushSync(cambio));
+}
+
+// Una cifra que sube desde 0 hasta su valor la primera vez que se enseña
+// (el total de vuelos, la nota de la ficha). Escribe en el DOM directamente,
+// fuera de React: un render por fotograma sería carísimo. El valor real está
+// siempre en el texto oculto, para los lectores de pantalla.
+function NumeroQueSube({ valor, duracion = 750, formato = (n) => n.toLocaleString("es-ES") }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || valor == null) return;
+    if (menosMovimiento()) { el.textContent = formato(valor); return; }
+    let raf = 0;
+    const t0 = performance.now();
+    const paso = (t) => {
+      const p = Math.min(1, (t - t0) / duracion);
+      const k = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);   // sale rápido y frena al llegar
+      el.textContent = formato(Math.round(valor * k));
+      if (p < 1) raf = requestAnimationFrame(paso);
+    };
+    raf = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(raf);
+  }, [valor]);
+  if (valor == null) return <span>—</span>;
+  return (
+    <span className="cifra">
+      <span className="sr-only">{formato(valor)}</span>
+      <span aria-hidden="true" ref={ref}>{formato(valor)}</span>
+    </span>
+  );
+}
+
+// Las filas y tarjetas entran con un pequeño ascenso al llegar a la pantalla,
+// una detrás de otra. Solo las nuevas: las que ya se vieron no se vuelven a
+// animar al filtrar, porque filtrar se hace decenas de veces por sesión y ahí
+// el cambio tiene que ser instantáneo. El estado "visto" va en un atributo
+// que React no gestiona, así que un re-render no lo borra.
+function useRevelar(contenedorRef, deps) {
+  useEffect(() => {
+    const raiz = contenedorRef.current;
+    if (!raiz) return;
+    const nuevos = [...raiz.querySelectorAll("[data-revelar]:not([data-visto])")];
+    if (!nuevos.length) return;
+    if (menosMovimiento() || !("IntersectionObserver" in window)) {
+      nuevos.forEach((el) => { el.dataset.visto = "1"; });
+      return;
+    }
+    const io = new IntersectionObserver((entradas) => {
+      let k = 0;
+      for (const e of entradas) {
+        if (!e.isIntersecting) continue;
+        // escalonado corto y con tope: la décima fila ya no espera más
+        e.target.style.setProperty("--retraso", `${Math.min(k++, 10) * 32}ms`);
+        e.target.dataset.visto = "1";
+        io.unobserve(e.target);
+      }
+    }, { rootMargin: "0px 0px -4% 0px" });
+    nuevos.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+}
+
+// Claves estables para las filas: la identidad del vuelo, no su posición.
+// Así, al filtrar, cada fila sigue siendo "la misma" y no se re-anima. Si dos
+// vuelos coincidieran en todo, el segundo lleva un sufijo.
+function clavesDe(vuelos) {
+  const vistas = new Map();
+  return vuelos.map((f) => {
+    const id = idVuelo(f);
+    const n = vistas.get(id) || 0;
+    vistas.set(id, n + 1);
+    return n ? `${id}#${n}` : id;
+  });
+}
+
+function textoEscalas(n) {
+  if (n == null || n === "") return "escalas: —";
+  const e = Number(n);
+  if (e === 0) return "directo";
+  return e === 1 ? "1 escala" : `${e} escalas`;
 }
 
 // Filtros de rango: se declaran una vez y la interfaz se dibuja sola a partir
@@ -269,16 +379,25 @@ function nivelTemp(t) {
   return "calor";
 }
 
+// Los iconos son dibujos de una sola familia (Phosphor), no emojis: un emoji
+// lo pinta cada sistema a su manera (el paraguas salía azul en Windows) y se
+// salía de la paleta.
 function Clima({ c }) {
   if (!c) return <span className="muted">—</span>;
   const nivel = nivelTemp(num(c.temp_media));
   return (
     <span className="clima">
-      <span className={"temp " + (nivel || "")}>🌡 {fmtNum(c.temp_media, 0, "°")}</span>
-      {" · "}
-      <span className="lluvia">☔ {fmtNum(c.dias_lluvia, 0)}d</span>
-      {" · "}
-      <span className="sol">☀ {fmtNum(c.horas_sol_dia, 1)}h</span>
+      <span className="sr-only">
+        {fmtNum(c.temp_media, 0, " °C")} de media, {fmtNum(c.dias_lluvia, 0)} días de lluvia
+        y {fmtNum(c.horas_sol_dia, 1)} horas de sol al día
+      </span>
+      <span aria-hidden="true">
+        <span className={"temp " + (nivel || "")}><Thermometer className="ico" /> {fmtNum(c.temp_media, 0, "°")}</span>
+        {" · "}
+        <span className="lluvia"><CloudRain className="ico" /> {fmtNum(c.dias_lluvia, 0)}d</span>
+        {" · "}
+        <span className="sol"><Sun className="ico" /> {fmtNum(c.horas_sol_dia, 1)}h</span>
+      </span>
     </span>
   );
 }
@@ -311,6 +430,9 @@ function nivelNota(s) {
   return "n1";
 }
 
+// El número va siempre en tinta (el naranja y el dorado como texto no se
+// leen sobre crema); el color del tramo vive en la barra, que crece desde
+// cero cuando la fila entra en pantalla.
 function Nota({ score, chip = false }) {
   if (score == null) {
     return <span className="muted" title="Sin datos suficientes para puntuar">—</span>;
@@ -319,11 +441,9 @@ function Nota({ score, chip = false }) {
     <span className={(chip ? "chip nota " : "nota ") + nivelNota(score)}>
       <b>{score}</b>
       <span className="nota-de">/100</span>
-      {!chip && (
-        <span className="nota-barra" aria-hidden="true">
-          <span style={{ width: `${score}%` }} />
-        </span>
-      )}
+      <span className="nota-barra" aria-hidden="true">
+        <span style={{ "--v": score / 100 }} />
+      </span>
     </span>
   );
 }
@@ -503,7 +623,7 @@ function descargarTexto(nombre, texto) {
 
 // Subpantalla de un vuelo: todos sus datos, el desglose de la nota, el enlace
 // a Aviasales y el deslizador para ponerle tu nota del 0 al 10.
-function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto, onGuardar, onBorrar, onCerrar }) {
+function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto, onGuardar, onBorrar, onCerrar, cerrarRef }) {
   // El deslizador arranca donde lo dejaste, o en la nota de muuyal si es la
   // primera vez: así valorar es "corregirle". Al abrir otro vuelo, el padre
   // remonta esta pantalla (le pasa una `key` distinta) y el estado se rehace.
@@ -511,16 +631,124 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
     valoracion ? Number(valoracion.nota_usuario) : (f.score ?? 50));
   const [motivo, setMotivo] = useState(valoracion?.motivo || "");
   const [guardado, setGuardado] = useState(false);
+  // "saliendo": la ficha está haciendo su animación de salida; al acabar se
+  // desmonta de verdad. Sin este paso, cerrar sería un corte seco.
+  const [saliendo, setSaliendo] = useState(false);
+  const fondoRef = useRef(null);
+  const modalRef = useRef(null);
+  const arrastre = useRef(null);
+  // La ficha avisa de que se ha cerrado una sola vez, llegue el aviso por el
+  // final de la animación, por el temporizador de seguridad o por el gesto.
+  const cerrada = useRef(false);
+  const fin = () => {
+    if (cerrada.current) return;
+    cerrada.current = true;
+    onCerrar();
+  };
+
+  const cerrar = () => {
+    if (saliendo) return;
+    if (menosMovimiento()) { fin(); return; }
+    setSaliendo(true);
+    // por si el navegador no avisa del final de la animación (pestaña oculta)
+    setTimeout(fin, 420);
+  };
+  // el botón Atrás del móvil también la cierra con su animación, no de golpe
+  if (cerrarRef) cerrarRef.current = cerrar;
 
   useEffect(() => {
-    const esc = (ev) => { if (ev.key === "Escape") onCerrar(); };
-    document.addEventListener("keydown", esc);
+    const previo = document.activeElement;
+    // El foco entra en la ficha al abrirla (para el teclado y los lectores de
+    // pantalla) y vuelve a la fila de la que salió al cerrarla.
+    modalRef.current?.focus({ preventScroll: true });
+    const teclas = (ev) => {
+      if (ev.key === "Escape") { cerrar(); return; }
+      if (ev.key !== "Tab" || !modalRef.current) return;
+      // el tabulador da vueltas dentro de la ficha en vez de escaparse detrás
+      // solo lo que se ve y se puede usar: nada desactivado, oculto o plegado
+      const enfocables = [...modalRef.current.querySelectorAll(
+        "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), " +
+        "textarea:not([disabled]), [tabindex]:not([tabindex='-1'])")]
+        .filter((el) => el.offsetParent !== null && !el.closest("[inert]"));
+      if (!enfocables.length) return;
+      const primero = enfocables[0];
+      const ultimo = enfocables[enfocables.length - 1];
+      if (ev.shiftKey && (document.activeElement === primero || document.activeElement === modalRef.current)) {
+        ev.preventDefault(); ultimo.focus();
+      } else if (!ev.shiftKey && document.activeElement === ultimo) {
+        ev.preventDefault(); primero.focus();
+      }
+    };
+    document.addEventListener("keydown", teclas);
     document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("keydown", esc);
+      document.removeEventListener("keydown", teclas);
       document.body.style.overflow = "";
+      if (cerrarRef) cerrarRef.current = null;
+      if (previo && typeof previo.focus === "function") previo.focus({ preventScroll: true });
     };
-  }, [onCerrar]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // --- En el móvil la ficha es una hoja que se baja con el dedo -------------
+  // Se coge por la cabecera. Sigue al dedo 1:1 hacia abajo y, hacia arriba,
+  // ofrece resistencia en vez de un tope seco. Al soltar se cierra si se ha
+  // bajado bastante o si el gesto ha sido un tirón rápido, aunque sea corto.
+  const empezarArrastre = (ev) => {
+    if (arrastre.current || saliendo) return;          // un solo dedo manda
+    if (!window.matchMedia("(max-width: 800px)").matches) return;
+    if (ev.target.closest("button, a, input, select")) return;
+    arrastre.current = {
+      id: ev.pointerId, y0: ev.clientY, dy: 0, capturado: false,
+      // últimas posiciones del dedo: la velocidad que cuenta es la del final
+      // del gesto, no la media desde que empezó
+      muestras: [{ y: ev.clientY, t: performance.now() }],
+    };
+  };
+  const moverArrastre = (ev) => {
+    const a = arrastre.current;
+    if (!a || ev.pointerId !== a.id) return;
+    const dy = ev.clientY - a.y0;
+    if (!a.capturado) {
+      if (Math.abs(dy) < 6) return;                      // aún puede ser un toque
+      ev.currentTarget.setPointerCapture(ev.pointerId);
+      a.capturado = true;
+    }
+    // hacia arriba, cuanto más se tira menos se mueve
+    const y = dy >= 0 ? dy : -(Math.abs(dy) * 40) / (40 + Math.abs(dy));
+    a.dy = dy;
+    const ahora = performance.now();
+    a.muestras.push({ y: ev.clientY, t: ahora });
+    while (a.muestras.length > 2 && ahora - a.muestras[0].t > 100) a.muestras.shift();
+    const m = modalRef.current;
+    m.style.transition = "none";
+    m.style.transform = `translateY(${y}px)`;
+    const alto = m.getBoundingClientRect().height || 1;
+    fondoRef.current.style.opacity = String(1 - Math.min(Math.max(dy, 0) / alto, 1) * 0.85);
+  };
+  const soltarArrastre = (ev) => {
+    const a = arrastre.current;
+    if (!a || ev.pointerId !== a.id) return;
+    arrastre.current = null;
+    if (!a.capturado) return;
+    const m = modalRef.current;
+    // px por ms en los últimos ~100 ms: un tirón rápido cierra aunque sea
+    // corto; bajar despacio y pararse devuelve la hoja a su sitio
+    const ahora = performance.now();
+    const ref = a.muestras.find((m) => ahora - m.t <= 100) || a.muestras[a.muestras.length - 1];
+    const velocidad = (ev.clientY - ref.y) / Math.max(16, ahora - ref.t);
+    if (a.dy > 120 || velocidad > 0.11) {
+      m.style.transition = "transform 260ms cubic-bezier(0.23, 1, 0.32, 1)";
+      m.style.transform = "translateY(100%)";
+      fondoRef.current.style.transition = "opacity 260ms ease";
+      fondoRef.current.style.opacity = "0";
+      setTimeout(fin, 260);
+    } else {
+      m.style.transition = "transform 420ms cubic-bezier(0.32, 0.72, 0, 1)";
+      m.style.transform = "";
+      fondoRef.current.style.transition = "opacity 300ms ease";
+      fondoRef.current.style.opacity = "";
+    }
+  };
 
   const e = f.enrichment || {};
   const corrijo = correccion(f, nota);
@@ -543,15 +771,29 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
   );
 
   return (
-    <div className="modal-fondo" onClick={onCerrar} role="presentation">
+    <div className={"modal-fondo" + (saliendo ? " saliendo" : "")} onClick={cerrar} role="presentation">
+      {/* El velo oscuro va en su propia capa, detrás de la ficha: así se puede
+          aclarar mientras se baja la hoja con el dedo sin volver transparente
+          la ficha, que va encima. */}
+      <div className="modal-velo" ref={fondoRef} aria-hidden="true" />
       <div
-        className="modal"
+        className={"modal" + (saliendo ? " saliendo" : "")}
         role="dialog"
         aria-modal="true"
         aria-label="Detalle del vuelo"
+        tabIndex={-1}
+        ref={modalRef}
         onClick={(ev) => ev.stopPropagation()}
+        onAnimationEnd={(ev) => { if (saliendo && ev.target === modalRef.current) fin(); }}
       >
-        <div className="modal-cabecera">
+        <div
+          className="modal-cabecera"
+          onPointerDown={empezarArrastre}
+          onPointerMove={moverArrastre}
+          onPointerUp={soltarArrastre}
+          onPointerCancel={soltarArrastre}
+        >
+          <span className="modal-asa" aria-hidden="true" />
           <div>
             <TipoBadge tipo={f.tipo_llamada} />{" "}
             <span className="ruta">
@@ -564,8 +806,8 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
               )}
             </div>
           </div>
-          <button type="button" className="btn-cerrar" onClick={onCerrar} aria-label="Cerrar">
-            ✕
+          <button type="button" className="btn-cerrar" onClick={cerrar} aria-label="Cerrar">
+            <X aria-hidden="true" />
           </button>
         </div>
 
@@ -573,8 +815,13 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
           <section className="modal-nota">
             <div className="modal-nota-num">
               <span className={"nota grande " + nivelNota(f.score)}>
-                {f.score == null ? "—" : f.score}
+                <NumeroQueSube valor={f.score} duracion={800} formato={(n) => String(n)} />
                 <span className="nota-de">/100</span>
+                {f.score != null && (
+                  <span className="nota-barra" aria-hidden="true">
+                    <span style={{ "--v": f.score / 100 }} />
+                  </span>
+                )}
               </span>
               <span className="muted small">puntuación muuyal</span>
             </div>
@@ -593,7 +840,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
           )}
 
           <section>
-            <h3>Tu valoración</h3>
+            <h2 className="titulo-seccion">Tu valoración</h2>
             <p className="muted small">
               Mueve la barra y pulsa Guardar. Se queda en este dispositivo hasta
               que la descargues.
@@ -605,6 +852,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
               <input
                 type="range" min="0" max="100" step="1" value={nota}
                 aria-label="Tu nota del 0 al 100"
+                style={{ "--p": `${nota}%` }}
                 onChange={(ev) => {
                   const nueva = Number(ev.target.value);
                   // Al cruzar de subir a bajar (o al dejar de corregir), el
@@ -620,7 +868,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
             {/* Solo se pregunta el motivo cuando de verdad estás corrigiendo:
                 a menos de 10 puntos de diferencia se entiende que coincides. */}
             {corrijo.hace_falta && (
-              <div className="motivo">
+              <div className="motivo-plegable"><div className="motivo">
                 <label htmlFor="motivo-correccion">
                   Le pones <b>{Math.abs(corrijo.dif)} puntos {corrijo.sentido === "sube" ? "más" : "menos"}</b>
                   {" "}que muuyal ({f.score}/100). ¿Por qué?
@@ -635,7 +883,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
                     <option key={m.id} value={m.id}>{m.texto}</option>
                   ))}
                 </select>
-              </div>
+              </div></div>
             )}
 
             <div className="valorar-acciones">
@@ -647,10 +895,14 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
                   setGuardado(true);
                 }}
               >
-                {guardado ? "Guardado ✓" : "Guardar valoración"}
+                {/* la `key` hace que el texto nuevo entre con un breve
+                    desenfoque en vez de cambiar de golpe */}
+                <span className="morfo" key={guardado ? "si" : "no"}>
+                  {guardado ? <><Check aria-hidden="true" /> Guardado</> : "Guardar valoración"}
+                </span>
               </button>
               {valoracion && (
-                <button type="button" className="btn-sec" onClick={() => { onBorrar(f); onCerrar(); }}>
+                <button type="button" className="btn-sec" onClick={() => { onBorrar(f); cerrar(); }}>
                   Borrar
                 </button>
               )}
@@ -665,7 +917,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
           </section>
 
           <section>
-            <h3>Por qué puntúa lo que puntúa</h3>
+            <h2 className="titulo-seccion">Por qué puntúa lo que puntúa</h2>
             {desglose.length === 0 ? (
               <p className="muted">No hay datos suficientes para puntuar este vuelo.</p>
             ) : (
@@ -675,14 +927,14 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
                     <tr><th>Señal</th><th>Peso</th><th>Nota (0–1)</th><th>Aporta</th></tr>
                   </thead>
                   <tbody>
-                    {desglose.map((d) => (
+                    {desglose.map((d, i) => (
                       <tr key={d.senal}>
                         <td>{d.label}</td>
                         <td>{d.peso}</td>
                         <td>{d.norm.toFixed(2).replace(".", ",")}</td>
                         <td className="nowrap">
                           <span className="aporte-barra" aria-hidden="true">
-                            <span style={{ width: `${(d.aporte / d.peso) * 100}%` }} />
+                            <span style={{ "--v": d.aporte / d.peso, "--i": i }} />
                           </span>
                           {" "}{d.aporte.toFixed(1).replace(".", ",")}
                         </td>
@@ -699,13 +951,15 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
           </section>
 
           <section>
-            <h3>El vuelo</h3>
+            <h2 className="titulo-seccion">El vuelo</h2>
             <div className="datos">
               {dato("Salida", fmtFecha(f.departure_at))}
               {dato("Vuelta", f.tipo_llamada === "RD" ? fmtFecha(f.return_at) : "—")}
               {dato("Aerolínea", `${f.airline || "—"} ${f.flight_number || ""}`)}
               {dato("Duración", fmtDuracion(f.duration))}
-              {dato("Escalas", `${f.transfers ?? "—"}${f.tipo_llamada === "RD" ? ` + ${f.return_transfers ?? "—"}` : ""}`)}
+              {dato("Escalas", f.tipo_llamada === "RD"
+                ? `${f.transfers ?? "—"} + ${f.return_transfers ?? "—"}`
+                : textoEscalas(f.transfers))}
               {dato("Distancia", f.distancia_km != null ? `${f.distancia_km.toLocaleString("es-ES")} km` : "—")}
               {dato("Precio", `${fmtNum(f.price, 0)} €`)}
               {dato("Precio guardado", <Frescura f={f} fechaConsulta={fechaConsulta} />)}
@@ -725,7 +979,7 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
           </section>
 
           <section>
-            <h3>El destino en el mes de salida</h3>
+            <h2 className="titulo-seccion">El destino en el mes de salida</h2>
             <div className="datos">
               {dato("Temperatura media", e.clima ? fmtNum(e.clima.temp_media, 1, " °C") : "—")}
               {dato("Máximas", e.clima ? fmtNum(e.clima.temp_max_media, 1, " °C") : "—")}
@@ -745,19 +999,26 @@ function DetalleVuelo({ f, meta, senales, fechaConsulta, valoracion, aeropuerto,
   );
 }
 
-function Logo({ className }) {
+// El logo es simétrico al girarlo media vuelta: por eso puede dar media vuelta
+// (al pasar el ratón, o en bucle mientras busca) y quedar exactamente igual.
+// `pathLength` deja que los trazos se "dibujen" al cargar la página.
+function Logo({ className, titulo = "Muuyal" }) {
   return (
-    <svg className={className} viewBox="0 0 200 140" role="img" aria-label="Muuyal">
-      <g fill="none" stroke="currentColor" strokeWidth="9" strokeLinecap="round">
-        <path d="M 100 70 C 116 50 142 46 154 58 C 164 68 160 82 148 84 C 139 85.5 133 78 137 71" />
-        <path
-          d="M 100 70 C 116 50 142 46 154 58 C 164 68 160 82 148 84 C 139 85.5 133 78 137 71"
-          transform="rotate(180 100 70)"
-        />
-      </g>
-      <g fill="currentColor">
-        <circle cx="100" cy="32" r="9" />
-        <circle cx="100" cy="108" r="9" />
+    <svg className={className} viewBox="0 0 200 140" role="img" aria-label={titulo}>
+      <g className="logo-giro">
+        <g fill="none" stroke="currentColor" strokeWidth="9" strokeLinecap="round">
+          <path className="logo-trazo" pathLength="1"
+                d="M 100 70 C 116 50 142 46 154 58 C 164 68 160 82 148 84 C 139 85.5 133 78 137 71" />
+          <path
+            className="logo-trazo" pathLength="1"
+            d="M 100 70 C 116 50 142 46 154 58 C 164 68 160 82 148 84 C 139 85.5 133 78 137 71"
+            transform="rotate(180 100 70)"
+          />
+        </g>
+        <g fill="currentColor">
+          <circle className="logo-punto" cx="100" cy="32" r="9" />
+          <circle className="logo-punto" cx="100" cy="108" r="9" />
+        </g>
       </g>
     </svg>
   );
@@ -792,6 +1053,15 @@ export default function App() {
 
   const inputRef = useRef(null);
   const peticionRef = useRef(null);
+  // sugerencia marcada con las flechas del teclado (-1 = ninguna)
+  const [activa, setActiva] = useState(-1);
+  // cuántas búsquedas han llegado: cambia la "identidad" de la lista, y con
+  // ella vuelve a jugarse la entrada escalonada de las filas
+  const [nBusqueda, setNBusqueda] = useState(0);
+  // en el móvil, con resultados, el buscador se pliega en una línea
+  const [formAbierto, setFormAbierto] = useState(false);
+  const metaRef = useRef(null);
+  const listaRef = useRef(null);
 
   useEffect(() => {
     fetch("/api/airports").then((r) => r.json()).then(setAirports).catch(() => {});
@@ -827,6 +1097,7 @@ export default function App() {
   async function buscar(e) {
     e.preventDefault();
     if (!origin || !group) return;
+    setFormAbierto(false);
     setLoading(true);
     setLoadingDesde(Date.now());
     setError(null);
@@ -850,7 +1121,13 @@ export default function App() {
         const body = await resp.json().catch(() => ({}));
         throw new Error(body.detail || `Error ${resp.status}`);
       }
-      setResult(await resp.json());
+      const datos = await resp.json();
+      // la portada (el mapa) da paso a los resultados con un fundido, no con
+      // un corte; en navegadores sin esa función, el cambio es directo
+      conTransicion(() => {
+        setResult(datos);
+        setNBusqueda((n) => n + 1);
+      });
     } catch (err) {
       // Si la búsqueda se cortó al volver a la portada, no es un error que
       // haya que enseñar: es lo que el usuario acaba de pedir.
@@ -866,19 +1143,45 @@ export default function App() {
   // El logo devuelve a la portada: se corta la búsqueda en curso si la hay y
   // se deja todo como recién abierta la página (el mapa vuelve a moverse).
   function volverAPortada() {
+    // Una búsqueda grande tarda minutos: no se tira por un toque sin querer
+    // en el logo.
+    if (peticionRef.current &&
+        !window.confirm("Hay una búsqueda en marcha. ¿Cortarla y volver a la portada?")) return;
     peticionRef.current?.abort();
     peticionRef.current = null;
-    setLoading(false);
-    setResult(null);
-    setError(null);
-    setDetalle(null);
-    setOrigin("");
-    setOriginQuery("");
-    setGroup("");
-    setPanelAbierto(false);
-    setFiltroTipo(""); setFiltroDestino(""); setMaxCache("");
-    setPais(""); setRangos({}); setPage(0); setOrden("score");
+    conTransicion(() => {
+      setLoading(false);
+      setResult(null);
+      setError(null);
+      setDetalle(null);
+      setOrigin("");
+      setOriginQuery("");
+      setGroup("");
+      setPanelAbierto(false);
+      setFormAbierto(false);
+      setFiltroTipo(""); setFiltroDestino(""); setMaxCache("");
+      setPais(""); setRangos({}); setPage(0); setOrden("score");
+    });
     window.scrollTo({ top: 0 });
+  }
+
+  // Elegir una sugerencia del buscador de origen (con el ratón, el dedo o
+  // Intro sobre la marcada con las flechas).
+  function elegirSugerencia(a) {
+    setOrigin(a.code);
+    setOriginQuery(`${a.code} — ${a.name}`);
+    setShowSugerencias(false);
+    setActiva(-1);
+  }
+
+  // Ir a otra página de resultados te deja al principio de la lista, no en
+  // el sitio donde pulsaste la flecha (que es el final).
+  // El salto es inmediato a propósito: un desplazamiento suave desde el final
+  // de una lista larga tardaba más de un segundo; las filas de la página nueva
+  // ya entran con su propia animación.
+  function irAPagina(n) {
+    setPage(n);
+    metaRef.current?.scrollIntoView({ block: "start" });
   }
 
   const fechaConsulta = result?.meta?.fecha_consulta;
@@ -893,6 +1196,56 @@ export default function App() {
   }, [airports]);
   const aeropuerto = (code) => (code ? porCodigo.get(code) || null : null);
   const aeropuertoOrigen = aeropuerto(origin);
+
+  // Los destinos que se consultan en la búsqueda en curso, con la misma regla
+  // que el servidor (backend/data.py, destinos_de_grupo): los de la zona, o
+  // los del Top 151, menos el propio origen. Ordenados del más cercano al más
+  // lejano, que es el orden en que el mapa dibuja sus rutas.
+  const rutasBusqueda = useMemo(() => {
+    if (!loading || !aeropuertoOrigen || !group) return [];
+    const o = aeropuertoOrigen;
+    const lejania = (a) => {
+      // distancia angular sobre la esfera; solo hace falta para ordenar
+      const p = Math.PI / 180;
+      const c = Math.sin(o.lat * p) * Math.sin(a.lat * p) +
+        Math.cos(o.lat * p) * Math.cos(a.lat * p) * Math.cos((a.lon - o.lon) * p);
+      return Math.acos(Math.max(-1, Math.min(1, c)));
+    };
+    return airports
+      .filter((a) => a.code !== o.code && a.lat != null && a.lon != null &&
+        (group === "Top151" ? a.top151 : a.zone === group))
+      .map((a) => ({ a, d: lejania(a) }))
+      .sort((x, y) => x.d - y.d)
+      .map((x) => x.a);
+  }, [loading, aeropuertoOrigen, group, airports]);
+
+  // --- La ficha de un vuelo y el botón "Atrás" del móvil ------------------
+  // Abrir una ficha deja una entrada en el historial del navegador, así que
+  // el gesto o el botón de Atrás la cierra en vez de sacarte de la web.
+  const abrirFicha = (f) => {
+    if (!detalle) window.history.pushState({ muuyalFicha: true }, "");
+    setDetalle(f);
+  };
+  // La ficha ya ha hecho su animación de salida (X, Escape, dedo o Atrás):
+  // falta quitar su entrada del historial, si sigue ahí, y desmontarla.
+  const cerrarFicha = () => {
+    if (window.history.state?.muuyalFicha) {
+      yaCerrada.current = true;
+      window.history.back();   // lo remata el popstate
+    } else setDetalle(null);
+  };
+  const cerrarFichaRef = useRef(null);   // el "cerrar con animación" de la ficha abierta
+  const yaCerrada = useRef(false);
+  useEffect(() => {
+    const atras = () => {
+      if (yaCerrada.current || !cerrarFichaRef.current) {
+        yaCerrada.current = false;
+        setDetalle(null);
+      } else cerrarFichaRef.current();     // Atrás del móvil: que se vaya bajando
+    };
+    window.addEventListener("popstate", atras);
+    return () => window.removeEventListener("popstate", atras);
+  }, []);
 
   // --- valoraciones manuales ------------------------------------------
   const guardarValoracion = (f, nota, motivo) => {
@@ -985,8 +1338,8 @@ export default function App() {
         onClick={descargarValoraciones}
         title="Descarga un CSV con tus valoraciones para afinar la fórmula"
       >
-        ⭳ Descargar mis valoraciones
-        <span className="badge-filtros">{nValoraciones}</span>
+        <DownloadSimple aria-hidden="true" /> Descargar mis valoraciones
+        <span className="badge-filtros" key={nValoraciones}>{nValoraciones}</span>
       </button>
       <button
         type="button"
@@ -1076,7 +1429,17 @@ export default function App() {
   }, [result, filtroTipo, filtroDestino, maxCache, pais, rangos, orden, fechaConsulta]);
 
   const totalPages = Math.max(1, Math.ceil(vuelosFiltrados.length / PAGE_SIZE));
-  const pagina = vuelosFiltrados.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pagina = useMemo(
+    () => vuelosFiltrados.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [vuelosFiltrados, page]);
+  const claves = useMemo(() => clavesDe(pagina), [pagina]);
+  // La lista "cambia de identidad" con cada búsqueda, página u orden: ahí las
+  // filas vuelven a entrar escalonadas. Al filtrar no cambia (ver useRevelar).
+  const identidadLista = `${nBusqueda}|${page}|${orden}`;
+  useRevelar(listaRef, [pagina, identidadLista]);
+
+  const nombreGrupo = (z) => (z === "Top151" ? "Top 151 mundial" : `Zona: ${z}`);
+  const listaSugerencias = showSugerencias && sugerencias.length > 0 && !origin;
 
   return (
     <div className={"app" + (result ? "" : " en-portada")}>
@@ -1096,32 +1459,76 @@ export default function App() {
       {/* Portada: el buscador encima y el mapa del mundo detrás. En cuanto hay
           resultados el mapa desaparece y la lista se queda toda la anchura. */}
       <div className={result ? "" : "portada"}>
-      <form className="search-form" onSubmit={buscar}>
+      {/* En el móvil, con resultados, el buscador se queda en una línea que
+          se despliega al tocarla: los vuelos empiezan mucho más arriba. */}
+      {result && (
+        <button
+          type="button"
+          className="resumen-busqueda"
+          aria-expanded={formAbierto}
+          aria-controls="buscador"
+          onClick={() => setFormAbierto(!formAbierto)}
+        >
+          <span>
+            <b>{result.meta.origin}</b> · {nombreGrupo(result.meta.group)}
+          </span>
+          <span className="resumen-accion">
+            {formAbierto ? "Cerrar" : "Cambiar"} <CaretDown className="ico giro" aria-hidden="true" />
+          </span>
+        </button>
+      )}
+      <div className="plegable buscador-plegable" data-abierto={!result || formAbierto ? "true" : "false"}>
+      <div>
+      <form className="search-form" id="buscador" onSubmit={buscar}>
         <div className="field origen-field">
-          <label>Aeropuerto de origen</label>
+          <label htmlFor="origen">Aeropuerto de origen</label>
           <input
+            id="origen"
             ref={inputRef}
             type="text"
+            autoComplete="off"
             placeholder="Ej.: BCN o Barcelona"
+            role="combobox"
+            aria-expanded={listaSugerencias}
+            aria-controls="sugerencias-origen"
+            aria-autocomplete="list"
+            aria-activedescendant={listaSugerencias && activa >= 0 ? `sugerencia-${activa}` : undefined}
             value={originQuery}
             onChange={(e) => {
               setOriginQuery(e.target.value);
               setOrigin("");
               setShowSugerencias(true);
+              setActiva(-1);
+            }}
+            onKeyDown={(e) => {
+              if (!listaSugerencias) return;
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setActiva((i) => Math.min(i + 1, sugerencias.length - 1));
+              } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setActiva((i) => Math.max(i - 1, 0));
+              } else if (e.key === "Enter" && activa >= 0) {
+                e.preventDefault();
+                elegirSugerencia(sugerencias[activa]);
+              } else if (e.key === "Escape") {
+                setShowSugerencias(false);
+              }
             }}
             onFocus={() => setShowSugerencias(true)}
             onBlur={() => setTimeout(() => setShowSugerencias(false), 150)}
           />
-          {showSugerencias && sugerencias.length > 0 && !origin && (
-            <ul className="sugerencias">
-              {sugerencias.map((a) => (
+          {listaSugerencias && (
+            <ul className="sugerencias" id="sugerencias-origen" role="listbox" aria-label="Aeropuertos">
+              {sugerencias.map((a, i) => (
                 <li
                   key={a.code}
-                  onMouseDown={() => {
-                    setOrigin(a.code);
-                    setOriginQuery(`${a.code} — ${a.name}`);
-                    setShowSugerencias(false);
-                  }}
+                  id={`sugerencia-${i}`}
+                  role="option"
+                  aria-selected={i === activa}
+                  className={i === activa ? "activa" : ""}
+                  onMouseDown={() => elegirSugerencia(a)}
+                  onMouseEnter={() => setActiva(i)}
                 >
                   <b>{a.code}</b> {a.name} <span className="muted">({a.country_code})</span>
                 </li>
@@ -1131,19 +1538,21 @@ export default function App() {
         </div>
 
         <div className="field">
-          <label>Grupo de destinos</label>
-          <select value={group} onChange={(e) => setGroup(e.target.value)}>
+          <label htmlFor="grupo">Grupo de destinos</label>
+          <select id="grupo" value={group} onChange={(e) => setGroup(e.target.value)}>
             <option value="">— elige —</option>
             {zones.map((z) => (
-              <option key={z} value={z}>{z === "Top151" ? "Top 151 mundial" : `Zona: ${z}`}</option>
+              <option key={z} value={z}>{nombreGrupo(z)}</option>
             ))}
           </select>
         </div>
 
-        <button type="submit" disabled={!origin || !group || loading}>
+        <button type="submit" className="btn-buscar" disabled={!origin || !group || loading}>
           {loading ? "Buscando…" : "Buscar vuelos"}
         </button>
       </form>
+      </div>
+      </div>
 
       {/* Descargar no debería obligar a repetir una búsqueda de varios
           minutos: si hay valoraciones guardadas, el botón también está aquí. */}
@@ -1157,34 +1566,45 @@ export default function App() {
         <MapaMundo
           destino={aeropuertoOrigen}
           aeropuertos={airports}
+          rutas={rutasBusqueda}
           onElegir={(a) => {
             setOrigin(a.code);
             setOriginQuery(`${a.code} — ${a.name}`);
           }}
-          etiqueta={aeropuertoOrigen
+          etiqueta={loading ? null : aeropuertoOrigen
             ? `${aeropuertoOrigen.code} — ${aeropuertoOrigen.name}`
             : "Arrastra el mapa y pulsa un aeropuerto"}
         />
       )}
       </div>
 
-      {/* Mientras busca, solo el cronómetro, en una pastilla legible por encima
-          del mapa: el texto suelto quedaba detrás y no se leía. */}
+      {/* Mientras busca: cuántos destinos se están consultando y cuánto lleva,
+          en una pastilla legible por encima del mapa. En el móvil se coloca
+          sobre el mapa, donde está la etiqueta del aeropuerto, y no debajo. */}
       {loading && (
-        <div className="loading">
+        <div className="loading" role="status">
           <div className="loading-pastilla">
-            <div className="spinner" />
-            <span>Buscando vuelos… <Cronometro desde={loadingDesde} /></span>
+            <Logo className="logo-cargando" titulo="" />
+            <span>
+              {rutasBusqueda.length > 0
+                ? <>Consultando {rutasBusqueda.length} destinos… </>
+                : <>Buscando vuelos… </>}
+              <span className="cronometro" aria-hidden="true"><Cronometro desde={loadingDesde} /></span>
+            </span>
           </div>
         </div>
       )}
 
-      {error && <div className="error">⚠ {error}</div>}
+      {error && (
+        <div className="error" role="alert">
+          <Warning className="ico" aria-hidden="true" /> {error}
+        </div>
+      )}
 
       {result && (
         <>
-          <div className="meta">
-            <b>{result.meta.flights_found.toLocaleString("es-ES")}</b> vuelos ·{" "}
+          <div className="meta" ref={metaRef}>
+            <b><NumeroQueSube valor={result.meta.flights_found} /></b> vuelos ·{" "}
             {result.meta.destinations_queried} destinos consultados desde{" "}
             <b>{result.meta.origin}</b> ({result.meta.group}) ·{" "}
             {result.meta.elapsed_seconds}s
@@ -1200,8 +1620,10 @@ export default function App() {
             )}
           </div>
 
+          {/* En el móvil, una sola fila que se desliza de lado: antes eran
+              siete controles apilados y el primer vuelo quedaba fuera. */}
           <div className="filtros">
-            <select value={filtroTipo} onChange={(e) => { setFiltroTipo(e.target.value); setPage(0); }}>
+            <select aria-label="Tipo de vuelo" value={filtroTipo} onChange={(e) => { setFiltroTipo(e.target.value); setPage(0); }}>
               <option value="">Todos los tipos</option>
               <option value="OW_IDA">Solo ida</option>
               <option value="OW_VUELTA">Solo vuelta</option>
@@ -1209,17 +1631,18 @@ export default function App() {
             </select>
             <input
               type="text"
+              aria-label="Filtrar destino"
               placeholder="Filtrar destino…"
               value={filtroDestino}
               onChange={(e) => { setFiltroDestino(e.target.value); setPage(0); }}
             />
-            <select value={maxCache} onChange={(e) => { setMaxCache(e.target.value); setPage(0); }}>
+            <select aria-label="Antigüedad del precio" value={maxCache} onChange={(e) => { setMaxCache(e.target.value); setPage(0); }}>
               <option value="">Precio de cualquier fecha</option>
               <option value="0">Solo precios de hoy</option>
               <option value="1">Precios de hoy o ayer</option>
               <option value="3">Precios de 3 días o menos</option>
             </select>
-            <select value={orden} onChange={(e) => setOrden(e.target.value)}>
+            <select aria-label="Orden" value={orden} onChange={(e) => setOrden(e.target.value)}>
               <option value="score">Mejor puntuación</option>
               <option value="price">Más baratos</option>
               <option value="duration">Más cortos</option>
@@ -1228,18 +1651,24 @@ export default function App() {
               <option value="cache">Precio más reciente</option>
               <option value="distancia">Más cerca</option>
             </select>
-            <select value={pais} onChange={(e) => { setPais(e.target.value); setPage(0); }}>
+            <select aria-label="País" value={pais} onChange={(e) => { setPais(e.target.value); setPage(0); }}>
               <option value="">Todos los países ({paises.length})</option>
               {paises.map((p) => (
                 <option key={p.code} value={p.code}>{p.nombre} ({p.n})</option>
               ))}
             </select>
-            <button type="button" className="btn-sec" onClick={() => setPanelAbierto(!panelAbierto)}>
-              {panelAbierto ? "▲" : "▼"} Más filtros
-              {nFiltrosActivos > 0 && <span className="badge-filtros">{nFiltrosActivos}</span>}
+            <button
+              type="button"
+              className="btn-sec"
+              aria-expanded={panelAbierto}
+              aria-controls="panel-filtros"
+              onClick={() => setPanelAbierto(!panelAbierto)}
+            >
+              <CaretDown className="ico giro" aria-hidden="true" /> Más filtros
+              {nFiltrosActivos > 0 && <span className="badge-filtros" key={nFiltrosActivos}>{nFiltrosActivos}</span>}
             </button>
             {nFiltrosActivos > 0 && (
-              <button type="button" className="btn-sec" onClick={limpiarFiltros}>
+              <button type="button" className="btn-sec aparece" onClick={limpiarFiltros}>
                 Limpiar
               </button>
             )}
@@ -1249,17 +1678,20 @@ export default function App() {
               onClick={descargarResultados}
               title="Descarga un CSV con los precios de esta búsqueda, para mejorar el precio normal de cada destino"
             >
-              ⭳ Descargar resultados
+              <DownloadSimple aria-hidden="true" /> Descargar resultados
               <span className="badge-filtros">{result.flights.length}</span>
             </button>
             {nValoraciones > 0 && <BotonesValoraciones />}
           </div>
 
-          {panelAbierto && (
-            <div className="panel-filtros">
+          {/* El panel siempre está en la página y se despliega a su altura
+              real; cerrado, `inert` lo saca del tabulador y de los lectores. */}
+          <div className="plegable" data-abierto={panelAbierto ? "true" : "false"}>
+            <div {...(panelAbierto ? {} : { inert: "" })}>
+            <div className="panel-filtros" id="panel-filtros">
               {GRUPOS_RANGO.map((g) => (
                 <div className="grupo-filtros" key={g}>
-                  <h3>{g}</h3>
+                  <h2 className="titulo-seccion">{g}</h2>
                   {RANGOS.filter((r) => r.grupo === g).map((r) => (
                     <div className="rango" key={r.id}>
                       <label>{r.label}{r.unidad && <span className="muted"> ({r.unidad})</span>}</label>
@@ -1277,6 +1709,7 @@ export default function App() {
                             ) : (
                               <input
                                 type="number" inputMode="decimal" step={r.paso}
+                                aria-label={`${r.label} ${extremo === "min" ? "mínimo" : "máximo"}`}
                                 placeholder={extremo === "min" ? "mín" : "máx"}
                                 value={rangos[`${r.id}_${extremo}`] ?? ""}
                                 onChange={(e) => setRango(r.id, extremo, e.target.value)}
@@ -1295,7 +1728,8 @@ export default function App() {
                 clima), queda fuera mientras ese filtro esté puesto.
               </p>
             </div>
-          )}
+            </div>
+          </div>
 
           {vuelosFiltrados.length === 0 && (
             <div className="vacio">
@@ -1305,7 +1739,7 @@ export default function App() {
             </div>
           )}
 
-          {vuelosFiltrados.length > 0 && (<>
+          {vuelosFiltrados.length > 0 && (<div ref={listaRef}>
           {/* Desktop: tabla */}
           <div className="tabla-wrap">
             <table>
@@ -1325,30 +1759,33 @@ export default function App() {
                   <th>Coste</th>
                   <th>UNESCO</th>
                   <th>Precio de</th>
-                  <th>Precio</th>
+                  <th className="precio-cell">Precio</th>
                 </tr>
               </thead>
-              <tbody>
+              {/* la `key` cambia con cada búsqueda, página u orden: la lista
+                  se monta de nuevo y sus filas vuelven a entrar escalonadas */}
+              <tbody key={identidadLista}>
                 {pagina.map((f, i) => {
                   const e = f.enrichment || {};
                   const mia = valoraciones[idVuelo(f)];
                   return (
                     <tr
-                      key={i}
+                      key={claves[i]}
+                      data-revelar=""
                       className="fila-vuelo"
-                      onClick={() => setDetalle(f)}
+                      onClick={() => abrirFicha(f)}
                       tabIndex={0}
                       role="button"
-                      aria-label="Ver detalle y valorar este vuelo"
+                      aria-label={`Ver y valorar el vuelo a ${f.enrich_airport_name || f.enrich_airport}, ${fmtNum(f.price, 0)} €`}
                       onKeyDown={(ev) => {
-                        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); setDetalle(f); }
+                        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); abrirFicha(f); }
                       }}
                     >
                       <td className="nota-cell">
                         <Nota score={f.score} />
                         {mia && (
                           <div className="mi-nota" title="Tu valoración">
-                            ★ {Math.round(Number(mia.nota_usuario))}
+                            <Star className="ico" aria-hidden="true" /> {Math.round(Number(mia.nota_usuario))}
                           </div>
                         )}
                       </td>
@@ -1422,18 +1859,19 @@ export default function App() {
           </div>
 
           {/* Móvil: cards */}
-          <div className="cards">
+          <div className="cards" key={identidadLista}>
             {pagina.map((f, i) => {
               const e = f.enrichment || {};
               const mia = valoraciones[idVuelo(f)];
               return (
                 <div
-                  className="card" key={i}
-                  onClick={() => setDetalle(f)}
+                  className="card" key={claves[i]}
+                  data-revelar=""
+                  onClick={() => abrirFicha(f)}
                   role="button" tabIndex={0}
-                  aria-label="Ver detalle y valorar este vuelo"
+                  aria-label={`Ver y valorar el vuelo a ${f.enrich_airport_name || f.enrich_airport}, ${fmtNum(f.price, 0)} €`}
                   onKeyDown={(ev) => {
-                    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); setDetalle(f); }
+                    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); abrirFicha(f); }
                   }}
                 >
                   <div className="card-top">
@@ -1460,28 +1898,41 @@ export default function App() {
                     {fmtFecha(f.departure_at)}
                     {f.tipo_llamada === "RD" && <> → {fmtFecha(f.return_at)}</>}
                     {" · "}{fmtDuracion(f.duration)}
-                    {" · "}{f.transfers ?? "?"} escala(s)
+                    {" · "}{f.tipo_llamada === "RD"
+                      ? `${f.transfers ?? "—"} + ${f.return_transfers ?? "—"} escalas`
+                      : textoEscalas(f.transfers)}
                     {f.distancia_km != null && <> · {f.distancia_km.toLocaleString("es-ES")} km</>}
                   </div>
                   <div className="card-chips">
                     <Nota score={f.score} chip />
                     {mia && (
                       <span className="chip mi-nota-chip">
-                        ★ tu nota {Math.round(Number(mia.nota_usuario))}
+                        <Star className="ico" aria-hidden="true" /> tu nota {Math.round(Number(mia.nota_usuario))}
                       </span>
                     )}
                     <Frescura f={f} fechaConsulta={fechaConsulta} chip />
                     {e.clima && (
-                      <span className="chip">🌡 {fmtNum(e.clima.temp_media, 0, "°")} · ☀ {fmtNum(e.clima.horas_sol_dia, 1)}h</span>
+                      <span className="chip">
+                        <Thermometer className="ico" aria-hidden="true" /> {fmtNum(e.clima.temp_media, 0, "°")}
+                        {" · "}<Sun className="ico" aria-hidden="true" /> {fmtNum(e.clima.horas_sol_dia, 1)}h
+                      </span>
                     )}
                     {e.coste && (
                       <span className={"chip coste-badge n" + String(e.coste.categoria || "").length}>
                         {e.coste.categoria}
                       </span>
                     )}
-                    {e.turismo && <span className="chip">★ {fmtNum(e.turismo.popularidad_0_100, 0)}/100</span>}
+                    {e.turismo && (
+                      <span className="chip" title="Popularidad del destino">
+                        <UsersThree className="ico" aria-hidden="true" /> {fmtNum(e.turismo.popularidad_0_100, 0)}/100
+                      </span>
+                    )}
                     {e.turismo_mes && <span className="chip">turismo ×{fmtNum(e.turismo_mes.turismo_idx, 2)}</span>}
-                    {e.unesco && <span className="chip">🏛 {e.unesco.unesco_100km} UNESCO</span>}
+                    {e.unesco && (
+                      <span className="chip">
+                        <Bank className="ico" aria-hidden="true" /> {e.unesco.unesco_100km} UNESCO
+                      </span>
+                    )}
                   </div>
                   <GapsBadges gaps={f.enrichment_gaps} />
                   <FlagsBadges flags={f.score_flags} />
@@ -1489,15 +1940,19 @@ export default function App() {
               );
             })}
           </div>
-          </>)}
+          </div>)}
 
           {totalPages > 1 && (
             <div className="paginacion">
-              <button disabled={page === 0} onClick={() => setPage(page - 1)}>←</button>
+              <button disabled={page === 0} onClick={() => irAPagina(page - 1)} aria-label="Página anterior">
+                <ArrowLeft aria-hidden="true" />
+              </button>
               <span>
                 Página {page + 1} de {totalPages} · {vuelosFiltrados.length.toLocaleString("es-ES")} vuelos
               </span>
-              <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}>→</button>
+              <button disabled={page >= totalPages - 1} onClick={() => irAPagina(page + 1)} aria-label="Página siguiente">
+                <ArrowRight aria-hidden="true" />
+              </button>
             </div>
           )}
         </>
@@ -1514,7 +1969,8 @@ export default function App() {
           aeropuerto={aeropuerto}
           onGuardar={guardarValoracion}
           onBorrar={borrarValoracion}
-          onCerrar={() => setDetalle(null)}
+          onCerrar={cerrarFicha}
+          cerrarRef={cerrarFichaRef}
         />
       )}
     </div>

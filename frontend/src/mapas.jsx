@@ -16,9 +16,10 @@
  * sistema pide menos animaciones.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { geoEquirectangular, geoPath } from "d3-geo";
 import { feature, mesh } from "topojson-client";
+import { ArrowCounterClockwise, Minus, Plus } from "./iconos";
 
 const RAD = Math.PI / 180;
 
@@ -37,6 +38,16 @@ const ZOOM_ELEGIDO = 2.2;
 const HOLGURA = 1.3;
 const LAT_INICIAL = 12;        // el centro arranca un poco al norte del ecuador
 const LON_INICIAL = -20;       // ...y sobre el Atlántico
+// Mientras busca, de cuántas rutas sale además un "cometa" que las recorre.
+// Las 186 de Europa a la vez serían demasiadas para un móvil: con las más
+// cercanas basta para que se vea que la búsqueda está viva.
+const MAX_COMETAS = 40;
+// Radio (en píxeles de pantalla) en el que el ratón "encuentra" un aeropuerto
+// al pasar por encima. Es el mismo que el de acierto al pulsar.
+const RADIO_RATON = 14;
+// Lista vacía fija: un `[]` nuevo en cada render haría que el mapa creyera
+// que las rutas han cambiado y rehiciera su bucle de dibujo cada vez.
+const SIN_RUTAS = [];
 
 let promesaMundo = null;
 
@@ -81,8 +92,13 @@ const acotar = (v, min, max) => Math.max(min, Math.min(max, v));
  * planeta pasara por delante. Se puede arrastrar, acercar y pulsar un
  * aeropuerto. Si `destino` trae uno ({code, lat, lon}), deja de moverse y
  * viaja hasta dejarlo en el centro.
+ *
+ * Mientras se busca, `rutas` trae los destinos que se están consultando: el
+ * mapa se aleja hasta que caben todos y dibuja una línea del origen a cada
+ * uno, de la más cercana a la más lejana. Es lo que está pasando de verdad
+ * (una consulta por destino), así que mirar el mapa explica la espera.
  */
-export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
+export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir, rutas = SIN_RUTAS }) {
   const [mundo, setMundo] = useState(null);
   const [tam, setTam] = useState({ w: 0, h: 0 });
   const cajaRef = useRef(null);
@@ -104,6 +120,10 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
   const tocado = useRef(false);
   const repintar = useRef(true);
   const viaje = useRef(null);
+  const rutasRef = useRef(null);
+  const destinosRef = useRef(null);
+  const hoverRef = useRef(null);
+  const hoverTextoRef = useRef(null);
 
   // Los 575 aeropuertos, como un solo grupo de puntos: un único trazo.
   const puntos = useMemo(() => ({
@@ -158,6 +178,43 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
       viaje.current = null;
     }
   }, [destino]);
+
+  // Al empezar a buscar, el mapa se aleja lo justo para que quepan el origen y
+  // todos los destinos consultados. El zoom nunca pasa del de "aeropuerto
+  // elegido": si los destinos están cerca (un vuelo por Europa), se queda
+  // donde estaba y solo se recoloca.
+  useEffect(() => {
+    if (!destino || destino.lat == null || !rutas.length) return;
+    const { w, h } = tamRef.current;
+    if (!w || !h) return;
+    const lons = [0, ...rutas.map((r) => difCorta(destino.lon, r.lon))];
+    const lats = [destino.lat, ...rutas.map((r) => r.lat)];
+    const lonMin = Math.min(...lons), lonMax = Math.max(...lons);
+    const latMin = Math.min(...lats), latMax = Math.max(...lats);
+    const kb = escalaBase(w, h);
+    // en escritorio el buscador tapa la franja de arriba del mapa: se deja
+    // menos alto útil y el centro se baja para que las rutas no queden debajo
+    const tapa = w > 800 ? 230 : 0;
+    const zoomLon = w / (Math.max(lonMax - lonMin, 8) * 1.2 * RAD * kb);
+    const zoomLat = (h - tapa) / (Math.max(latMax - latMin, 6) * 1.35 * RAD * kb);
+    const z = acotar(Math.min(zoomLon, zoomLat), 1, Math.max(zoom.current, ZOOM_ELEGIDO));
+    const k = kb * z;
+    viaje.current = {
+      desde: [lonCentro.current, latCentro.current, zoom.current],
+      hasta: [
+        destino.lon + (lonMin + lonMax) / 2,
+        (latMin + latMax) / 2 + (tapa / 2) / k / RAD,
+        z,
+      ],
+      t0: null,
+    };
+    if (menosAnimaciones()) {
+      [lonCentro.current, latCentro.current, zoom.current] = viaje.current.hasta;
+      viaje.current = null;
+    }
+    tocado.current = false;
+    repintar.current = true;
+  }, [rutas, destino]);
 
   // Escala del mapa: la que hace que cubra el hueco por completo (como una
   // foto de fondo "cover") y un poco más, la holgura de arriba.
@@ -253,6 +310,27 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
         `translate(${w / 2 + dx},${h / 2 + k * latCentro.current * RAD})`,
       );
 
+      // Rutas de la búsqueda en curso: el arco real sobre la esfera, del origen
+      // a cada destino. Se recalculan con la cámara (al viajar, arrastrar o
+      // acercar); quietas, no se tocan. `pathLength=1` en el JSX hace que la
+      // animación de dibujado mida lo mismo aunque cambie la forma.
+      if (rutasRef.current && destino && destino.lat != null && rutas.length) {
+        const camino = geoPath(proyeccionRef.current);
+        const lineas = rutasRef.current.querySelectorAll("[data-ruta]");
+        lineas.forEach((el) => {
+          const r = rutas[Number(el.dataset.ruta)];
+          if (!r) return;
+          el.setAttribute("d", camino({
+            type: "LineString",
+            coordinates: [[destino.lon, destino.lat], [r.lon, r.lat]],
+          }) || "");
+        });
+        destinosRef.current?.setAttribute("d", camino.pointRadius(3)({
+          type: "MultiPoint",
+          coordinates: rutas.map((r) => [r.lon, r.lat]),
+        }) || "");
+      }
+
       // Marcador del aeropuerto elegido.
       if (destino && destino.lat != null && marcaRef.current) {
         const p = proyeccionRef.current([destino.lon, destino.lat]);
@@ -277,7 +355,7 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
       cancelAnimationFrame(animacion);
       document.removeEventListener("visibilitychange", despertar);
     };
-  }, [mundo, tam, destino, puntos]);
+  }, [mundo, tam, destino, puntos, rutas]);
 
   // --- manejar el mapa con el ratón o el dedo ---------------------------
 
@@ -347,27 +425,52 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
     repintar.current = true;
   };
 
-  // Un clic (arrastre de casi nada) elige el aeropuerto más cercano al dedo.
-  const soltarGesto = (ev) => {
-    const g = gesto.current;
-    punteros.current.delete(ev.pointerId);
-    if (punteros.current.size === 0) gesto.current = null;
-    if (!g || g.tipo !== "arrastre" || g.movidoPx > 8 || !onElegir) return;
+  // El aeropuerto más cercano a un punto de la pantalla, si cae dentro del
+  // radio. Lo usan el clic (para elegir) y el ratón (para enseñar cuál es).
+  const masCercano = (x, y, radio) => {
     const proyeccion = proyeccionRef.current;
-    if (!proyeccion) return;
-    const [x, y] = enPantalla(ev);
-    // Se acierta un aeropuerto si el dedo cae a menos de esta distancia en
-    // pantalla; con el dedo la zona de acierto es más ancha que con el ratón.
-    let mejorDist = ev.pointerType === "touch" ? 26 : 14;
+    if (!proyeccion) return null;
+    let mejorDist = radio;
     let mejor = null;
     for (const ap of aeropuertos || []) {
       if (ap.lat == null || ap.lon == null) continue;
       const p = proyeccion([ap.lon, ap.lat]);
       if (!p) continue;
       const d = Math.hypot(p[0] - x, p[1] - y);
-      if (d < mejorDist) { mejorDist = d; mejor = ap; }
+      if (d < mejorDist) { mejorDist = d; mejor = { ap, p }; }
     }
-    if (mejor) onElegir(mejor);
+    return mejor;
+  };
+
+  // Con ratón, el aeropuerto que está bajo el cursor se marca con un aro y su
+  // código antes de pulsar: así se ve a qué se va a dar. Se pinta escribiendo
+  // atributos, sin pasar por React, porque llega un evento por píxel movido.
+  const ocultarHover = () => {
+    hoverRef.current?.setAttribute("data-visible", "false");
+    if (svgRef.current) svgRef.current.style.cursor = "";
+  };
+  const mostrarHover = (ev) => {
+    if (ev.pointerType !== "mouse" || gesto.current) { ocultarHover(); return; }
+    const [x, y] = enPantalla(ev);
+    const hit = masCercano(x, y, RADIO_RATON);
+    if (!hit || !hoverRef.current) { ocultarHover(); return; }
+    hoverRef.current.setAttribute("transform", `translate(${hit.p[0]},${hit.p[1]})`);
+    hoverRef.current.setAttribute("data-visible", "true");
+    if (hoverTextoRef.current) hoverTextoRef.current.textContent = hit.ap.code;
+    svgRef.current.style.cursor = "pointer";
+  };
+
+  // Un clic (arrastre de casi nada) elige el aeropuerto más cercano al dedo.
+  const soltarGesto = (ev) => {
+    const g = gesto.current;
+    punteros.current.delete(ev.pointerId);
+    if (punteros.current.size === 0) gesto.current = null;
+    if (!g || g.tipo !== "arrastre" || g.movidoPx > 8 || !onElegir) return;
+    const [x, y] = enPantalla(ev);
+    // Se acierta un aeropuerto si el dedo cae a menos de esta distancia en
+    // pantalla; con el dedo la zona de acierto es más ancha que con el ratón.
+    const hit = masCercano(x, y, ev.pointerType === "touch" ? 26 : RADIO_RATON);
+    if (hit) onElegir(hit.ap);
   };
 
   const cancelarGesto = (ev) => {
@@ -422,6 +525,8 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
     return () => svg.removeEventListener("wheel", rueda);
   }, []);
 
+  const buscando = rutas.length > 0 && destino != null;
+
   return (
     <div className="mapa-mundo" ref={cajaRef}>
       <svg
@@ -429,16 +534,20 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
         width="100%"
         height="100%"
         role="img"
-        aria-label={destino ? `Mapa del mundo centrado en ${destino.code}` : "Mapa del mundo en movimiento"}
-        onPointerDown={empezarGesto}
-        onPointerMove={moverGesto}
+        className={(mundo ? "listo" : "") + (buscando ? " buscando" : "")}
+        aria-label={buscando
+          ? `Mapa con las rutas desde ${destino.code} a los ${rutas.length} destinos que se están consultando`
+          : destino ? `Mapa del mundo centrado en ${destino.code}` : "Mapa del mundo en movimiento"}
+        onPointerDown={(ev) => { ocultarHover(); empezarGesto(ev); }}
+        onPointerMove={(ev) => { moverGesto(ev); mostrarHover(ev); }}
         onPointerUp={soltarGesto}
         onPointerCancel={cancelarGesto}
+        onPointerLeave={ocultarHover}
       >
         <rect x="0" y="0" width={tam.w} height={tam.h} className="mundo-mar" />
         {/* la tira: el mundo dibujado dos veces, una detrás de otra, para que
             al desplazarse nunca aparezca un borde */}
-        <g ref={stripRef}>
+        <g ref={stripRef} className="mundo-tira">
           {[0, 1].map((i) => (
             <g key={i} ref={(el) => { copiasRef.current[i] = el; }}>
               <path className="mundo-tierra" />
@@ -448,15 +557,42 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
             </g>
           ))}
         </g>
+        {buscando && (
+          <g ref={rutasRef} className="mundo-rutas" aria-hidden="true">
+            {/* `--i` va en cada línea (no en el grupo): así el retraso de su
+                dibujado no obliga a recalcular el estilo de todas las demás */}
+            {rutas.map((r, i) => (
+              <path key={r.code} data-ruta={i} className="mundo-ruta" pathLength="1"
+                    style={{ "--i": i / rutas.length }} />
+            ))}
+            {rutas.slice(0, MAX_COMETAS).map((r, i) => (
+              <path key={"c" + r.code} data-ruta={i} className="mundo-cometa" pathLength="1"
+                    style={{ "--i": i / Math.min(rutas.length, MAX_COMETAS) }} />
+            ))}
+            <path ref={destinosRef} className="mundo-destinos" />
+          </g>
+        )}
         <circle ref={anilloRef} r="11" className="mundo-anillo" style={{ display: "none" }} />
         <circle ref={marcaRef} r="5" className="mundo-marca" style={{ display: "none" }} />
+        <g ref={hoverRef} className="mundo-hover" data-visible="false" aria-hidden="true">
+          <circle r="7" />
+          <text ref={hoverTextoRef} y="-12" />
+        </g>
       </svg>
       <div className="mapa-mundo-pie">
-        {etiqueta && <div className="mapa-mundo-etiqueta">{etiqueta}</div>}
+        {/* la `key` hace que el texto nuevo entre con su propia animación en
+            vez de cambiar de golpe dentro de la misma pastilla */}
+        {etiqueta && <div className="mapa-mundo-etiqueta" key={etiqueta}>{etiqueta}</div>}
         <div className="mapa-mundo-controles">
-          <button type="button" onClick={() => acercar(1 / 1.4)} aria-label="Alejar" title="Alejar">−</button>
-          <button type="button" onClick={recentrar} aria-label="Recentrar y volver al movimiento" title="Recentrar">⟲</button>
-          <button type="button" onClick={() => acercar(1.4)} aria-label="Acercar" title="Acercar">+</button>
+          <button type="button" onClick={() => acercar(1 / 1.4)} aria-label="Alejar" title="Alejar">
+            <Minus aria-hidden="true" />
+          </button>
+          <button type="button" onClick={recentrar} aria-label="Recentrar y volver al movimiento" title="Recentrar">
+            <ArrowCounterClockwise aria-hidden="true" />
+          </button>
+          <button type="button" onClick={() => acercar(1.4)} aria-label="Acercar" title="Acercar">
+            <Plus aria-hidden="true" />
+          </button>
         </div>
       </div>
     </div>
@@ -470,6 +606,10 @@ export function MapaMundo({ destino, etiqueta, aeropuertos, onElegir }) {
 export function MapaRuta({ origen, destino }) {
   const [mundo, setMundo] = useState(null);
   useEffect(() => { cargarMundo().then(setMundo); }, []);
+  // Ids únicos para la máscara y el recorte: si dos fichas convivieran un
+  // instante (al cerrar una y abrir otra), no se pisarían.
+  const uid = useId().replace(/:/g, "");
+  const quieto = menosAnimaciones();
 
   if (!mundo || !origen || !destino ||
       origen.lat == null || destino.lat == null) return null;
@@ -501,22 +641,49 @@ export function MapaRuta({ origen, destino }) {
   const dibujo = geoPath(proyeccion);
   const a = proyeccion([origen.lon, origen.lat]);
   const b = proyeccion([destino.lon, destino.lat]);
+  const dRuta = dibujo(ruta) || "";
+  // Si la ruta cruza el borde del mapa, d3 la parte en dos trozos ("M…M…") y
+  // un punto que la recorriera saltaría de un lado al otro: solo se anima
+  // cuando es un único trazo.
+  const deUnTrazo = dRuta.lastIndexOf("M") === 0;
 
   return (
     <div className="mapa-ruta">
       <svg viewBox={`0 0 ${ancho} ${alto}`} role="img"
            aria-label={`Ruta de ${origen.code} a ${destino.code}`}>
-        {/* el recorte evita que la tierra se salga del marco al acercarse */}
-        <clipPath id="mapa-marco">
-          <rect width={ancho} height={alto} rx="6" />
-        </clipPath>
-        <g clipPath="url(#mapa-marco)">
+        <defs>
+          {/* el recorte evita que la tierra se salga del marco al acercarse */}
+          <clipPath id={`marco-${uid}`}>
+            <rect width={ancho} height={alto} rx="6" />
+          </clipPath>
+          {/* La línea es punteada, así que no se puede "dibujar" con su propio
+              trazo: se dibuja una máscara continua encima del mismo camino y
+              la línea punteada va apareciendo por debajo. */}
+          <mask id={`trazo-${uid}`} maskUnits="userSpaceOnUse">
+            <path d={dRuta} className="mapa-linea-mascara" pathLength="1" />
+          </mask>
+        </defs>
+        <g clipPath={`url(#marco-${uid})`}>
         <rect width={ancho} height={alto} className="mapa-mar" />
         <path d={dibujo(mundo.tierra)} className="mapa-tierra" />
         <path d={dibujo(mundo.fronteras)} className="mapa-fronteras" />
-        <path d={dibujo(ruta)} className="mapa-linea" />
+        <path id={`ruta-${uid}`} d={dRuta} className="mapa-linea" mask={`url(#trazo-${uid})`} />
+        {/* un avión-punto que recorre la ruta en el sentido del vuelo: dice
+            sin palabras si es la ida o la vuelta */}
+        {!quieto && deUnTrazo && (
+          <circle r="2.6" className="mapa-avion">
+            <animateMotion dur="3.2s" begin="1.1s" repeatCount="indefinite"
+                           keyPoints="0;1" keyTimes="0;1" calcMode="spline"
+                           keySplines="0.77 0 0.175 1">
+              <mpath href={`#ruta-${uid}`} />
+            </animateMotion>
+          </circle>
+        )}
         <circle cx={a[0]} cy={a[1]} r="3.5" className="mapa-punto origen" />
-        <circle cx={b[0]} cy={b[1]} r="4.5" className="mapa-punto destino" />
+        <g className="mapa-llegada" style={{ transformOrigin: `${b[0]}px ${b[1]}px` }}>
+          <circle cx={b[0]} cy={b[1]} r="4.5" className="mapa-punto destino" />
+          <circle cx={b[0]} cy={b[1]} r="4.5" className="mapa-onda" />
+        </g>
         <text x={a[0]} y={a[1] - 7} className="mapa-texto">{origen.code}</text>
         <text x={b[0]} y={b[1] - 9} className="mapa-texto destino">{destino.code}</text>
         </g>

@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-25T00:00:00Z",
+  "title": "Design System: muuyal",
+  "extensions": {
+    "colorMeta": {
+      "orange": { "role": "primary", "displayName": "Naranja atardecer", "canonical": "var(--mu-orange)", "tonalRamp": ["#6E3A14", "#934B16", "#B95D18", "#E8731A", "#EE9450", "#F4B685", "#F8D1B0", "#FCE9D6"] },
+      "orange-hover": { "role": "primary", "displayName": "Naranja más hondo", "canonical": "color-mix(in srgb, var(--mu-orange) 85%, var(--mu-clay))" },
+      "terracotta": { "role": "secondary", "displayName": "Terracota", "canonical": "var(--mu-terracotta)", "tonalRamp": ["#5D2E1A", "#793820", "#954326", "#B8502D", "#CA7A5E", "#DCA48E", "#EAC6B6", "#F6E5D9"] },
+      "clay": { "role": "secondary", "displayName": "Barro", "canonical": "var(--mu-clay)", "tonalRamp": ["#4D2716", "#602E19", "#72351C", "#8A3E20", "#A76D54", "#C49C88", "#DCC1B2", "#F1E3D7"] },
+      "trazo": { "role": "secondary", "displayName": "Trazo de mapa", "canonical": "color-mix(in srgb, var(--mu-terracotta) 80%, var(--mu-dark))" },
+      "gold": { "role": "tertiary", "displayName": "Dorado", "canonical": "var(--mu-gold)", "tonalRamp": ["#694B21", "#8B662B", "#AE8235", "#D9A441", "#E2B96D", "#ECCE98", "#F4DFBC", "#FAEFDB"] },
+      "earth": { "role": "neutral", "displayName": "Tierra", "canonical": "var(--mu-earth)", "tonalRamp": ["#3D2416", "#462919", "#502E1C", "#5C3520", "#856654", "#AE9788", "#CEBEB2", "#EBE1D7"] },
+      "surface": { "role": "neutral", "displayName": "Superficie", "canonical": "var(--mu-surface)" },
+      "cream": { "role": "neutral", "displayName": "Crema", "canonical": "var(--mu-cream)" },
+      "sand": { "role": "neutral", "displayName": "Arena", "canonical": "var(--mu-sand)" },
+      "border": { "role": "neutral", "displayName": "Borde", "canonical": "var(--mu-border)" },
+      "ink-soft": { "role": "neutral", "displayName": "Tinta suave", "canonical": "var(--mu-ink-soft)", "tonalRamp": ["#473426", "#574333", "#665140", "#7A6350", "#9B8878", "#BCAEA0", "#D7CCC0", "#EFE7DD"] },
+      "ink": { "role": "neutral", "displayName": "Tinta", "canonical": "var(--mu-ink)", "tonalRamp": ["#311E13", "#342014", "#362216", "#3A2418", "#6B594E", "#9C8E84", "#C4B9AF", "#E7DFD6"] },
+      "dark": { "role": "neutral", "displayName": "Oscuro (solo en mezclas)", "canonical": "var(--mu-dark)" },
+      "mar": { "role": "neutral", "displayName": "Mar del mapa", "canonical": "color-mix(in srgb, var(--mu-orange) 30%, var(--mu-cream))" },
+      "fila-alterna": { "role": "neutral", "displayName": "Franja alterna", "canonical": "color-mix(in srgb, var(--mu-sand) 30%, var(--mu-surface))" },
+      "fila-hover": { "role": "neutral", "displayName": "Fila señalada", "canonical": "color-mix(in srgb, var(--mu-selected) 14%, var(--mu-surface))" },
+      "txt-terracota": { "role": "secondary", "displayName": "Texto terracota", "canonical": "color-mix(in srgb, var(--mu-terracotta) 70%, var(--mu-earth))" },
+      "txt-calido": { "role": "tertiary", "displayName": "Texto cálido", "canonical": "color-mix(in srgb, var(--mu-orange) 20%, var(--mu-clay))" },
+      "txt-templado": { "role": "tertiary", "displayName": "Texto templado", "canonical": "color-mix(in srgb, var(--mu-warm) 40%, var(--mu-earth))" },
+      "txt-calor": { "role": "tertiary", "displayName": "Texto calor", "canonical": "var(--mu-error)" },
+      "txt-exito": { "role": "tertiary", "displayName": "Texto éxito", "canonical": "color-mix(in srgb, var(--mu-success) 80%, var(--mu-dark))" },
+      "success": { "role": "tertiary", "displayName": "Oliva cálido", "canonical": "var(--mu-success)", "tonalRamp": ["#423E1F", "#4F5227", "#5B6630", "#6B7F3A", "#909E68", "#B5BC95", "#D3D4B9", "#EDEADA"] },
+      "error": { "role": "tertiary", "displayName": "Rojo arcilla", "canonical": "var(--mu-error)", "tonalRamp": ["#5A261A", "#752C20", "#8F3226", "#B03A2E", "#C46A5E", "#D89A8F", "#E7C0B6", "#F6E2D9"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Titular de marca", "purpose": "Solo el titular \"Muuyal\" junto al logo. 1.7rem en el móvil." },
+      "headline": { "displayName": "Cifra grande", "purpose": "Número del deslizador de tu nota. La nota grande de la ficha es 2.4rem en Instrument Sans." },
+      "title": { "displayName": "Título de sección", "purpose": "Títulos de sección de la ficha y de grupos de filtros, en mayúsculas con regla debajo. Es el título, no una etiqueta encima de otro." },
+      "body": { "displayName": "Texto", "purpose": "Texto general, campos y botones (a 600)." },
+      "body-table": { "displayName": "Texto de tabla", "purpose": "Celdas de la tabla de 15 columnas." },
+      "label": { "displayName": "Etiqueta de campo", "purpose": "Etiquetas del buscador." },
+      "label-caps": { "displayName": "Etiqueta en mayúsculas", "purpose": "Títulos de columna y nombre de cada dato de la ficha." },
+      "badge": { "displayName": "Badge", "purpose": "Tipo de vuelo, coste, contador de filtros, chips." }
+    },
+    "shadows": [
+      { "name": "sombra-flota", "value": "0 2px 10px color-mix(in srgb, var(--mu-earth) 14%, transparent)", "purpose": "Pastillas sobre el mapa y tirador del deslizador." },
+      { "name": "sombra-menu", "value": "0 8px 20px color-mix(in srgb, var(--mu-earth) 16%, transparent)", "purpose": "Lista de sugerencias." },
+      { "name": "sombra-ficha", "value": "0 18px 50px color-mix(in srgb, var(--mu-dark) 35%, transparent)", "purpose": "Ficha del vuelo, sobre velo de --mu-dark al 55%." },
+      { "name": "barra-senalado", "value": "inset 3px 0 0 var(--mu-earth)", "purpose": "Fila de la tabla bajo el ratón." },
+      { "name": "foco", "value": "outline: 2px solid var(--mu-clay); outline-offset: 2px", "purpose": "Anillo de foco de todo lo que recibe foco." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Entradas y respuestas." },
+      { "name": "ease-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Llegadas largas: barras, filas, bloques." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "Lo que viaja o se dibuja en pantalla (logo, línea de ruta, cometas)." },
+      { "name": "ease-drawer", "value": "cubic-bezier(0.32, 0.72, 0, 1)", "purpose": "Hoja del móvil al subir o volver a su sitio." },
+      { "name": "t-press", "value": "140ms", "purpose": "Pulsar: escala 0.97." },
+      { "name": "t-hover", "value": "180ms", "purpose": "Pasar el ratón, cambios de color y borde." },
+      { "name": "t-ui", "value": "220ms", "purpose": "Flecha de filtros y X de cerrar que giran." },
+      { "name": "t-panel", "value": "280ms", "purpose": "Plegables que se abren a su altura." },
+      { "name": "t-ficha", "value": "420ms", "purpose": "La hoja del móvil al subir." },
+      { "name": "reduced-motion", "value": "@media (prefers-reduced-motion: reduce)", "purpose": "Sin desplazamientos ni bucles; fundidos de 160ms; rutas ya dibujadas; mapa quieto; sin cifras que cuentan ni fundido entre pantallas." }
+    ],
+    "breakpoints": [
+      { "name": "movil", "value": "max-width: 800px" },
+      { "name": "portatil-tabla", "value": "801px – 1400px" },
+      { "name": "ancho-portada", "value": "1400px" },
+      { "name": "ancho-resultados", "value": "1800px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón principal",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Las dos acciones principales: Buscar vuelos y Ver en Aviasales, con el degradado de atardecer.",
+      "html": "<button class=\"ds-btn-buscar\">Buscar vuelos</button>",
+      "css": ".ds-btn-buscar { padding: 0.6rem 1.4rem; border: none; border-radius: 6px; background-color: var(--mu-orange); background-image: linear-gradient(90deg, var(--mu-gold) 0%, var(--mu-orange) 100%); background-size: 200% 100%; background-position: 0% 50%; color: var(--mu-ink); font: 600 1rem 'Instrument Sans', system-ui, sans-serif; cursor: pointer; transition: transform 140ms cubic-bezier(0.23,1,0.32,1), background-position 400ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-buscar:hover { background-position: 100% 50%; } .ds-btn-buscar:active { transform: scale(0.97); } .ds-btn-buscar:focus-visible { outline: 2px solid var(--mu-clay); outline-offset: 2px; }"
+    },
+    {
+      "name": "Botón plano",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Botón por defecto, naranja sólido (Guardar valoración, paginación).",
+      "html": "<button class=\"ds-btn\">Guardar valoración</button>",
+      "css": ".ds-btn { padding: 0.6rem 1.4rem; border: none; border-radius: 6px; background: var(--mu-orange); color: var(--mu-ink); font: 600 1rem 'Instrument Sans', system-ui, sans-serif; cursor: pointer; transition: transform 140ms cubic-bezier(0.23,1,0.32,1), background-color 180ms ease; } .ds-btn:hover { background: color-mix(in srgb, var(--mu-orange) 85%, var(--mu-clay)); } .ds-btn:active { transform: scale(0.97); } .ds-btn:focus-visible { outline: 2px solid var(--mu-clay); outline-offset: 2px; } .ds-btn:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor: not-allowed; }"
+    },
+    {
+      "name": "Botón secundario",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Botones de la barra de filtros.",
+      "html": "<button class=\"ds-btn-sec\">Más filtros <span class=\"ds-badge\">3</span></button>",
+      "css": ".ds-btn-sec { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.9rem; background: var(--mu-surface); color: var(--mu-ink); border: 1px solid var(--mu-border); border-radius: 6px; font: 400 1rem 'Instrument Sans', system-ui, sans-serif; cursor: pointer; transition: transform 140ms cubic-bezier(0.23,1,0.32,1), background-color 180ms ease; } .ds-btn-sec:hover { background: var(--mu-sand); } .ds-btn-sec:active { transform: scale(0.97); } .ds-btn-sec:focus-visible { outline: 2px solid var(--mu-clay); outline-offset: 2px; } .ds-badge { background: var(--mu-terracotta); color: var(--mu-surface); font-size: 0.72rem; font-weight: 600; border-radius: 6px; padding: 0.05rem 0.4rem; }"
+    },
+    {
+      "name": "Campo",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo del buscador con su etiqueta.",
+      "html": "<label class=\"ds-field\"><span>Aeropuerto de origen</span><input value=\"BCN — Barcelona-El Prat Airport\"></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 0.25rem; font-family: 'Instrument Sans', system-ui, sans-serif; } .ds-field span { font-size: 0.8rem; font-weight: 600; color: var(--mu-ink-soft); } .ds-field input { padding: 0.55rem 0.7rem; border: 1px solid var(--mu-border); border-radius: 6px; font: 400 1rem inherit; background: var(--mu-surface); color: var(--mu-ink); transition: border-color 180ms ease; } .ds-field input:focus { outline: 2px solid var(--mu-clay); outline-offset: 1px; border-color: var(--mu-orange); }"
+    },
+    {
+      "name": "Chips de coste y tipo",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Color siempre con texto: tipo de vuelo, coste en €, chip de dato.",
+      "html": "<span class=\"ds-tipo\">Vuelta</span> <span class=\"ds-coste1\">€</span> <span class=\"ds-coste4\">€€€€</span> <span class=\"ds-chip\">5d lluvia</span>",
+      "css": ".ds-tipo, .ds-coste1, .ds-coste4, .ds-chip { display: inline-block; font-family: 'Instrument Sans', system-ui, sans-serif; border-radius: 6px; white-space: nowrap; } .ds-tipo { background: var(--mu-earth); color: var(--mu-surface); font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.45rem; } .ds-coste1 { background: var(--mu-cost-1); color: var(--mu-ink); font-size: 0.78rem; font-weight: 600; padding: 0.1rem 0.4rem; } .ds-coste4 { background: var(--mu-cost-4); color: var(--mu-surface); font-size: 0.78rem; font-weight: 600; padding: 0.1rem 0.4rem; } .ds-chip { background: var(--mu-sand); border: 1px solid var(--mu-border); font-size: 0.78rem; padding: 0.15rem 0.55rem; color: var(--mu-ink); }"
+    },
+    {
+      "name": "Fila de resultados",
+      "kind": "card",
+      "refersTo": "fila-tabla-hover",
+      "description": "Fila de la tabla: franja alterna, señalada con tinte y barra de tierra, precio en terracota.",
+      "html": "<table class=\"ds-tabla\"><thead><tr><th>Puntuación</th><th>Destino</th><th>Precio</th></tr></thead><tbody><tr><td><b>73</b>/100</td><td>AYT · Turquía</td><td class=\"ds-precio\">81 €</td></tr><tr><td><b>69</b>/100</td><td>AYT · Turquía</td><td class=\"ds-precio\">90 €</td></tr></tbody></table>",
+      "css": ".ds-tabla { border-collapse: collapse; width: 100%; font: 400 0.87rem 'Instrument Sans', system-ui, sans-serif; color: var(--mu-ink); background: var(--mu-surface); font-variant-numeric: tabular-nums; } .ds-tabla th, .ds-tabla td { padding: 0.55rem 0.7rem; text-align: left; } .ds-tabla th { border-bottom: 2px solid var(--mu-border); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mu-ink-soft); font-weight: 400; } .ds-tabla tbody tr { border-bottom: 1px solid var(--mu-border); transition: background-color 120ms ease, box-shadow 120ms ease; cursor: pointer; } .ds-tabla tbody tr:nth-child(even) { background: color-mix(in srgb, var(--mu-sand) 30%, var(--mu-surface)); } .ds-tabla tbody tr:hover { background: color-mix(in srgb, var(--mu-selected) 14%, var(--mu-surface)); box-shadow: inset 3px 0 0 var(--mu-earth); } .ds-precio { font-weight: 600; color: var(--mu-terracotta); text-align: right; } .ds-tabla tbody tr:hover .ds-precio { color: color-mix(in srgb, var(--mu-terracotta) 70%, var(--mu-earth)); }"
+    },
+    {
+      "name": "Pastilla sobre el mapa",
+      "kind": "custom",
+      "refersTo": "pastilla",
+      "description": "Texto sobre el mapa siempre en pastilla de superficie con sombra flota (nombre del aeropuerto, Consultando…).",
+      "html": "<div class=\"ds-pastilla\">Consultando 185 destinos… 0:02</div>",
+      "css": ".ds-pastilla { display: inline-flex; align-items: center; gap: 0.6rem; background: var(--mu-surface); border: 1px solid var(--mu-border); border-radius: 16px; padding: 0.45rem 1.1rem; font: 600 1rem 'Instrument Sans', system-ui, sans-serif; color: var(--mu-ink); box-shadow: 0 2px 10px color-mix(in srgb, var(--mu-earth) 14%, transparent); font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Título de sección",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "Título de sección de la ficha o de un grupo de filtros dentro de un panel.",
+      "html": "<section class=\"ds-panel\"><h2 class=\"ds-titulo\">Tu valoración</h2><p>Mueve la barra y pulsa Guardar.</p></section>",
+      "css": ".ds-panel { background: var(--mu-surface); border: 1px solid var(--mu-border); border-radius: 16px; padding: 1rem; font: 400 1rem/1.45 'Instrument Sans', system-ui, sans-serif; color: var(--mu-ink); } .ds-titulo { font: 700 0.78rem 'Bricolage Grotesque', system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mu-ink-soft); margin: 0 0 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--mu-border); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El mapa al atardecer",
+    "overview": "muuyal es una herramienta, no un folleto. Se abre sobre un mapa del mundo plano, pintado en arena y naranja muy rebajado, que se desplaza despacio de este a oeste como si el planeta pasara por delante. Encima flotan solo dos cosas: la marca dentro de un recuadro y el buscador. Al buscar, las rutas salen del aeropuerto de origen hacia todos los destinos y el mapa se convierte en el indicador de que la búsqueda está viva. Después el mapa se va y queda una tabla densa de 15 columnas (en el móvil, tarjetas), que es donde se trabaja.\n\nToda la luz es cálida: cremas y arenas con base ámbar, tinta marrón, y el naranja y el terracota reservados para lo que importa (la acción principal, el precio, la nota, las rutas del mapa). No hay grises, ni gris azulado, ni blanco puro, ni negro. La profundidad sale de cambiar de un tono cálido a otro con un borde fino; las sombras son pocas, marrones y translúcidas.\n\nEl movimiento es parte del carácter: lo que se pulsa responde enseguida (se hunde un poco), lo que llega entra con una curva que frena al final, y nada se mueve si el sistema pide menos animaciones.",
+    "keyCharacteristics": [
+      "Mapa del mundo plano en SVG como portada y como indicador de búsqueda.",
+      "Paleta cerrada `--mu-*`; cualquier tono nuevo se mezcla con `color-mix()` a partir de dos de ella.",
+      "Dos radios en todo el sistema: 16px para lo que contiene, 6px para lo que se pulsa o etiqueta.",
+      "Titulares en Bricolage Grotesque 700; texto en Instrument Sans 400/600.",
+      "Degradado de atardecer solo en las dos acciones principales.",
+      "Movimiento con curvas propias y cinco duraciones con nombre."
+    ],
+    "rules": [
+      { "name": "La Regla de la Paleta Cerrada", "body": "Ningún color se escribe a mano. Si hace falta un tono, se mezclan dos `--mu-*` con `color-mix()`, y se le da nombre en `:root` si se repite.", "section": "colors" },
+      { "name": "La Regla de la Señal Doble", "body": "El color nunca dice nada solo: coste lleva sus €, clima lleva icono y cifra, la nota lleva su número en tinta y el color va en la barra.", "section": "colors" },
+      { "name": "La Regla del Texto Oscuro", "body": "Sobre naranja y dorado, texto `--mu-ink`; sobre terracota, tierra y coste 4, texto `--mu-surface`.", "section": "colors" },
+      { "name": "La Regla de las Cifras Quietas", "body": "Toda cifra que se compara en columna (tabla, precio, nota, cronómetro, contadores, paginación) usa números de ancho fijo (`tabular-nums`).", "section": "typography" },
+      { "name": "La Regla de los Pesos Reales", "body": "Instrument Sans solo tiene 400 y 600 cargados; Bricolage solo 700. No se piden otros pesos.", "section": "typography" },
+      { "name": "La Regla de la Sombra Cálida", "body": "Si algo necesita sombra, sale de `--mu-earth` o `--mu-dark` mezclado con transparente. Nada de negro.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do sacar cada color de `--mu-*` o de una mezcla con nombre (`--mu-trazo`, `--txt-*`, `--fila-*`).",
+      "Do usar 16px para lo que contiene y 6px para lo que se pulsa.",
+      "Do reservar el degradado de atardecer para \"Buscar vuelos\" y \"Ver en Aviasales\".",
+      "Do poner los precios en terracota a 600, y en `--txt-terracota` sobre la fila señalada.",
+      "Do usar el anillo de foco de 2px en `--mu-clay` en todo lo que recibe foco.",
+      "Do usar las curvas y duraciones con nombre; lo pulsado responde en `--t-press`.",
+      "Do meter cualquier movimiento nuevo dentro de `prefers-reduced-motion: no-preference` y darle su versión reducida.",
+      "Do acompañar cada color de dato con un número, un icono o texto.",
+      "Do dar 44px a cualquier botón que solo tenga icono."
+    ],
+    "donts": [
+      "Don't usar gris, gris azulado, blanco puro ni negro, tampoco en sombras.",
+      "Don't usar naranja o dorado puros como color de texto sobre crema o arena: usar las mezclas `--txt-*`.",
+      "Don't poner texto claro sobre naranja o dorado.",
+      "Don't usar radios distintos de 6 y 16px.",
+      "Don't extender el degradado de atardecer a fondos, textos o bordes.",
+      "Don't volver al globo terráqueo ni a una esfera de partículas: el mapa plano es la decisión (ver `CONTEXTO.md` §9.4).",
+      "Don't pedir a Instrument Sans pesos que no están cargados (500, 700).",
+      "Don't poner una etiqueta en mayúsculas encima de un título: el texto en mayúsculas espaciadas es el propio título de sección o de columna."
+    ]
+  }
+}

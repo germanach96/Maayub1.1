@@ -1,19 +1,100 @@
 /* Estilos de la app. Los colores salen todos de la paleta de marca
    (handoff/palette.css, importada como palette.css): ningún color se escribe
-   a mano aquí. Neutros con base ámbar, nunca gris azulado. */
+   a mano aquí. Neutros con base ámbar, nunca gris azulado. Cuando hace falta
+   un tono que no está en la paleta, se mezclan dos de ella con color-mix. */
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Tono de los trazos de los mapas: terracota oscuro. No es un color escrito a
-   mano, sale de mezclar dos colores de la paleta (terracota + oscuro), así que
-   si algún día cambia palette.css, este cambia con ella. */
-:root { --mu-trazo: color-mix(in srgb, var(--mu-terracotta) 80%, var(--mu-dark)); }
+:root {
+  /* Tono de los trazos de los mapas: terracota oscuro. No es un color escrito
+     a mano, sale de mezclar dos colores de la paleta (terracota + oscuro), así
+     que si algún día cambia palette.css, este cambia con ella. */
+  --mu-trazo: color-mix(in srgb, var(--mu-terracotta) 80%, var(--mu-dark));
+  /* hover del botón principal: un paso más oscuro, con el texto igual */
+  --mu-orange-hover: color-mix(in srgb, var(--mu-orange) 85%, var(--mu-clay));
+  /* degradado de atardecer, solo para las dos acciones principales */
+  --mu-gradient-sunset: linear-gradient(90deg, var(--mu-gold) 0%, var(--mu-orange) 100%); /* taste-skill-ignore: degradado de atardecer que el DESIGN.md pide para la acción principal */
+  /* sombras: marrón cálido translúcido, nunca negro */
+  --sombra-flota: 0 2px 10px color-mix(in srgb, var(--mu-earth) 14%, transparent);
+  --sombra-menu: 0 8px 20px color-mix(in srgb, var(--mu-earth) 16%, transparent);
+  --sombra-ficha: 0 18px 50px color-mix(in srgb, var(--mu-dark) 35%, transparent);
+  /* fila resaltada al pasar el ratón y franja alterna de la tabla. La franja
+     es más clara que la arena pura: sobre arena, el precio en terracota y el
+     texto secundario no llegaban al contraste mínimo de lectura (4,5:1). */
+  --fila-hover: color-mix(in srgb, var(--mu-selected) 14%, var(--mu-surface));
+  --fila-alterna: color-mix(in srgb, var(--mu-sand) 30%, var(--mu-surface));
+
+  /* Textos de color que se leen bien sobre crema, arena y la fila resaltada.
+     El naranja y el dorado puros, como texto, se quedaban en 2-3:1. */
+  --txt-templado: color-mix(in srgb, var(--mu-warm) 40%, var(--mu-earth));
+  --txt-calido: color-mix(in srgb, var(--mu-orange) 20%, var(--mu-clay));
+  --txt-calor: var(--mu-error);
+  --txt-exito: color-mix(in srgb, var(--mu-success) 80%, var(--mu-dark));
+  --txt-terracota: color-mix(in srgb, var(--mu-terracotta) 70%, var(--mu-earth));
+
+  /* ---- Movimiento ----
+     Curvas: las de serie de CSS son demasiado blandas. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);       /* entradas y respuestas */
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);       /* llegadas largas (barras, cifras) */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);   /* cosas que viajan en pantalla */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);    /* hojas que suben (como en iOS) */
+  /* Duraciones: lo que se pulsa responde rápido; lo que llega, algo más. */
+  --t-press: 140ms;
+  --t-hover: 180ms;
+  --t-ui: 220ms;
+  --t-panel: 280ms;
+  --t-ficha: 420ms;
+
+  /* Radios: los dos del DESIGN.md. Tarjetas y paneles 16; botones, campos y
+     etiquetas 6. */
+  --radio-tarjeta: 16px;
+  --radio-pequeno: 6px;
+}
+
+html {
+  /* sin el destello gris que pinta el móvil al tocar: cada control tiene su
+     propia respuesta al pulsar (ver :active) */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  /* las barras de desplazamiento, con los colores de la marca */
+  scrollbar-color: var(--mu-border) transparent;
+}
 
 body {
   font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   background: var(--mu-cream);
   color: var(--mu-ink);
   line-height: 1.45;
+  caret-color: var(--mu-orange);
+}
+
+/* lo que el navegador pinta por su cuenta también lleva la marca */
+::selection { background: color-mix(in srgb, var(--mu-orange) 30%, var(--mu-surface)); color: var(--mu-ink); }
+::placeholder { color: var(--mu-ink-soft); opacity: 1; }
+:focus-visible { outline: 2px solid var(--mu-clay); outline-offset: 2px; }
+
+/* las cifras que se comparan en columna no bailan al cambiar */
+table, .precio, .nota, .cronometro, .cifra, .valorar-num, .badge-filtros, .paginacion {
+  font-variant-numeric: tabular-nums;
+}
+
+/* texto solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* iconos: misma familia y mismo grosor en toda la app, alineados al texto */
+.ico, button svg, .btn-aviasales svg {
+  width: 1.05em;
+  height: 1.05em;
+  vertical-align: -0.15em;
+  flex: none;
 }
 
 .app { max-width: 1400px; margin: 0 auto; padding: 1rem; }
@@ -35,7 +116,11 @@ header {
   height: 48px;
   flex: none;
   color: var(--mu-terracotta);
+  transition: color var(--t-hover) ease;
+  overflow: visible;
 }
+/* el giro del logo sobre su centro (el punto 100,70 de su dibujo) */
+.logo-giro { transform-origin: 100px 70px; }
 /* El titular pide Nordique Pro Inline primero. Si no está (no se puede meter
    en el repo, es de pago: ver fonts.css), cae en Bricolage Grotesque, que es
    lo que se ha visto siempre. */
@@ -57,10 +142,14 @@ h1 {
   gap: 0.85rem;
   text-decoration: none;
   color: inherit;
-  border-radius: 12px;
+  border-radius: var(--radio-tarjeta);
+  transition: transform var(--t-press) var(--ease-out);
+  touch-action: manipulation;
 }
-.marca:hover .logo { color: var(--mu-orange); }
-.marca:focus-visible { outline: 2px solid var(--mu-orange); outline-offset: 4px; }
+.marca:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .marca:hover .logo { color: var(--mu-orange); }
+}
 
 /* ---------- portada: buscador y mapa del mundo ---------- */
 .portada {
@@ -70,15 +159,14 @@ h1 {
   justify-content: center;
   gap: 2rem;
 }
-.portada .search-form { flex: 1 1 380px; }
+.portada .buscador-plegable { flex: 1 1 380px; }
 /* En la portada el logo va dentro de un recuadro: encima del mapa, un logo
    suelto se perdía sobre los continentes. */
 .en-portada .marca {
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
-  border-radius: 14px;
+  border-radius: var(--radio-tarjeta);
   padding: 0.5rem 1.1rem 0.5rem 0.85rem;
-  box-shadow: 0 2px 10px rgba(92, 53, 32, 0.14);
 }
 .descarga-portada {
   display: flex;
@@ -90,7 +178,9 @@ h1 {
 }
 /* borrar es destructivo: se distingue del resto sin gritar */
 .btn-borrar { color: var(--mu-error); border-color: var(--mu-error); }
-.btn-borrar:hover { background: var(--mu-error); color: var(--mu-surface); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-borrar:hover { background: var(--mu-error); color: var(--mu-surface); }
+}
 @media (min-width: 801px) {
   .descarga-portada { margin-top: 0.75rem; }
 }
@@ -108,7 +198,7 @@ h1 {
     z-index: 1;
   }
   .portada { display: block; }
-  .portada .search-form {
+  .portada .buscador-plegable {
     max-width: 860px;
     margin: 0 auto;
     position: relative;
@@ -124,6 +214,22 @@ h1 {
   }
 }
 
+/* ---------- plegables ----------
+   Se abren a su altura real animando la fila de una rejilla de 0fr a 1fr,
+   sin medir nada en JavaScript. Cerrados, lo de dentro queda recortado; ya
+   abiertos se deja de recortar (con un pequeño retraso, al acabar de abrirse)
+   para que los desplegables de dentro, como las sugerencias, no se corten. */
+.plegable {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--t-panel) var(--ease-out),
+    opacity var(--t-panel) var(--ease-out);
+}
+.plegable > div { min-height: 0; overflow: hidden; }
+.plegable[data-abierto="true"] > div { animation: dejar-de-recortar 1ms var(--t-panel) forwards; }
+.plegable[data-abierto="false"] { grid-template-rows: 0fr; opacity: 0; }
+@keyframes dejar-de-recortar { to { overflow: visible; } }
+
 /* ---------- mapa del mundo de la portada ---------- */
 .mapa-mundo {
   position: relative;
@@ -134,7 +240,7 @@ h1 {
 /* Colocado en absoluto a propósito: un SVG con `height: 100%` dentro de una
    caja flexible no sabe contra qué medir el porcentaje y se queda en los
    150 px que trae de fábrica. Con `inset: 0` llena siempre su hueco. */
-.mapa-mundo svg {
+.mapa-mundo > svg {
   position: absolute;
   inset: 0;
   display: block;
@@ -145,7 +251,11 @@ h1 {
      mientras se arrastra encima de él */
   touch-action: none;
 }
-.mapa-mundo svg:active { cursor: grabbing; }
+.mapa-mundo > svg:active { cursor: grabbing; }
+/* El mundo aparece con un fundido cuando termina de cargar, en vez de
+   presentarse de golpe sobre el mar vacío. */
+.mundo-tira { opacity: 0; transition: opacity 700ms var(--ease-out); }
+.mapa-mundo > svg.listo .mundo-tira { opacity: 1; }
 /* Mar: naranja de la paleta muy rebajado sobre crema. Tierra: arena. Como los
    dos tonos son claros y parecidos, lo que separa los continentes del mar es
    el contorno, no el relleno. */
@@ -158,16 +268,53 @@ h1 {
   stroke-linejoin: round;
 }
 .mundo-fronteras { fill: none; stroke: var(--mu-trazo); stroke-width: 0.7; opacity: 0.5; }
-/* los 575 aeropuertos que se pueden consultar */
-.mundo-puntos { fill: var(--mu-terracotta); opacity: 0.7; }
+/* los 575 aeropuertos que se pueden consultar; al buscar se apagan un poco
+   para que destaquen los del grupo que se está consultando */
+.mundo-puntos { fill: var(--mu-terracotta); opacity: 0.7; transition: opacity 600ms ease; }
+.mapa-mundo > svg.buscando .mundo-puntos { opacity: 0.25; }
 .mundo-marca { fill: var(--mu-orange); stroke: var(--mu-surface); stroke-width: 2; }
 .mundo-anillo { fill: none; stroke: var(--mu-orange); stroke-width: 2.2; opacity: 0.75; }
+/* aeropuerto bajo el ratón: un aro y su código, antes de pulsar */
+.mundo-hover { pointer-events: none; opacity: 0; transition: opacity 120ms ease; }
+.mundo-hover[data-visible="true"] { opacity: 1; }
+.mundo-hover circle { fill: none; stroke: var(--mu-clay); stroke-width: 1.6; }
+.mundo-hover text {
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--mu-ink);
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--mu-surface);
+  stroke-width: 3;
+}
+/* rutas de la búsqueda en curso */
+.mundo-rutas { pointer-events: none; }
+.mundo-ruta {
+  fill: none;
+  stroke: var(--mu-trazo);
+  stroke-width: 1;
+  stroke-linecap: round;
+  opacity: 0.45;
+}
+.mundo-cometa {
+  fill: none;
+  stroke: var(--mu-orange);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  opacity: 0;
+}
+.mundo-destinos {
+  fill: var(--mu-orange);
+  stroke: var(--mu-surface);
+  stroke-width: 1;
+}
+
 /* pie del mapa: nombre del aeropuerto elegido y botones de acercar/alejar */
 .mapa-mundo-pie {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0.9rem;
+  bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -181,28 +328,32 @@ h1 {
   /* sobre el mapa el texto suelto no se lee: va en una pastilla */
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
-  border-radius: 999px;
+  border-radius: var(--radio-tarjeta);
   padding: 0.35rem 0.95rem;
   color: var(--mu-ink);
-  box-shadow: 0 2px 8px rgba(92, 53, 32, 0.1);
+  box-shadow: var(--sombra-flota);
   max-width: calc(100% - 2rem);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.mapa-mundo-controles { display: flex; gap: 0.35rem; pointer-events: auto; }
+.mapa-mundo-controles { display: flex; gap: 0.4rem; pointer-events: auto; }
 .mapa-mundo-controles button {
-  width: 2.3rem;
-  height: 2.3rem;
+  /* 44 px: el tamaño mínimo cómodo para un dedo */
+  width: 2.75rem;
+  height: 2.75rem;
   padding: 0;
-  font-size: 1.1rem;
+  display: inline-grid;
+  place-items: center;
+  font-size: 1.15rem;
   line-height: 1;
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
   color: var(--mu-ink);
-  box-shadow: 0 2px 8px rgba(92, 53, 32, 0.1);
 }
-.mapa-mundo-controles button:hover { background: var(--mu-sand); color: var(--mu-ink); }
+@media (hover: hover) and (pointer: fine) {
+  .mapa-mundo-controles button:hover { background: var(--mu-sand); color: var(--mu-ink); }
+}
 
 /* ---------- mapa de la ruta (ficha del vuelo) ---------- */
 .mapa-ruta { margin: 0.9rem 0 0; }
@@ -211,7 +362,7 @@ h1 {
   width: 100%;
   height: auto;
   border: 1px solid var(--mu-border);
-  border-radius: 10px;
+  border-radius: var(--radio-tarjeta);
 }
 .mapa-mar { fill: color-mix(in srgb, var(--mu-orange) 22%, var(--mu-cream)); }
 /* mismos tonos que el mapa de la portada, para que los dos casen */
@@ -224,9 +375,18 @@ h1 {
   stroke-dasharray: 4 3;
   stroke-linecap: round;
 }
+/* la máscara que "dibuja" la línea punteada: completa en reposo */
+.mapa-linea-mascara {
+  fill: none;
+  stroke: var(--mu-surface);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.mapa-avion { fill: var(--mu-clay); stroke: var(--mu-surface); stroke-width: 1; }
 .mapa-punto { stroke: var(--mu-surface); stroke-width: 1.2; }
 .mapa-punto.origen { fill: var(--mu-earth); }
 .mapa-punto.destino { fill: var(--mu-orange); }
+.mapa-onda { fill: none; stroke: var(--mu-orange); stroke-width: 1.4; opacity: 0; }
 .mapa-texto {
   font-size: 9px;
   font-weight: 700;
@@ -251,31 +411,33 @@ h1 {
   align-items: flex-end;
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
-  border-radius: 12px;
+  border-radius: var(--radio-tarjeta);
   padding: 1rem;
-  box-shadow: 0 1px 2px rgba(92, 53, 32, 0.06);
 }
 .field { display: flex; flex-direction: column; gap: 0.25rem; position: relative; }
 .field label { font-size: 0.8rem; font-weight: 600; color: var(--mu-ink-soft); }
 .field input, .field select, .filtros input, .filtros select {
   padding: 0.55rem 0.7rem;
   border: 1px solid var(--mu-border);
-  border-radius: 8px;
+  border-radius: var(--radio-pequeno);
   font-size: 1rem;
   font-family: inherit;
   background: var(--mu-surface);
   color: var(--mu-ink);
+  transition: border-color var(--t-hover) ease, box-shadow var(--t-hover) ease;
 }
 .field input:focus, .field select:focus,
 .filtros input:focus, .filtros select:focus,
 .rango-inputs input:focus {
-  outline: 2px solid var(--mu-orange);
+  outline: 2px solid var(--mu-clay);
   outline-offset: 1px;
   border-color: var(--mu-orange);
 }
 .origen-field { flex: 2 1 260px; }
 .field:not(.origen-field) { flex: 1 1 200px; }
 
+/* Sugerencias del buscador de origen: salen del propio campo (crecen desde
+   arriba), no aparecen de golpe. */
 .sugerencias {
   position: absolute;
   top: 100%;
@@ -284,32 +446,63 @@ h1 {
   z-index: 10;
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
-  border-radius: 8px;
+  border-radius: var(--radio-pequeno);
   margin-top: 2px;
   list-style: none;
   max-height: 260px;
   overflow-y: auto;
-  box-shadow: 0 8px 20px rgba(92, 53, 32, 0.16);
+  overscroll-behavior: contain;
+  box-shadow: var(--sombra-menu);
+  transform-origin: top center;
 }
-.sugerencias li { padding: 0.5rem 0.7rem; cursor: pointer; }
-.sugerencias li:hover { background: var(--mu-sand); }
+.sugerencias li { padding: 0.55rem 0.7rem; cursor: pointer; transition: background-color 120ms ease; }
+.sugerencias li.activa { background: var(--mu-sand); }
 
 /* botón principal (CTA): naranja atardecer con texto oscuro (4.8:1) */
 button {
   padding: 0.6rem 1.4rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radio-pequeno);
   background: var(--mu-orange);
   color: var(--mu-ink);
   font-size: 1rem;
   font-family: inherit;
   font-weight: 600;
   cursor: pointer;
+  /* responde al dedo al instante: sin el retraso del doble toque, y sin que
+     una pulsación larga seleccione el texto del botón */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: transform var(--t-press) var(--ease-out),
+    background-color var(--t-hover) ease, color var(--t-hover) ease,
+    border-color var(--t-hover) ease;
 }
-button:hover { background: var(--mu-terracotta); color: var(--mu-surface); }
+/* todo lo que se pulsa se hunde un poco: el botón "ha oído" el dedo */
+button:active:not(:disabled) { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  button:hover:not(:disabled) { background: var(--mu-orange-hover); color: var(--mu-ink); }
+}
 button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor: not-allowed; }
 
-/* ---------- loading ---------- */
+/* Las dos acciones principales (buscar y ver en Aviasales) llevan el
+   degradado de atardecer de la marca. Al pasar el ratón la luz se desliza
+   hacia el naranja. */
+.btn-buscar:not(:disabled), .btn-aviasales {
+  background-image: var(--mu-gradient-sunset);
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  transition: transform var(--t-press) var(--ease-out),
+    background-position 400ms var(--ease-out), color var(--t-hover) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-buscar:not(:disabled):hover, .btn-aviasales:hover {
+    background-color: var(--mu-orange);
+    background-position: 100% 50%;
+  }
+}
+
+/* ---------- buscando ---------- */
 /* z-index para quedar por encima del mapa de la portada, que es fijo */
 .loading { text-align: center; padding: 1.5rem 1rem; position: relative; z-index: 1; }
 .loading-pastilla {
@@ -318,34 +511,33 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
   gap: 0.6rem;
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
-  border-radius: 999px;
-  padding: 0.5rem 1.1rem 0.5rem 0.6rem;
+  border-radius: var(--radio-tarjeta);
+  padding: 0.45rem 1.1rem 0.45rem 0.6rem;
   font-weight: 600;
-  box-shadow: 0 2px 10px rgba(92, 53, 32, 0.12);
+  box-shadow: var(--sombra-flota);
 }
-.spinner {
-  width: 22px; height: 22px;
-  border: 3px solid var(--mu-border);
-  border-top-color: var(--mu-orange);
-  border-radius: 50%;
-  flex: none;
-  animation: spin 0.9s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+/* en lugar de una rueda genérica, el propio logo da media vuelta en bucle */
+.logo-cargando { width: 34px; height: 24px; flex: none; color: var(--mu-terracotta); overflow: visible; }
 
 .error {
   margin: 1rem 0;
   padding: 0.8rem 1rem;
   background: var(--mu-surface);
   border: 1px solid var(--mu-error);
-  border-left-width: 4px;
-  border-radius: 8px;
+  border-radius: var(--radio-pequeno);
   color: var(--mu-error);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* ---------- resultados ---------- */
-.meta { margin: 1rem 0 0.5rem; color: var(--mu-ink-soft); }
+.meta { margin: 1rem 0 0.5rem; color: var(--mu-ink-soft); scroll-margin-top: 1rem; }
+.meta b { color: var(--mu-ink); }
 .filtros { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+
+/* resumen plegado del buscador (solo en el móvil, con resultados) */
+.resumen-busqueda { display: none; }
 
 /* botones secundarios de la barra de filtros */
 .btn-sec {
@@ -358,13 +550,19 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
   align-items: center;
   gap: 0.4rem;
 }
-.btn-sec:hover { background: var(--mu-sand); color: var(--mu-ink); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-sec:hover:not(:disabled) { background: var(--mu-sand); color: var(--mu-ink); }
+}
+.btn-sec.btn-borrar { color: var(--mu-error); border-color: var(--mu-error); }
+/* la flecha de "Más filtros" gira en vez de cambiar de dibujo */
+.giro { transition: transform var(--t-ui) var(--ease-out); }
+[aria-expanded="true"] .giro { transform: rotate(180deg); }
 .badge-filtros {
   background: var(--mu-terracotta);
   color: var(--mu-surface);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  border-radius: 999px;
+  border-radius: var(--radio-pequeno);
   padding: 0.05rem 0.4rem;
   min-width: 1.2em;
   text-align: center;
@@ -374,18 +572,24 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
 .panel-filtros {
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
-  border-radius: 12px;
+  border-radius: var(--radio-tarjeta);
   padding: 1rem;
   margin-bottom: 0.75rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  /* tres columnas fijas que reparten todo el ancho: con "auto-fit" la nota de
+     abajo, que ocupa la fila entera, dejaba columnas vacías a la derecha */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem 1.5rem;
 }
-.grupo-filtros h3 {
+@media (max-width: 800px) {
+  .panel-filtros { grid-template-columns: minmax(0, 1fr); }
+}
+/* títulos de sección pequeños, en mayúsculas espaciadas (DESIGN.md) */
+.titulo-seccion {
   font-family: "Bricolage Grotesque", system-ui, sans-serif;
   font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   color: var(--mu-ink-soft);
   margin-bottom: 0.5rem;
   padding-bottom: 0.3rem;
@@ -399,7 +603,7 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
   min-width: 0;
   padding: 0.35rem 0.5rem;
   border: 1px solid var(--mu-border);
-  border-radius: 6px;
+  border-radius: var(--radio-pequeno);
   font-size: 0.9rem;
   font-family: inherit;
   background: var(--mu-surface);
@@ -410,7 +614,7 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
 .vacio {
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
-  border-radius: 12px;
+  border-radius: var(--radio-tarjeta);
   padding: 2rem 1rem;
   text-align: center;
 }
@@ -419,43 +623,42 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
 .tipo-badge {
   display: inline-block;
   color: var(--mu-surface);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   padding: 0.15rem 0.45rem;
-  border-radius: 999px;
+  border-radius: var(--radio-pequeno);
   white-space: nowrap;
 }
 .ruta { font-weight: 600; white-space: nowrap; }
 
 .gaps { display: inline-flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.2rem; }
 .gap-badge {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   background: var(--mu-sand);
   color: var(--mu-earth);
   border: 1px solid var(--mu-border);
   padding: 0.05rem 0.35rem;
-  border-radius: 999px;
+  border-radius: var(--radio-pequeno);
   white-space: nowrap;
 }
 
-.idx.alta { color: var(--mu-terracotta); font-weight: 600; }
-.idx.baja { color: var(--mu-success); }
+.idx.alta { color: var(--txt-terracota); font-weight: 600; }
+.idx.baja { color: var(--txt-exito); }
 
 /* antigüedad del precio cacheado de Aviasales */
 .cache { white-space: nowrap; font-weight: 600; }
-.cache.fresco { color: var(--mu-success); }
-.cache.medio { color: var(--mu-orange); }
+.cache.fresco { color: var(--txt-exito); }
+.cache.medio { color: var(--mu-clay); }
 .cache.viejo { color: var(--mu-error); }
 
 /* clima: color + icono siempre juntos, nunca solo color */
 .clima { white-space: nowrap; }
 .temp { font-weight: 600; }
 .temp.frio { color: var(--mu-ink-soft); }
-.temp.templado { color: var(--mu-warm); }
-.temp.calido { color: var(--mu-orange); }
-.temp.calor { color: var(--mu-hot); }
-.sol { color: var(--mu-earth); }
-.lluvia { color: var(--mu-rain); }
+.temp.templado { color: var(--txt-templado); }
+.temp.calido { color: var(--txt-calido); }
+.temp.calor { color: var(--txt-calor); }
+.sol, .lluvia { color: var(--mu-earth); }
 
 /* coste: escala monotónica en luminosidad; el nº de € ya distingue el nivel */
 .coste-badge {
@@ -463,7 +666,7 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
   font-weight: 700;
   font-size: 0.78rem;
   padding: 0.1rem 0.4rem;
-  border-radius: 6px;
+  border-radius: var(--radio-pequeno);
   white-space: nowrap;
 }
 .coste-badge.n1 { background: var(--mu-cost-1); color: var(--mu-ink); }
@@ -476,16 +679,22 @@ button:disabled { background: var(--mu-sand); color: var(--mu-ink-soft); cursor:
   color: var(--mu-terracotta);
   text-decoration: none;
   white-space: nowrap;
+  text-underline-offset: 3px;
 }
-.precio:hover { text-decoration: underline; }
+@media (hover: hover) and (pointer: fine) {
+  .precio:hover { text-decoration: underline; }
+}
 
-/* tabla (desktop) */
+/* tabla (desktop). Se desplaza dentro de su marco para que la fila de
+   títulos se quede arriba al bajar: con el desplazamiento de la página no se
+   quedaba, porque el marco (que corta el ancho sobrante) la "atrapaba". */
 .tabla-wrap {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: calc(100dvh - 1.5rem);
+  overscroll-behavior: contain;
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(92, 53, 32, 0.06);
+  border-radius: var(--radio-tarjeta);
 }
 table { border-collapse: collapse; width: 100%; font-size: 0.87rem; }
 /* El relleno lateral es ajustado a propósito: son 15 columnas, y cada décima
@@ -498,21 +707,27 @@ th:first-child, td:first-child { padding-left: 0.7rem; }
 th:last-child, td:last-child { padding-right: 0.7rem; }
 thead th {
   position: sticky; top: 0;
+  z-index: 1;
   background: var(--mu-surface);
   border-bottom: 2px solid var(--mu-border);
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
   color: var(--mu-ink-soft);
   white-space: nowrap;
 }
 tbody tr { border-bottom: 1px solid var(--mu-border); }
-tbody tr:nth-child(even) { background: var(--mu-sand); }
+tbody tr:nth-child(even) { background: var(--fila-alterna); }
 /* hover: tinte del color de selección, no el naranja pleno (ilegible en una
-   fila entera). El color-mix se ignora en navegadores viejos y queda el sand. */
-tbody tr:hover {
-  background: color-mix(in srgb, var(--mu-selected) 14%, var(--mu-surface));
-  box-shadow: inset 3px 0 0 var(--mu-earth);
+   fila entera), con la barra de tierra a la izquierda (DESIGN.md). Sobre ese
+   tinte el precio pasa a un terracota más oscuro para seguir leyéndose. */
+.fila-vuelo { transition: background-color 120ms ease, box-shadow 120ms ease; }
+@media (hover: hover) and (pointer: fine) {
+  .fila-vuelo:hover {
+    background: var(--fila-hover);
+    box-shadow: inset 3px 0 0 var(--mu-earth);
+  }
+  .fila-vuelo:hover .precio { color: var(--txt-terracota); }
 }
 .precio-cell { text-align: right; }
 
@@ -529,19 +744,19 @@ tbody tr:hover {
 /* toda la fila abre la subpantalla del vuelo */
 .fila-vuelo { cursor: pointer; }
 .fila-vuelo:focus-visible {
-  outline: 2px solid var(--mu-orange);
+  outline: 2px solid var(--mu-clay);
   outline-offset: -2px;
 }
 
 /* ---------- puntuación ---------- */
-/* El número siempre se ve: el color y la barra son información redundante,
-   para que la nota se lea igual en daltonismo. */
-.nota { white-space: nowrap; font-weight: 700; }
-.nota.n1 { color: var(--mu-ink-soft); }
-.nota.n2 { color: var(--mu-gold); }
-.nota.n3 { color: var(--mu-orange); }
-.nota.n4 { color: var(--mu-success); }
+/* El número siempre se ve y siempre en tinta: el color del tramo va en la
+   barra, que es información redundante (se lee igual en daltonismo). */
+.nota { white-space: nowrap; font-weight: 700; color: var(--mu-ink); }
 .nota-de { font-weight: 400; font-size: 0.75em; color: var(--mu-ink-soft); }
+.nota.n1 { --tramo: var(--mu-ink-soft); }
+.nota.n2 { --tramo: var(--mu-gold); }
+.nota.n3 { --tramo: var(--mu-orange); }
+.nota.n4 { --tramo: var(--mu-success); }
 /* corta a propósito: es un apoyo visual al número, no una gráfica */
 .nota-barra {
   display: block;
@@ -549,11 +764,19 @@ tbody tr:hover {
   height: 4px;
   margin-top: 0.2rem;
   background: var(--mu-sand);
-  border-radius: 999px;
+  border-radius: var(--radio-pequeno);
   overflow: hidden;
 }
-.nota-barra > span { display: block; height: 100%; background: currentColor; }
-.nota.grande { font-size: 2.4rem; line-height: 1; }
+.nota-barra > span {
+  display: block;
+  height: 100%;
+  background: var(--tramo, var(--mu-orange));
+  transform-origin: left center;
+  transform: scaleX(var(--v, 0));
+  transition: transform 360ms var(--ease-out);
+}
+.nota.grande { font-size: 2.4rem; line-height: 1; color: var(--mu-terracotta); }
+.nota.grande .nota-barra { width: 100%; height: 6px; margin-top: 0.45rem; }
 
 /* la columna se queda del ancho del contenido: los avisos se fueron a la
    columna del vuelo, con las etiquetas de datos que faltan */
@@ -565,37 +788,44 @@ tbody tr:hover {
   margin-top: 0.25rem;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--mu-terracotta);
+  color: var(--txt-terracota);
 }
-.chip.mi-nota-chip { border-color: var(--mu-terracotta); color: var(--mu-terracotta); }
+.chip.mi-nota-chip { border-color: var(--mu-terracotta); color: var(--mu-clay); }
 .flag-badge { background: var(--mu-surface); color: var(--mu-clay); }
 
 /* cards (móvil) — ocultas en desktop */
 .cards { display: none; }
 .card { cursor: pointer; }
-.card:focus-visible { outline: 2px solid var(--mu-orange); outline-offset: 2px; }
+.card:focus-visible { outline: 2px solid var(--mu-clay); outline-offset: 2px; }
 
 /* ---------- subpantalla de un vuelo ---------- */
 .modal-fondo {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(44, 27, 16, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
 }
+.modal-velo {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--mu-dark) 55%, transparent);
+}
 .modal {
+  position: relative;
   background: var(--mu-surface);
   border: 1px solid var(--mu-border);
-  border-radius: 14px;
+  border-radius: var(--radio-tarjeta);
   width: 100%;
   max-width: 720px;
   max-height: 92vh;
+  max-height: 92dvh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 18px 50px rgba(44, 27, 16, 0.35);
+  box-shadow: var(--sombra-ficha);
+  outline: none;
 }
 .modal-cabecera {
   display: flex;
@@ -604,30 +834,37 @@ tbody tr:hover {
   gap: 0.75rem;
   padding: 1rem 1.1rem 0.8rem;
   border-bottom: 1px solid var(--mu-border);
+  position: relative;
 }
+/* el asa de la hoja solo se ve en el móvil, que es donde se arrastra */
+.modal-asa { display: none; }
 .modal-dest { margin-top: 0.3rem; }
 .btn-cerrar {
   background: var(--mu-sand);
   color: var(--mu-ink);
-  border-radius: 8px;
-  padding: 0.3rem 0.6rem;
-  font-size: 1rem;
+  border-radius: var(--radio-pequeno);
+  /* 44 × 44: es la única salida visible de la ficha en el móvil */
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  font-size: 1.1rem;
   line-height: 1;
   flex: none;
 }
-.modal-cuerpo { overflow-y: auto; padding: 1rem 1.1rem 1.4rem; }
+.btn-cerrar svg { transition: transform var(--t-ui) var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-cerrar:hover:not(:disabled) { background: var(--mu-border); }
+  .btn-cerrar:hover svg { transform: rotate(90deg); }
+}
+.modal-cuerpo {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem 1.1rem 1.4rem;
+}
 .modal-cuerpo section { margin-top: 1.3rem; }
 .modal-cuerpo section:first-child { margin-top: 0; }
-.modal-cuerpo h3 {
-  font-family: "Bricolage Grotesque", system-ui, sans-serif;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--mu-ink-soft);
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid var(--mu-border);
-}
 .modal-nota {
   display: flex;
   align-items: center;
@@ -637,15 +874,17 @@ tbody tr:hover {
 }
 .modal-nota-num { display: flex; flex-direction: column; gap: 0.15rem; }
 .btn-aviasales {
-  background: var(--mu-orange);
+  background-color: var(--mu-orange);
   color: var(--mu-ink);
   font-weight: 600;
   text-decoration: none;
   padding: 0.6rem 1.1rem;
-  border-radius: 8px;
+  border-radius: var(--radio-pequeno);
   white-space: nowrap;
+  display: inline-block;
+  touch-action: manipulation;
 }
-.btn-aviasales:hover { background: var(--mu-terracotta); color: var(--mu-surface); }
+.btn-aviasales:active { transform: scale(0.97); }
 .modal-avisos { margin-top: 0.7rem; display: flex; flex-wrap: wrap; gap: 0.3rem; }
 
 /* deslizador de tu nota: sin teclear nada */
@@ -659,13 +898,55 @@ tbody tr:hover {
   color: var(--mu-terracotta);
   text-align: center;
 }
+/* el "/100" igual que en la puntuación de arriba: fino y en tinta suave */
+.valorar-num .nota-de { font-weight: 400; color: var(--mu-ink-soft); }
+/* El carril del deslizador, pintado con la paleta: relleno naranja hasta la
+   nota (--p, lo pone la app) y arena el resto. El de serie salía casi negro. */
 .valorar input[type="range"] {
   width: 100%;
   margin: 0.5rem 0 0.1rem;
   accent-color: var(--mu-orange);
   background: transparent;
   height: 2.2rem;
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: pan-y;
 }
+.valorar input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: var(--radio-pequeno);
+  background: linear-gradient(90deg, var(--mu-orange) var(--p, 50%), var(--mu-sand) var(--p, 50%)); /* taste-skill-ignore: relleno de dos tonos con corte seco: es el carril del deslizador, no un degradado */
+}
+.valorar input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: var(--radio-pequeno);
+  background: var(--mu-sand);
+}
+.valorar input[type="range"]::-moz-range-progress {
+  height: 8px;
+  border-radius: var(--radio-pequeno);
+  background: var(--mu-orange);
+}
+.valorar input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: var(--mu-surface);
+  border: 3px solid var(--mu-orange);
+  box-shadow: var(--sombra-flota);
+  transition: transform var(--t-press) var(--ease-out);
+}
+.valorar input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--mu-surface);
+  border: 3px solid var(--mu-orange);
+  box-shadow: var(--sombra-flota);
+}
+.valorar input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
 .valorar-escala { display: flex; justify-content: space-between; }
 
 /* por qué corriges la nota de muuyal */
@@ -673,7 +954,7 @@ tbody tr:hover {
   margin-top: 0.9rem;
   background: var(--mu-sand);
   border: 1px solid var(--mu-border);
-  border-radius: 10px;
+  border-radius: var(--radio-tarjeta);
   padding: 0.7rem 0.8rem;
 }
 .motivo label { display: block; font-size: 0.9rem; margin-bottom: 0.4rem; }
@@ -681,30 +962,39 @@ tbody tr:hover {
   width: 100%;
   padding: 0.55rem 0.7rem;
   border: 1px solid var(--mu-border);
-  border-radius: 8px;
+  border-radius: var(--radio-pequeno);
   font-size: 1rem;
   font-family: inherit;
   background: var(--mu-surface);
   color: var(--mu-ink);
 }
-.motivo select:focus { outline: 2px solid var(--mu-orange); outline-offset: 1px; }
+.motivo select:focus { outline: 2px solid var(--mu-clay); outline-offset: 1px; }
+.motivo-plegable { display: grid; grid-template-rows: 1fr; }
+.motivo-plegable > div { min-height: 0; }
 .valorar-acciones { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.morfo { display: inline-flex; align-items: center; gap: 0.35rem; }
 
 /* desglose de la nota */
 table.desglose { font-size: 0.85rem; }
 table.desglose th, table.desglose td { padding: 0.3rem 0.5rem; }
 table.desglose thead th { text-transform: none; letter-spacing: 0; position: static; }
-table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
+table.desglose tbody tr:nth-child(even) { background: var(--fila-alterna); }
 .aporte-barra {
   display: inline-block;
   width: 56px;
   height: 6px;
-  border-radius: 999px;
+  border-radius: var(--radio-pequeno);
   background: var(--mu-sand);
   overflow: hidden;
   vertical-align: middle;
 }
-.aporte-barra > span { display: block; height: 100%; background: var(--mu-orange); }
+.aporte-barra > span {
+  display: block;
+  height: 100%;
+  background: var(--mu-orange);
+  transform-origin: left center;
+  transform: scaleX(var(--v, 0));
+}
 
 /* fichas de datos del vuelo y del destino */
 .datos {
@@ -713,7 +1003,7 @@ table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
   gap: 0.5rem 1rem;
 }
 .dato { display: flex; flex-direction: column; }
-.dato-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--mu-ink-soft); }
+.dato-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mu-ink-soft); }
 .dato-valor { font-weight: 600; }
 
 .paginacion {
@@ -724,7 +1014,14 @@ table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
   margin: 1rem 0 2rem;
   color: var(--mu-ink-soft);
 }
-.paginacion button { padding: 0.4rem 0.9rem; }
+.paginacion button {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  font-size: 1.15rem;
+}
 
 /* ---------- móvil ---------- */
 @media (max-width: 800px) {
@@ -733,10 +1030,13 @@ table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
   .card {
     background: var(--mu-surface);
     border: 1px solid var(--mu-border);
-    border-radius: 12px;
+    border-radius: var(--radio-tarjeta);
     padding: 0.85rem;
-    box-shadow: 0 1px 2px rgba(92, 53, 32, 0.06);
+      touch-action: manipulation;
+    transition: transform var(--t-press) var(--ease-out), border-color var(--t-hover) ease;
   }
+  /* al tocar una tarjeta se hunde un poco, antes de que se abra su ficha */
+  .card:active { transform: scale(0.985); border-color: var(--mu-orange); }
   .card-top {
     display: flex;
     justify-content: space-between;
@@ -748,21 +1048,49 @@ table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
   .card-fechas { font-size: 0.85rem; margin-top: 0.15rem; }
   .card-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
   .chip {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     background: var(--mu-sand);
     border: 1px solid var(--mu-border);
-    border-radius: 999px;
+    border-radius: var(--radio-pequeno);
     padding: 0.15rem 0.55rem;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
   }
-  .chip.coste-badge { border-color: transparent; border-radius: 999px; }
-  .chip.cache.fresco { background: var(--mu-sand); border-color: var(--mu-success); color: var(--mu-success); }
+  /* la nota en chip lleva su barra pequeña dentro, como en la tabla */
+  .chip.nota { gap: 0.15rem; }
+  .chip.nota .nota-barra { width: 22px; margin: 0 0 0 0.35rem; }
+  .chip .nota-de { font-size: 0.72rem; }
+  .chip.coste-badge { border-color: transparent; }
+  .chip.cache.fresco { background: var(--mu-sand); border-color: var(--mu-success); color: var(--txt-exito); }
   .chip.cache.medio { background: var(--mu-sand); border-color: var(--mu-orange); color: var(--mu-clay); }
   .chip.cache.viejo { background: var(--mu-sand); border-color: var(--mu-error); color: var(--mu-error); }
-  /* la subpantalla ocupa la pantalla entera en el móvil */
-  .modal-fondo { padding: 0; align-items: stretch; }
-  .modal { max-width: none; max-height: 100vh; border-radius: 0; border: none; }
-  .modal-cuerpo { padding-bottom: 2.5rem; }
+
+  /* La ficha es una hoja que sube desde abajo y se baja con el dedo. Deja
+     ver un poco de la lista por arriba, para que se entienda que está encima
+     y se puede apartar. */
+  .modal-fondo { padding: 0; align-items: flex-end; }
+  .modal {
+    max-width: none;
+    max-height: calc(100dvh - 0.75rem - env(safe-area-inset-top, 0px));
+    height: calc(100dvh - 0.75rem - env(safe-area-inset-top, 0px));
+    border-radius: var(--radio-tarjeta) var(--radio-tarjeta) 0 0;
+    border: none;
+  }
+  .modal-cabecera { padding-top: 1.35rem; touch-action: none; }
+  .modal-asa {
+    display: block;
+    position: absolute;
+    top: 0.45rem;
+    left: 50%;
+    width: 2.5rem;
+    height: 0.3rem;
+    margin-left: -1.25rem;
+    border-radius: var(--radio-pequeno);
+    background: var(--mu-border);
+  }
+  .modal-cuerpo { padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px)); }
   .modal-nota { justify-content: space-between; }
   .btn-aviasales { flex: 1; text-align: center; }
   .datos { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
@@ -774,6 +1102,49 @@ table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
   .search-form .field { flex: none; }
   .logo { width: 54px; height: 38px; }
   h1 { font-size: 1.7rem; }
+
+  /* Con resultados, el buscador se pliega en una línea ("BCN · Zona: Europe
+     · Cambiar") que se despliega al tocarla. */
+  .resumen-busqueda {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: var(--mu-surface);
+    color: var(--mu-ink);
+    border: 1px solid var(--mu-border);
+    border-radius: var(--radio-tarjeta);
+    padding: 0.7rem 0.9rem;
+    font-weight: 500;
+    text-align: left;
+  }
+  .resumen-accion { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--mu-clay); font-weight: 600; }
+  .buscador-plegable .search-form { margin-top: 0.5rem; }
+  .meta { font-size: 0.9rem; }
+
+  /* Los filtros, en una sola fila que se desliza de lado. Antes eran siete
+     controles uno encima de otro y el primer vuelo quedaba fuera de la
+     pantalla. El borde derecho se desvanece para avisar de que hay más. */
+  .filtros {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    margin: 0 -1rem 0.75rem;
+    padding: 0.1rem 1rem 0.2rem;
+    mask-image: linear-gradient(90deg, var(--mu-ink) 85%, transparent); /* taste-skill-ignore: máscara que desvanece el borde para avisar de que la fila se desliza */
+    -webkit-mask-image: linear-gradient(90deg, var(--mu-ink) 85%, transparent); /* taste-skill-ignore: lo mismo, con el prefijo de Safari */
+    touch-action: pan-x pan-y;
+  }
+  .filtros::-webkit-scrollbar { display: none; }
+  .filtros { scroll-padding-inline: 1rem; }
+  .filtros > * { flex: none; scroll-snap-align: start; }
+  .filtros input { width: 10.5rem; }
+
+  /* en el móvil iOS amplía la página si el campo tiene menos de 16 px */
+  .rango-inputs input { font-size: 16px; }
+
   /* En el móvil el mapa empieza donde acaban las opciones y llena todo lo que
      queda hasta el borde de abajo de la pantalla. La portada entera es una
      columna: cabecera, buscador y, ocupando el resto, el mapa. */
@@ -795,7 +1166,7 @@ table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
   }
   /* apilado en columna, el `flex: 1 1 380px` del buscador lo estiraba a lo
      alto y dejaba un hueco enorme entre los campos y el mapa */
-  .en-portada .portada .search-form { flex: 0 0 auto; }
+  .en-portada .portada .buscador-plegable { flex: 0 0 auto; }
   .portada .mapa-mundo {
     flex: 1 1 auto;
     /* a sangre: llega a los bordes laterales y hasta abajo del todo. El ancho
@@ -805,4 +1176,223 @@ table.desglose tbody tr:hover { background: transparent; box-shadow: none; }
     min-height: 240px;
     border-top: 1px solid var(--mu-border);
   }
+  /* Mientras busca, la pastilla se pone sobre el mapa, donde estaba el
+     nombre del aeropuerto, y no debajo (ahí empujaba el mapa y quedaba casi
+     fuera de la pantalla). */
+  .en-portada .loading {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(4.4rem + env(safe-area-inset-bottom, 0px));
+    padding: 0 1rem;
+    z-index: 2;
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 801px) {
+  /* en escritorio el buscador no se pliega nunca */
+  .buscador-plegable[data-abierto="false"] { grid-template-rows: 1fr; opacity: 1; }
+  .buscador-plegable > div { overflow: visible; }
+}
+
+/* ======================================================================
+   MOVIMIENTO
+   Todo lo que se mueve está aquí, dentro de "no-preference": si el sistema
+   pide menos animaciones, la página que queda es la página terminada, sin
+   desplazamientos (más abajo, la versión reducida con fundidos cortos).
+   ====================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+
+  /* --- Llegada a la portada: el logo se dibuja, la marca y el buscador
+     bajan un poco a su sitio. Pasa una vez por visita. --- */
+  .logo-trazo {
+    stroke-dasharray: 1;
+    animation: dibujar-trazo 900ms var(--ease-in-out) 120ms both;
+  }
+  .logo-punto {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: aparecer-punto 420ms var(--ease-out) 760ms both;
+  }
+  @keyframes dibujar-trazo { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes aparecer-punto { from { opacity: 0; transform: scale(0.4); } }
+
+  /* el logo da media vuelta al pasar el ratón: es simétrico, así que acaba
+     exactamente como estaba */
+  @media (hover: hover) and (pointer: fine) {
+    .marca .logo-giro { transition: transform 700ms var(--ease-in-out); }
+    .marca:hover .logo-giro { transform: rotate(180deg); }
+  }
+  /* mientras busca, el logo de la pastilla da media vuelta en bucle: es el
+     indicador de que la búsqueda sigue viva (uno solo: el de la cabecera
+     se queda quieto para no tener dos cosas girando a la vez) */
+  .logo-cargando .logo-giro { animation: media-vuelta 1100ms var(--ease-in-out) infinite; }
+  .logo-cargando .logo-trazo, .logo-cargando .logo-punto { animation: none; }
+  @keyframes media-vuelta { from { transform: rotate(0deg); } to { transform: rotate(180deg); } }
+
+  .en-portada header { animation: bajar 600ms var(--ease-expo) backwards; }
+  .en-portada .buscador-plegable { animation: subir 700ms var(--ease-expo) 90ms backwards; }
+  .descarga-portada { animation: subir 700ms var(--ease-expo) 170ms backwards; }
+  @keyframes bajar { from { opacity: 0; transform: translateY(-10px); } }
+  @keyframes subir { from { opacity: 0; transform: translateY(14px); } }
+
+  /* --- El mapa --- */
+  /* El aeropuerto elegido cae en el mapa con un pequeño rebote de escala y
+     su aro late como un radar. Mientras busca, el radar late más deprisa. */
+  .mundo-marca {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: caer-marca 460ms var(--ease-out) both;
+  }
+  .mundo-anillo {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: radar 2200ms var(--ease-out) infinite;
+  }
+  .mapa-mundo > svg.buscando .mundo-anillo { animation-duration: 1100ms; }
+  @keyframes caer-marca { from { opacity: 0; transform: scale(2.2); } }
+  @keyframes radar {
+    0% { transform: scale(0.6); opacity: 0.9; }
+    80%, 100% { transform: scale(2.6); opacity: 0; }
+  }
+
+  /* Las rutas de la búsqueda se dibujan de la más cercana a la más lejana,
+     en poco más de un segundo y medio en total. Después, un "cometa" sale
+     del origen y recorre algunas, en bucle, mientras dura la búsqueda. */
+  .mundo-ruta {
+    stroke-dasharray: 1;
+    animation: dibujar-trazo 900ms var(--ease-out) calc(var(--i) * 900ms) both;
+  }
+  .mundo-cometa {
+    stroke-dasharray: 0.07 1;
+    animation: cometa 2600ms var(--ease-in-out) calc(1600ms + var(--i) * 2600ms) infinite;
+  }
+  @keyframes cometa {
+    0% { stroke-dashoffset: 0.07; opacity: 0; }
+    10% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { stroke-dashoffset: -1; opacity: 0; }
+  }
+  .mundo-destinos { animation: aparecer 700ms var(--ease-out) 500ms both; }
+  @keyframes aparecer { from { opacity: 0; } }
+
+  .mapa-mundo-etiqueta { animation: subir-poco 260ms var(--ease-out) both; }
+  @keyframes subir-poco { from { opacity: 0; transform: translateY(6px); } }
+  .mapa-mundo-controles button:active { transform: scale(0.92); }
+
+  /* --- Buscador --- */
+  .sugerencias { animation: desplegar 180ms var(--ease-out) both; }
+  @keyframes desplegar { from { opacity: 0; transform: scaleY(0.96) translateY(-4px); } }
+  .loading-pastilla { animation: subir 420ms var(--ease-expo) both; }
+  .error { animation: sacudir 380ms var(--ease-out) both; }
+  @keyframes sacudir {
+    0% { opacity: 0; transform: translateX(0); }
+    25% { opacity: 1; transform: translateX(-5px); }
+    50% { transform: translateX(4px); }
+    75% { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+  }
+
+  /* --- Resultados --- */
+  .meta { animation: aparecer 400ms var(--ease-out) both; }
+  .filtros { animation: subir-poco 420ms var(--ease-out) 60ms backwards; }
+  .vacio { animation: subir 420ms var(--ease-expo) both; }
+  .badge-filtros { animation: latido 260ms var(--ease-out); }
+  @keyframes latido { from { transform: scale(1.35); } }
+  .aparece { animation: entrar-boton 200ms var(--ease-out) both; }
+  @keyframes entrar-boton { from { opacity: 0; transform: scale(0.94); } }
+
+  /* Filas y tarjetas: entran con un pequeño ascenso al llegar a la pantalla,
+     escalonadas (el retraso lo pone la app, con tope en la décima). La barra
+     de la nota crece desde cero justo detrás. */
+  [data-revelar]:not([data-visto]) { opacity: 0; transform: translateY(10px); }
+  /* Es una animación y no una transición a propósito: así, una vez dentro,
+     la fila vuelve a sus propias transiciones (la pulsación sigue siendo
+     inmediata, sin heredar el retraso de la entrada). */
+  [data-revelar][data-visto] { animation: entrar-fila 520ms var(--ease-expo) var(--retraso, 0ms) backwards; }
+  @keyframes entrar-fila { from { opacity: 0; transform: translateY(10px); } }
+  [data-revelar]:not([data-visto]) .nota-barra > span { transform: scaleX(0); }
+  [data-revelar][data-visto] .nota-barra > span {
+    animation: llenar 800ms var(--ease-expo) calc(var(--retraso, 0ms) + 140ms) both;
+  }
+  @keyframes llenar { from { transform: scaleX(0); } }
+
+  /* --- La ficha del vuelo --- */
+  .modal-velo { animation: aparecer 240ms var(--ease-out) backwards; }
+  .saliendo .modal-velo { animation: desaparecer 200ms ease both; }
+  .modal { animation: abrir-ficha 300ms var(--ease-out) backwards; }
+  .modal.saliendo { animation: cerrar-ficha 180ms ease both; }
+  @keyframes desaparecer { to { opacity: 0; } }
+  @keyframes abrir-ficha { from { opacity: 0; transform: translateY(10px) scale(0.96); } }
+  @keyframes cerrar-ficha { to { opacity: 0; transform: translateY(6px) scale(0.97); } }
+
+  /* lo de dentro llega en cascada corta: nota, mapa, avisos, secciones */
+  .modal-cuerpo > * { animation: subir-poco 420ms var(--ease-out) backwards; }
+  .modal-cuerpo > :nth-child(1) { animation-delay: 80ms; }
+  .modal-cuerpo > :nth-child(2) { animation-delay: 130ms; }
+  .modal-cuerpo > :nth-child(3) { animation-delay: 180ms; }
+  .modal-cuerpo > :nth-child(4) { animation-delay: 230ms; }
+  .modal-cuerpo > :nth-child(n+5) { animation-delay: 280ms; }
+  .modal .nota.grande .nota-barra > span { animation: llenar 900ms var(--ease-expo) 220ms both; }
+
+  /* la línea de la ruta se dibuja, y al llegar al destino el punto aparece
+     con una onda */
+  .mapa-linea-mascara {
+    stroke-dasharray: 1;
+    animation: dibujar-trazo 1000ms var(--ease-in-out) 260ms both;
+  }
+  .mapa-llegada { animation: aparecer-punto 360ms var(--ease-out) 1160ms both; }
+  .mapa-onda {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: onda 1200ms var(--ease-out) 1200ms both;
+  }
+  @keyframes onda {
+    from { opacity: 0.9; transform: scale(1); }
+    to { opacity: 0; transform: scale(3.2); }
+  }
+
+  /* las barras del desglose crecen una detrás de otra */
+  .aporte-barra > span {
+    animation: llenar 700ms var(--ease-expo) calc(320ms + var(--i, 0) * 45ms) both;
+  }
+
+  /* el panel del motivo se abre a su altura en vez de aparecer de golpe */
+  .motivo-plegable { animation: abrir-plegable var(--t-panel) var(--ease-out) both; }
+  .motivo-plegable > div { overflow: hidden; }
+  @keyframes abrir-plegable { from { grid-template-rows: 0fr; opacity: 0; } }
+
+  /* "Guardado" entra con un breve desenfoque: un cambio de estado, no un
+     texto que salta */
+  .morfo { animation: enfocar 260ms var(--ease-out) both; }
+  @keyframes enfocar { from { filter: blur(3px); opacity: 0.4; } }
+
+  @media (max-width: 800px) {
+    /* en el móvil la ficha sube desde abajo, con la curva de las hojas de iOS */
+    .modal { animation: subir-hoja var(--t-ficha) var(--ease-drawer) backwards; }
+    .modal.saliendo { animation: bajar-hoja 240ms var(--ease-out) both; }
+    @keyframes subir-hoja { from { transform: translateY(100%); } }
+    @keyframes bajar-hoja { to { transform: translateY(100%); } }
+    .modal-cuerpo > * { animation-duration: 360ms; }
+  }
+}
+
+/* Con menos animaciones: sin desplazamientos ni bucles; los cambios de
+   estado se siguen viendo, como fundidos cortos. */
+@media (prefers-reduced-motion: reduce) {
+  .modal-velo, .modal, .sugerencias, .loading-pastilla, .vacio, .error {
+    animation: aparecer 160ms ease backwards;
+  }
+  .modal.saliendo { animation: none; }
+  .mundo-ruta { opacity: 0.35; }
+  .plegable, .nota-barra > span, .giro { transition-duration: 1ms; }
+}
+@keyframes aparecer { from { opacity: 0; } }
+
+/* el fundido entre portada y resultados (View Transitions del navegador) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-out);
 }

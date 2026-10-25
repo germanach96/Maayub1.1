@@ -2,10 +2,9 @@
   "mcpServers": {
     "playwright": {
       "type": "stdio",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@playwright/mcp@0.0.83"
+        ".claude/playwright-mcp.mjs"
       ],
       "env": {}
     },
