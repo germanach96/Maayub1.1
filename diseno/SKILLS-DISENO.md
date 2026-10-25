@@ -42,9 +42,18 @@ npx -y skills add https://github.com/Leonxlnx/taste-skill/tree/v2.1.0 \
   minimalist-ui redesign-existing-projects stitch-design-taste --yes --copy
 
 # MCP (scope de proyecto → .mcp.json)
-claude mcp add --scope project playwright -- npx -y @playwright/mcp@0.0.83
+claude mcp add --scope project playwright -- node .claude/playwright-mcp.mjs
 claude mcp add --scope project --transport http figma https://mcp.figma.com/mcp
 ```
+
+Playwright MCP no se arranca directamente con `npx @playwright/mcp`, sino con
+`.claude/playwright-mcp.mjs`: en las sesiones en la nube no hay Google Chrome,
+sino el Chromium de `/opt/pw-browsers`, y ese script se lo pasa (sin ventana y
+sin "caja de arena"). En un ordenador normal arranca el MCP tal cual.
+
+Las herramientas de Taste que abren un navegador (`inspect.mjs`, `scenes.mjs`)
+necesitan lo mismo en la nube: `CHROME_PATH` apuntando a un pequeño script que
+llame a `/opt/pw-browsers/chromium --no-sandbox "$@"`.
 
 Las skills tienen que quedar como archivos reales en `.claude/skills/`. Si el
 instalador las deja también en `.agents/skills/`, esa copia sobra (está en
