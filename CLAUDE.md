@@ -23,3 +23,5 @@ hacer con él para reajustar los pesos de la puntuación.
 búsqueda, descargados de la web), lee `ACTUALIZAR_PRECIOS.md`: ahí está qué
 hacer con él para actualizar el precio normal de cada ruta y mes. Son dos
 tareas distintas y no se mezclan.
+
+Reglas de diseño (skills obligatorias Impeccable, Emil Kowalski, Taste, Figma y Playwright): @diseno/SKILLS-DISENO.md
